@@ -25,6 +25,7 @@ The design lives in [PLAN.md](PLAN.md). Read it before changing models or scorin
 | Everything CI runs (minus Docker) | `make check` |
 | Verify audit hash chain | `uv run python manage.py audit_verify` |
 | Full stack | `docker compose up -d --build`, then https://localhost |
+| Import ATT&CK (latest / pinned / offline) | `uv run python manage.py import_attack` · `--version 20.1` · `--file bundle.json` (`--sha256`, `--allow-downgrade`, `--async`) |
 
 ## Conventions
 - **Access control is deny-by-default.** Every view declares `tl_access` (`PUBLIC`, `AUTHENTICATED` or a
@@ -40,6 +41,12 @@ The design lives in [PLAN.md](PLAN.md). Read it before changing models or scorin
 - **Coverage, compliance % and scores are derived, never stored** (PLAN.md §4). Snapshots exist only for trends.
 - **Secrets** come from env vars or `<NAME>_FILE`, via `config/settings/base.py:secret()`. Never hard-code them,
   and never log them (`core/logging.py` scrubs, but don't rely on it).
+- **ATT&CK data is importer-owned** (`threatledger/attack`). Rows are matched by STIX id and never deleted. Revoked/deprecated
+  objects are flagged and `Technique.revoked_by`/`replacement()` point to the successor. User mappings (risk/control ↔ technique)
+  must live in *other* apps, FK to `Technique` with `on_delete=PROTECT`, and never in the `*Technique` link tables the importer re-syncs.
+  Use `Technique.objects.active()` for anything user-facing. Tactic order comes from `Tactic.order` (the matrix), never hard-coded:
+  v19+ replaced Defense Evasion with Stealth plus Defense Impairment.
+- Test bundles: `threatledger/attack/tests/bundles.py` (`bundle_v1`/`bundle_v2`). Use `test_importer._load()` to load one in a fixture.
 - Django admin is **superuser-only** break-glass. Everyday admin features belong in the app, behind `can()`.
 - Settings: `config.settings.dev` (manage.py default), `.test` (pytest), `.prod` (wsgi/Docker; fails closed).
 - Templates: Django + HTMX. HTMX partials are `_name.html`, chosen when `request.htmx`. Body sets the CSRF

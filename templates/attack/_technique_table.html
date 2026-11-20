@@ -1,0 +1,21 @@
+<p class="mb-2 text-sm text-slate-600">{{ paginator.count|default:0 }} result{{ paginator.count|pluralize }}</p>
+<div class="card overflow-x-auto">
+<table class="data-table">
+  <thead><tr><th scope="col">ID</th><th scope="col">Name</th><th scope="col">Tactics</th><th scope="col">Platforms</th><th scope="col" class="text-right">Sub-techniques</th></tr></thead>
+  <tbody class="divide-y divide-slate-100">
+  {% for t in techniques %}
+    <tr>
+      <td class="whitespace-nowrap font-mono text-xs"><a class="text-brand-700 hover:underline" href="{% url 'attack:technique_detail' t.attack_id %}">{{ t.attack_id }}</a></td>
+      <td>{% if t.is_subtechnique and t.parent %}<span class="text-slate-500">{{ t.parent.name }}:</span> {% endif %}<a class="font-medium hover:underline" href="{% url 'attack:technique_detail' t.attack_id %}">{{ t.name }}</a>
+        {% if t.is_revoked %}<span class="badge ml-1 bg-red-100 text-red-800">Revoked</span>{% elif t.is_deprecated %}<span class="badge ml-1 bg-amber-100 text-amber-800">Deprecated</span>{% endif %}</td>
+      <td class="text-xs">{% for tac in t.tactics.all %}{{ tac.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</td>
+      <td class="text-xs text-slate-600">{{ t.platforms|join:", " }}</td>
+      <td class="text-right">{% if t.sub_count %}{{ t.sub_count }}{% else %}<span class="text-slate-400">—</span>{% endif %}</td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="5" class="py-8 text-center text-slate-500">No techniques match these filters.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% include "attack/_pagination.html" with target="#technique-table" %}

@@ -1,0 +1,19 @@
+{% load attack %}
+<p class="mb-2 text-sm text-slate-600">{{ paginator.count|default:0 }} group{{ paginator.count|pluralize }}</p>
+<div class="card overflow-x-auto">
+<table class="data-table">
+  <thead><tr><th scope="col">ID</th><th scope="col">Name</th><th scope="col">Also known as</th><th scope="col" class="text-right">Techniques</th><th scope="col" class="text-right">Software</th></tr></thead>
+  <tbody class="divide-y divide-slate-100">
+  {% for g in groups %}
+    <tr>
+      <td class="font-mono text-xs"><a class="text-brand-700 hover:underline" href="{% url 'attack:group_detail' g.attack_id %}">{{ g.attack_id }}</a></td>
+      <td><a class="font-medium hover:underline" href="{% url 'attack:group_detail' g.attack_id %}">{{ g.name }}</a></td>
+      <td class="max-w-md text-xs text-slate-600">{{ g.aliases|join:", "|truncatechars:120 }}</td>
+      <td class="text-right">{{ g.technique_count }}</td>
+      <td class="text-right">{{ g.software_count }}</td>
+    </tr>
+  {% empty %}<tr><td colspan="5" class="py-8 text-center text-slate-500">No groups match. {% if not paginator %}Import ATT&amp;CK data first.{% endif %}</td></tr>{% endfor %}
+  </tbody>
+</table>
+</div>
+{% include "attack/_pagination.html" with target="#group-table" %}

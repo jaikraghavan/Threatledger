@@ -123,10 +123,15 @@ that could disagree with the inputs.
 | `Group` | stix_id, attack_id (`G0016`), name, aliases[], description, url, deprecated/revoked flags |
 | `Software` | stix_id, attack_id (`S0001`), name, type (malware/tool), aliases[], platforms[] |
 | `Mitigation` | stix_id, attack_id (`M1032`), name, description |
-| `DataSource` / `DataComponent` | stix_id, attack_id (`DS0017`), name, description; component → source FK |
+| `DataSource` / `DataComponent` | stix_id, attack_id (`DS0017`/`DC0001`), name, description, log sources; component → source FK. **Data sources are all deprecated since v18**, kept only for older bundles |
+| `DetectionStrategy` / `Analytic` | v18+ detection model: strategy (`DET…`) detects techniques; analytics (`AN…`, platforms) belong to strategies and reference data components |
 | `GroupTechnique`, `SoftwareTechnique`, `GroupSoftware` | "uses" links with procedure description |
 | `MitigationTechnique` | "mitigates" links |
-| `DataComponentTechnique` | "detects" links |
+| `DetectionStrategyTechnique` | v18+ "detects" links |
+| `DataComponentTechnique` | legacy (pre-v18) "detects" links |
+| `ImportRun` | status, requested version, requested_by, stats, message — one row per import attempt |
+
+_Implementation note (Phase 2):_ verified against ATT&CK v18.1, v19.2 and v20.1. Campaigns (`campaign`, ~57 objects) are not imported yet; they can feed the threat-group coverage scope in Phase 6 if wanted. All base fields live on an abstract `AttackObject` (stix_id, attack_id, flags, `last_seen_release`).
 
 Indexes: `attack_id`, trigram GIN index on `name` (Postgres `pg_trgm`) for the HTMX search;
 falls back to `icontains` on SQLite.

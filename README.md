@@ -27,6 +27,21 @@ in `.env`.
 Secrets (Django key, Postgres and Redis passwords) are generated on first start into the
 `secrets` Docker volume and are never written to the repository.
 
+## Load MITRE ATT&CK
+
+```sh
+docker compose exec web python manage.py import_attack                 # latest Enterprise release
+docker compose exec web python manage.py import_attack --version 20.1  # pin a version
+# air-gapped: download enterprise-attack-<ver>.json from github.com/mitre-attack/attack-stix-data
+docker compose cp enterprise-attack-20.1.json web:/tmp/b.json
+docker compose exec web python manage.py import_attack --file /tmp/b.json --sha256 <expected>
+```
+
+Admins can also start an import from **ATT&CK data** in the app, which runs on the background worker.
+Re-importing is safe and idempotent. Techniques MITRE revokes are kept and flagged, with a pointer to
+their replacement, so your mappings never break. Importing an older version over a newer one is refused
+unless you pass `--allow-downgrade`.
+
 ## Local development
 
 ```sh

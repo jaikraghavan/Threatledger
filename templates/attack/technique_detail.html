@@ -1,0 +1,70 @@
+{% extends "base.html" %}{% load attack %}
+{% block title %}{{ technique.attack_id }} {{ technique.name }}{% endblock %}
+{% block content %}
+<nav class="mb-3 text-sm text-slate-500" aria-label="Breadcrumb"><a class="hover:underline" href="{% url 'attack:technique_list' %}">Techniques</a>
+  {% if technique.parent %} / <a class="hover:underline" href="{% url 'attack:technique_detail' technique.parent.attack_id %}">{{ technique.parent.attack_id }} {{ technique.parent.name }}</a>{% endif %}</nav>
+
+{% if technique.is_revoked %}
+<div class="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900" role="alert">
+  MITRE has <strong>revoked</strong> this technique.
+  {% if replacement %}Use <a class="font-medium underline" href="{% url 'attack:technique_detail' replacement.attack_id %}">{{ replacement.attack_id }} {{ replacement.name }}</a> instead. Existing mappings to {{ technique.attack_id }} are kept and should be moved to the replacement.{% else %}No replacement is listed.{% endif %}
+</div>
+{% elif technique.is_deprecated %}
+<div class="mb-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900" role="alert">MITRE has <strong>deprecated</strong> this technique. It is kept so existing mappings keep working.</div>
+{% endif %}
+
+<div class="flex flex-wrap items-start justify-between gap-4">
+  <div>
+    <div class="font-mono text-sm text-slate-500">{{ technique.attack_id }}{% if technique.is_subtechnique %} · sub-technique{% endif %}</div>
+    <h1 class="text-2xl font-semibold">{{ technique.name }}</h1>
+  </div>
+  {% if technique.url %}<a href="{{ technique.url }}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">View on attack.mitre.org ↗</a>{% endif %}
+</div>
+
+<div class="mt-6 grid gap-6 lg:grid-cols-3">
+  <div class="space-y-6 lg:col-span-2">
+    <section class="card p-5"><h2 class="mb-2 font-semibold">Description</h2>
+      <div class="prose-attack space-y-3 text-sm leading-relaxed text-slate-700">{{ technique.description|attack_text }}</div></section>
+
+    {% if subtechniques %}<section class="card p-5"><h2 class="mb-3 font-semibold">Sub-techniques ({{ subtechniques|length }})</h2>
+      <ul class="divide-y divide-slate-100 text-sm">{% for s in subtechniques %}<li class="py-2"><a class="font-mono text-xs text-brand-700 hover:underline" href="{% url 'attack:technique_detail' s.attack_id %}">{{ s.attack_id }}</a> {{ s.name }}</li>{% endfor %}</ul></section>{% endif %}
+
+    <section class="card p-5"><h2 class="mb-3 font-semibold">Mitigations ({{ mitigations|length }})</h2>
+      {% for m in mitigations %}<div class="border-t border-slate-100 py-3 first:border-0 first:pt-0">
+        <div class="text-sm"><span class="font-mono text-xs text-slate-500">{{ m.mitigation.attack_id }}</span> <span class="font-medium">{{ m.mitigation.name }}</span></div>
+        {% if m.description %}<div class="mt-1 space-y-2 text-sm text-slate-600">{{ m.description|attack_text }}</div>{% endif %}
+      </div>{% empty %}<p class="text-sm text-slate-500">No mitigations listed by MITRE.</p>{% endfor %}</section>
+
+    <section class="card p-5"><h2 class="mb-3 font-semibold">Detection strategies ({{ detections|length }})</h2>
+      {% for d in detections %}<div class="border-t border-slate-100 py-3 first:border-0 first:pt-0">
+        <div class="text-sm"><span class="font-mono text-xs text-slate-500">{{ d.strategy.attack_id }}</span> <span class="font-medium">{{ d.strategy.name }}</span></div>
+        {% with analytics=d.strategy.analytics.all %}{% if analytics %}<ul class="mt-2 space-y-1 text-xs text-slate-600">
+          {% for a in analytics %}<li><span class="font-mono">{{ a.attack_id }}</span>{% if a.platforms %} · {{ a.platforms|join:", " }}{% endif %}{% with comps=a.data_components.all %}{% if comps %} · data: {% for c in comps %}{{ c.name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}{% endwith %}</li>{% endfor %}
+        </ul>{% endif %}{% endwith %}
+      </div>{% empty %}
+        {% if legacy_components %}<ul class="text-sm">{% for l in legacy_components %}<li>{{ l.data_component.name }}</li>{% endfor %}</ul>
+        {% else %}<p class="text-sm text-slate-500">No detection strategies listed by MITRE.</p>{% endif %}
+      {% endfor %}</section>
+
+    <section class="card p-5"><h2 class="mb-3 font-semibold">Threat groups using this ({{ groups|length }})</h2>
+      {% for g in groups %}<details class="border-t border-slate-100 py-2 first:border-0 first:pt-0"><summary class="cursor-pointer text-sm"><a class="font-medium text-brand-700 hover:underline" href="{% url 'attack:group_detail' g.group.attack_id %}">{{ g.group.name }}</a> <span class="font-mono text-xs text-slate-500">{{ g.group.attack_id }}</span></summary>
+        {% if g.description %}<div class="mt-2 space-y-2 text-sm text-slate-600">{{ g.description|attack_text }}</div>{% endif %}</details>
+      {% empty %}<p class="text-sm text-slate-500">No groups recorded.</p>{% endfor %}</section>
+  </div>
+
+  <aside class="space-y-6">
+    <section class="card p-5 text-sm"><h2 class="mb-3 font-semibold">Details</h2>
+      <dl class="space-y-3">
+        <div><dt class="text-xs uppercase tracking-wide text-slate-500">Tactics</dt><dd>{% for t in tactics %}<span class="badge mr-1 mt-1 bg-brand-50 text-brand-700">{{ t.name }}</span>{% empty %}—{% endfor %}</dd></div>
+        <div><dt class="text-xs uppercase tracking-wide text-slate-500">Platforms</dt><dd>{{ technique.platforms|join:", "|default:"—" }}</dd></div>
+        <div><dt class="text-xs uppercase tracking-wide text-slate-500">ATT&amp;CK object version</dt><dd>{{ technique.attack_version|default:"—" }}</dd></div>
+        <div><dt class="text-xs uppercase tracking-wide text-slate-500">Last modified by MITRE</dt><dd>{{ technique.stix_modified|date:"Y-m-d"|default:"—" }}</dd></div>
+      </dl></section>
+    {% if replaces %}<section class="card p-5 text-sm"><h2 class="mb-2 font-semibold">Replaces revoked</h2>
+      <ul>{% for r in replaces %}<li><a class="font-mono text-xs text-brand-700 hover:underline" href="{% url 'attack:technique_detail' r.attack_id %}">{{ r.attack_id }}</a> {{ r.name }}</li>{% endfor %}</ul></section>{% endif %}
+    <section class="card p-5 text-sm"><h2 class="mb-3 font-semibold">Software using this ({{ software|length }})</h2>
+      <ul class="max-h-96 space-y-1 overflow-y-auto">{% for s in software %}<li><span class="font-mono text-xs text-slate-500">{{ s.software.attack_id }}</span> {{ s.software.name }} <span class="text-xs text-slate-400">{{ s.software.get_kind_display }}</span></li>{% empty %}<li class="text-slate-500">None recorded.</li>{% endfor %}</ul></section>
+    <section class="card border-dashed p-5 text-sm text-slate-500"><h2 class="mb-1 font-semibold text-slate-700">Risks &amp; controls</h2>Linked risks and controls appear here from Phases 3–4.</section>
+  </aside>
+</div>
+{% endblock %}

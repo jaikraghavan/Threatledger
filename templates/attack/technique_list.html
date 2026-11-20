@@ -1,0 +1,29 @@
+{% extends "base.html" %}{% load tl %}
+{% block title %}Techniques{% endblock %}
+{% block content %}
+<div class="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+  <div><h1 class="text-2xl font-semibold">Techniques</h1>{% include "attack/_release_note.html" %}</div>
+</div>
+{% if not release %}{% include "attack/_empty.html" %}{% else %}
+<form class="card mb-4 grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-6" role="search"
+      hx-get="{% url 'attack:technique_list' %}" hx-target="#technique-table" hx-push-url="true"
+      hx-trigger="input changed delay:250ms from:#f-q, change">
+  <div class="sm:col-span-2"><label class="label" for="f-q">Search</label>
+    <input id="f-q" name="q" type="search" class="field" value="{{ filters.q }}" placeholder="T1059, PowerShell, phishing…" autocomplete="off"></div>
+  <div><label class="label" for="f-tactic">Tactic</label>
+    <select id="f-tactic" name="tactic" class="field"><option value="">All tactics</option>
+      {% for t in tactics %}<option value="{{ t.shortname }}"{% if filters.tactic == t.shortname %} selected{% endif %}>{{ t.name }}</option>{% endfor %}</select></div>
+  <div><label class="label" for="f-platform">Platform</label>
+    <select id="f-platform" name="platform" class="field"><option value="">All platforms</option>
+      {% for p in platforms %}<option value="{{ p }}"{% if filters.platform == p %} selected{% endif %}>{{ p }}</option>{% endfor %}</select></div>
+  <div><label class="label" for="f-level">Show</label>
+    <select id="f-level" name="level" class="field">
+      <option value="all"{% if filters.level == "all" %} selected{% endif %}>Techniques + sub-techniques</option>
+      <option value="top"{% if filters.level == "top" %} selected{% endif %}>Techniques only</option>
+      <option value="sub"{% if filters.level == "sub" %} selected{% endif %}>Sub-techniques only</option></select></div>
+  <div class="flex items-end"><label class="inline-flex items-center gap-2 text-sm text-slate-700">
+    <input type="checkbox" name="revoked" value="1"{% if filters.revoked %} checked{% endif %} class="rounded border-slate-300"> Include revoked/deprecated</label></div>
+</form>
+<div id="technique-table">{% include "attack/_technique_table.html" %}</div>
+{% endif %}
+{% endblock %}

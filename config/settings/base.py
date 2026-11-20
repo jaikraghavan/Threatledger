@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "threatledger.org",
     "threatledger.accounts",
     "threatledger.audit",
+    "threatledger.attack",
 ]
 
 MIDDLEWARE = [
@@ -244,6 +245,9 @@ LOGGING = {
         "django.security": {"level": "INFO"},
     },
 }
+
+# ------------------------------------------------------------------ ATT&CK
+ATTACK_MAX_BUNDLE_BYTES = env.int("ATTACK_MAX_BUNDLE_BYTES", default=200 * 1024 * 1024)
 
 # ------------------------------------------------------------------ app
 THREATLEDGER_VERSION = "0.1.0"

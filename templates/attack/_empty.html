@@ -1,0 +1,6 @@
+{% load tl %}<div class="card p-8 text-center">
+  <h2 class="text-lg font-semibold">No ATT&amp;CK data yet</h2>
+  <p class="mt-2 text-sm text-slate-600">An administrator needs to import MITRE ATT&amp;CK first.</p>
+  {% if user|can:"run_imports" %}<a href="{% url 'attack:data' %}" class="btn btn-primary mt-4">Go to ATT&amp;CK data</a>
+  {% else %}<p class="mt-2 text-xs text-slate-500">Command line: <code>python manage.py import_attack</code></p>{% endif %}
+</div>
