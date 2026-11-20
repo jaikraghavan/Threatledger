@@ -66,6 +66,16 @@ CIS v8 ship with identifiers and short titles only, for licensing reasons; impor
 `import_framework`. HIPAA and the DPDP Act ship with plain-language summaries. All seeded mappings are
 **indicative**: verify them against the official text.
 
+## Dashboards and reports
+
+- **Dashboard** (home page): KPIs, residual heatmap, top risks, top threat gaps, control priorities and trend charts.
+- **ATT&CK coverage** (`/coverage/`): matrix for your risk register, all techniques, one threat group or a sector;
+  **Export Navigator layer** opens directly in MITRE ATT&CK Navigator.
+- **Board report** (`/reports/board/`): printable summary; use *Print / Save as PDF*.
+
+Trend charts are built from daily snapshots. The worker records them automatically, or run
+`docker compose exec web python manage.py take_snapshots`.
+
 ## Local development
 
 ```sh

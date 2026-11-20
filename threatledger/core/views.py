@@ -1,29 +1,16 @@
 from __future__ import annotations
 
 import logging
-from typing import Any
 
 from django.core.cache import cache
 from django.db import connection
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.cache import never_cache
-from django.views.generic import TemplateView
 
-from threatledger.accounts.permissions import PUBLIC, AccessControlMixin, access, get_role
-from threatledger.accounts.roles import Cap
+from threatledger.accounts.permissions import PUBLIC, access
 
 logger = logging.getLogger(__name__)
-
-
-class HomeView(AccessControlMixin, TemplateView):
-    tl_access = Cap.VIEW_DASHBOARD
-    template_name = "core/home.html"
-
-    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
-        ctx = super().get_context_data(**kwargs)
-        ctx["role"] = get_role(self.request.user)
-        return ctx
 
 
 @never_cache

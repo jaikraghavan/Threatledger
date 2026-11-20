@@ -18,6 +18,7 @@ def test_home_renders_role_navigation(client_for):
         "Risk register",
         "Controls",
         "Compliance",
+        "ATT&CK coverage",
         "Techniques",
         "Threat groups",
         "Audit log",
@@ -32,6 +33,7 @@ def test_viewer_does_not_see_audit_link(client_for):
         "Risk register",
         "Controls",
         "Compliance",
+        "ATT&CK coverage",
         "Techniques",
         "Threat groups",
     ]

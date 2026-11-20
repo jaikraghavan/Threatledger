@@ -32,3 +32,13 @@ def get_item(mapping: Any, key: Any) -> Any:
 @register.filter
 def expires_soon(evidence: Any, days: int = 30) -> bool:
     return bool(evidence.expires_within(int(days)))
+
+
+@register.filter
+def chart_rows(data: dict[str, Any]) -> list[list[Any]]:
+    """Chart series -> table rows: [[label, value1, value2, ...], ...] for accessible fallbacks."""
+    datasets = data.get("datasets", [])
+    return [
+        [label, *[(ds["data"][i] if i < len(ds["data"]) else None) for ds in datasets]]
+        for i, label in enumerate(data.get("labels", []))
+    ]

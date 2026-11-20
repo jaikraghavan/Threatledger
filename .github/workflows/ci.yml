@@ -170,6 +170,21 @@ jobs:
           assert after > before, (before, after)
           print('compliance smoke OK', before, '->', after)"
           docker compose exec -T web python manage.py audit_verify
+      - name: Smoke test - snapshots, dashboard, coverage matrix and Navigator export
+        run: |
+          docker compose exec -T web python manage.py take_snapshots
+          docker compose exec -T web python manage.py shell -c "
+          import json
+          from django.test import Client
+          from threatledger.accounts.models import User
+          c = Client(HTTP_HOST='localhost', HTTP_X_FORWARDED_PROTO='https')
+          c.force_login(User.objects.get(username='auditor'))
+          for url in ['/', '/coverage/?scope=all', '/coverage/?scope=sector&value=financial', '/reports/board/']:
+              r = c.get(url, secure=True)
+              assert r.status_code == 200, (url, r.status_code)
+          layer = json.loads(c.get('/coverage/navigator.json?scope=all', secure=True).content)
+          assert layer['versions']['layer'] == '4.5' and len(layer['techniques']) > 600, len(layer['techniques'])
+          print('reporting smoke OK')"
           docker compose exec -T web python manage.py audit_verify
       - name: Logs on failure
         if: failure()

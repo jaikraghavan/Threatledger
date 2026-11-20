@@ -61,6 +61,10 @@ The design lives in [PLAN.md](PLAN.md). Read it before changing models or scorin
   `scripts/build_nist_80053.py` and `scripts/seeds/build_seeds.py` (never hand-edit the NIST JSON). Always quote refs
   in YAML. Starter-control requirement mappings live in `data/controls/starter.yaml` under `requirements:`.
   Commands: `seed_frameworks`, `import_framework <file> [--dry-run]`, `import_ctid_mappings [--attack-version|--file]`.
+- **Reporting/coverage**: dashboard = `reporting.views.dashboard_context()`; KPIs and snapshots in
+  `reporting/services.py` (snapshots are for trends only). Matrix/Navigator in `coverage/matrix.py`.
+  Charts: include `partials/_chart.html` with `id`/`data` (series dict with `labels` + `datasets`) and load
+  `vendor/chart-4.6.1.umd.min.js` in `{% block head_scripts %}`. Never add inline `<script>` or `style=`.
 - Test helpers for risks/controls/techniques: `threatledger/risks/tests/helpers.py`.
 - Test bundles: `threatledger/attack/tests/bundles.py` (`bundle_v1`/`bundle_v2`). Use `test_importer._load()` to load one in a fixture.
 - Django admin is **superuser-only** break-glass. Everyday admin features belong in the app, behind `can()`.

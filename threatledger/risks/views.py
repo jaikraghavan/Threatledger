@@ -29,6 +29,8 @@ from threatledger.coverage.selectors import coverage_for
 
 from . import exports, filters, services
 from .forms import AcceptanceForm, AssetForm, DecisionForm, MatrixForm, RiskForm
+from .heatmaps import band_counts as _band_counts
+from .heatmaps import grid as _grid
 from .models import (
     Asset,
     Band,
@@ -124,6 +126,9 @@ class RiskDetailView(AccessControlMixin, DetailView):
         ctx.update(_panel_context(self.request, risk))
         ctx["matrix"] = _matrix(self.request)
         ctx["history"] = risk.score_history.select_related("changed_by")[:20]
+        from threatledger.reporting.services import risk_score_series
+
+        ctx["score_series"] = risk_score_series(risk)
         ctx["acceptances"] = risk.acceptances.select_related("requested_by", "decided_by")
         ctx["can_request_acceptance"] = (
             ctx["can_edit"]
@@ -473,41 +478,6 @@ class HeatmapView(AccessControlMixin, TemplateView):
             business_units=_bus(self.request.user),
         )
         return ctx
-
-
-def _grid(matrix: RiskMatrix, counts: Counter[tuple[int, int]]) -> list[dict[str, Any]]:
-    """Rows from highest likelihood down; each row has one cell per impact value."""
-    rows = []
-    for likelihood in reversed(matrix.scale):
-        cells = []
-        for impact in matrix.scale:
-            score = likelihood * impact
-            cells.append(
-                {
-                    "likelihood": likelihood,
-                    "impact": impact,
-                    "score": score,
-                    "band": matrix.band(score),
-                    "count": counts.get((likelihood, impact), 0),
-                }
-            )
-        rows.append(
-            {"likelihood": likelihood, "label": matrix.likelihood_label(likelihood), "cells": cells}
-        )
-    return rows
-
-
-def _band_counts(matrix: RiskMatrix, values: list[tuple[int, ...]]) -> list[dict[str, Any]]:
-    out = []
-    for band in Band:
-        out.append(
-            {
-                "band": band,
-                "inherent": sum(1 for v in values if matrix.band(v[0] * v[1]) == band),
-                "residual": sum(1 for v in values if matrix.band(v[2] * v[3]) == band),
-            }
-        )
-    return out
 
 
 # ----------------------------------------------------------------------------- export

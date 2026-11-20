@@ -1,0 +1,14 @@
+<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+  <a href="{% url 'risks:list' %}?status=active" class="card block p-5 hover:border-brand-500"><div class="text-sm text-slate-500">Open risks</div><div class="mt-1 text-3xl font-semibold">{{ k.open_risks }}</div>
+    <div class="mt-1 text-xs {% if k.critical_high %}font-medium text-red-700{% else %}text-slate-500{% endif %}">{{ k.critical_high }} high or critical (residual)</div></a>
+  <a href="{% url 'coverage:matrix' %}" class="card block p-5 hover:border-brand-500"><div class="text-sm text-slate-500">ATT&amp;CK threat coverage</div><div class="mt-1 text-3xl font-semibold">{{ k.coverage.percent }}%</div>
+    <div class="mt-1 text-xs text-slate-500">{{ k.coverage.covered }} covered · {{ k.coverage.partial }} partial · {{ k.coverage.gap }} gap, of {{ k.coverage.total }} techniques in your risks</div></a>
+  <a href="{% url 'controls:list' %}" class="card block p-5 hover:border-brand-500"><div class="text-sm text-slate-500">Controls implemented</div><div class="mt-1 text-3xl font-semibold">{{ k.controls_pct }}%</div>
+    <div class="mt-1 text-xs text-slate-500">{{ k.controls_implemented }} of {{ k.controls_total }}{% if k.tests_overdue %} · <span class="text-red-700">{{ k.tests_overdue }} test{{ k.tests_overdue|pluralize }} overdue</span>{% endif %}</div></a>
+  <div class="card p-5"><div class="text-sm text-slate-500">Needs attention</div>
+    <ul class="mt-2 space-y-1 text-sm">
+      <li><a class="hover:underline {% if k.review_overdue %}text-red-700{% endif %}" href="{% url 'risks:list' %}?review=overdue">{{ k.review_overdue }} risk review{{ k.review_overdue|pluralize }} overdue</a></li>
+      <li><a class="hover:underline {% if k.pending_acceptances %}text-amber-700{% endif %}" href="{% url 'risks:acceptances' %}">{{ k.pending_acceptances }} acceptance{{ k.pending_acceptances|pluralize }} pending</a></li>
+      <li><span class="{% if k.evidence_expiring %}text-amber-700{% endif %}">{{ k.evidence_expiring }} evidence item{{ k.evidence_expiring|pluralize }} expiring ≤ 30 days</span></li>
+    </ul></div>
+</div>

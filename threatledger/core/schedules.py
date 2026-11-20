@@ -10,6 +10,7 @@ JOBS = [
     # (name, function, schedule type "D" = daily)
     ("risk-register-daily", "threatledger.risks.tasks.daily", "D"),
     ("controls-daily", "threatledger.controls.tasks.daily", "D"),
+    ("reporting-daily", "threatledger.reporting.tasks.daily", "D"),
 ]
 
 

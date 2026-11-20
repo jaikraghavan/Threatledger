@@ -1,0 +1,10 @@
+{% load tl %}{% comment %}Usage: include with id= data= title= type= percent= empty=. Renders a chart plus an accessible data table.{% endcomment %}
+{% if data.labels|length >= 2 %}
+<figure>
+  <div class="relative h-64"><canvas data-chart="{{ id }}" data-type="{{ type|default:'line' }}" data-percent="{{ percent|default:'' }}" role="img" aria-label="{{ title }}"></canvas></div>
+  {{ data|json_script:id }}
+  <details class="mt-2 text-xs"><summary class="cursor-pointer text-slate-500">View data</summary>
+    <div class="overflow-x-auto"><table class="data-table"><thead><tr><th scope="col">Date</th>{% for ds in data.datasets %}<th scope="col">{{ ds.label }}</th>{% endfor %}</tr></thead>
+    <tbody>{% for row in data|chart_rows %}<tr>{% for v in row %}<td>{{ v|default_if_none:"—" }}</td>{% endfor %}</tr>{% endfor %}</tbody></table></div></details>
+</figure>
+{% else %}<p class="flex h-24 items-center justify-center rounded-md bg-slate-50 text-center text-sm text-slate-500">{{ empty|default:"Trends appear once daily snapshots accumulate (at least two days)." }}</p>{% endif %}

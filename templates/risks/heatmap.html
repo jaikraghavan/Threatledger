@@ -18,18 +18,7 @@
 {% for kind, title, grid in heatmaps %}
   <section class="card p-5" aria-labelledby="hm-{{ kind }}">
     <h2 id="hm-{{ kind }}" class="mb-3 font-semibold">{{ title }}</h2>
-    <div class="overflow-x-auto">
-    <table class="w-full border-separate border-spacing-1 text-center text-sm">
-      <caption class="sr-only">{{ title }}: number of risks by likelihood (rows) and impact (columns)</caption>
-      <thead><tr><th scope="col" class="w-28"></th>{% for i, label in impact_header %}<th scope="col" class="px-1 pb-1 text-xs font-medium text-slate-500">{{ i }}<div class="font-normal">{{ label }}</div></th>{% endfor %}</tr></thead>
-      <tbody>{% for row in grid %}<tr>
-        <th scope="row" class="pr-2 text-right text-xs font-medium text-slate-500">{{ row.likelihood }} · {{ row.label }}</th>
-        {% for cell in row.cells %}<td class="heat-{{ cell.band }} h-14 min-w-12 rounded-md p-0">
-          {% if cell.count %}<a class="flex h-14 flex-col items-center justify-center rounded-md font-semibold hover:ring-2 hover:ring-slate-700" href="{% url 'risks:list' %}?cell={{ kind }}:{{ cell.likelihood }}:{{ cell.impact }}&amp;status={{ filters.status }}&amp;category={{ filters.category }}&amp;bu={{ filters.bu }}" aria-label="{{ cell.count }} risks with likelihood {{ cell.likelihood }} and impact {{ cell.impact }}">{{ cell.count }}<span class="text-[10px] font-normal opacity-70">score {{ cell.score }}</span></a>
-          {% else %}<span class="flex h-14 flex-col items-center justify-center text-[10px] opacity-50">{{ cell.score }}</span>{% endif %}</td>{% endfor %}
-      </tr>{% endfor %}</tbody>
-      <tfoot><tr><td></td><td colspan="{{ matrix.size }}" class="pt-1 text-xs text-slate-500">Impact →</td></tr></tfoot>
-    </table></div>
+    {% include "risks/_heatmap_grid.html" %}
   </section>
 {% endfor %}
 </div>

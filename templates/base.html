@@ -6,6 +6,8 @@
   <title>{% block title %}ThreatLedger{% endblock %} · ThreatLedger</title>
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
   <script src="{% static 'vendor/htmx-2.0.4.min.js' %}" defer></script>
+  {% block head_scripts %}{% endblock %}
+  <script src="{% static 'js/app.js' %}" defer></script>
 </head>
 <body class="h-full text-slate-800" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
 {% if user.is_authenticated %}

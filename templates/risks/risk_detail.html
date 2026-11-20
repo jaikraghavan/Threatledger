@@ -1,5 +1,6 @@
 {% extends "base.html" %}{% load risks tl %}
 {% block title %}{{ risk.ref }} {{ risk.title }}{% endblock %}
+{% block head_scripts %}{% load static %}<script src="{% static 'vendor/chart-4.6.1.umd.min.js' %}" defer></script>{% endblock %}
 {% block content %}
 <nav class="mb-3 text-sm text-slate-500" aria-label="Breadcrumb"><a class="hover:underline" href="{% url 'risks:list' %}">Risk register</a></nav>
 {% if risk.archived_at %}<div class="mb-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900" role="status">This risk is archived ({{ risk.archived_at|date:"Y-m-d" }}). It is excluded from the register, heatmaps and exports.</div>{% endif %}
@@ -53,6 +54,7 @@
           <button class="btn btn-primary" type="submit">Submit for approval</button></form></details>{% endif %}
     </section>
     <section class="card p-5"><h2 class="mb-3 font-semibold">Score history</h2>
+      <div class="mb-4">{% include "partials/_chart.html" with id="score-series" data=score_series title="Inherent and residual score over time" empty="A chart appears after the first score change." %}</div>
       <ol class="space-y-3 text-sm">{% for h in history %}<li class="border-l-2 border-slate-200 pl-3">
         <div class="flex flex-wrap gap-2">{% include "risks/_score.html" with score=h.inherent_score %}<span aria-hidden="true">→</span>{% include "risks/_score.html" with score=h.residual_score %}</div>
         <div class="mt-1 text-xs text-slate-500">{{ h.changed_at|date:"Y-m-d H:i" }} · {{ h.changed_by|default:"system" }}{% if h.reason %} — {{ h.reason }}{% endif %}</div></li>

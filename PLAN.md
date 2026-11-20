@@ -358,6 +358,15 @@ _Implementation notes (Phase 5, as built):_
 - Printable board report: print stylesheet; PDF route *(Q10)*
 - **Tests:** matrix scoping, Navigator JSON shape, snapshot job, dashboard numbers vs engine
 
+_Implementation notes (Phase 6, as built):_
+- Coverage matrix (`/coverage/`): scopes risks (all / mine), all, group, sector. Sectors are curated in
+  `data/attack/sectors.yaml` from ATT&CK v20.1 group descriptions (indicative). Navigator export is layer 4.5,
+  one entry per technique–tactic pair using each technique's own tactics, colour + score + control refs.
+- Dashboard (home) and printable board report (`/reports/board/`, browser print → PDF per Q10); trends come from
+  daily snapshots (`reporting-daily` job / `take_snapshots`), risk score chart from `RiskScoreHistory`.
+- Chart.js 4.6.1 vendored (MIT, sha256 87364cc2…); all JS in `static/js/app.js`, data via `json_script` blocks:
+  no inline scripts or style attributes (CSP-ready). Every chart has a "View data" table fallback.
+
 ### Phase 7 — API & hardening
 - DRF API for all main resources (read for all roles per matrix; write per role), token auth (hashed tokens, per-user, revocable, expiring), OpenAPI at `/api/schema/` + Swagger UI (auth required)
 - Throttling (DRF scoped rates), login rate limiting + **account lockout** *(Q2: django-axes or hand-rolled)*

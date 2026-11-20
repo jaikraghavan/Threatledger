@@ -1,0 +1,44 @@
+{% extends "base.html" %}{% load tl %}
+{% block title %}ATT&amp;CK coverage{% endblock %}
+{% block content %}
+<div class="mb-2 flex flex-wrap items-end justify-between gap-3">
+  <div><h1 class="text-2xl font-semibold">ATT&amp;CK coverage</h1><p class="text-sm text-slate-600">{{ scope.label }}{% if release %} · ATT&amp;CK v{{ release.version }}{% endif %}</p></div>
+  {% if user|can:"export_data" %}<a class="btn btn-secondary" href="{% url 'coverage:navigator' %}?scope={{ scope.kind }}&amp;value={{ scope.value|urlencode }}">Export Navigator layer</a>{% endif %}
+</div>
+<section class="card mb-4 p-4" aria-label="Scope">
+  <div class="flex flex-wrap items-end gap-4">
+    <nav class="flex flex-wrap gap-2 text-sm" aria-label="Quick scopes">
+      <a class="badge {% if scope.kind == 'risks' and not scope.value %}bg-brand-600 text-white{% else %}bg-slate-100 text-slate-700 hover:bg-slate-200{% endif %}" href="?scope=risks">My risk register</a>
+      <a class="badge {% if scope.kind == 'risks' and scope.value == 'mine' %}bg-brand-600 text-white{% else %}bg-slate-100 text-slate-700 hover:bg-slate-200{% endif %}" href="?scope=risks&amp;value=mine">Risks I own</a>
+      <a class="badge {% if scope.kind == 'all' %}bg-brand-600 text-white{% else %}bg-slate-100 text-slate-700 hover:bg-slate-200{% endif %}" href="?scope=all">All techniques</a></nav>
+    <form method="get" class="flex items-end gap-2"><input type="hidden" name="scope" value="group">
+      <div><label class="label" for="cv-group">Threat group</label><select id="cv-group" name="value" class="field" required><option value="">Choose…</option>{% for g in groups %}<option value="{{ g.attack_id }}"{% if scope.kind == "group" and scope.value == g.attack_id %} selected{% endif %}>{{ g.name }} ({{ g.attack_id }})</option>{% endfor %}</select></div>
+      <button class="btn btn-secondary" type="submit">Show</button></form>
+    <form method="get" class="flex items-end gap-2"><input type="hidden" name="scope" value="sector">
+      <div><label class="label" for="cv-sector">Sector</label><select id="cv-sector" name="value" class="field" required><option value="">Choose…</option>{% for key, s in sectors %}<option value="{{ key }}"{% if scope.kind == "sector" and scope.value == key %} selected{% endif %}>{{ s.label }}</option>{% endfor %}</select></div>
+      <button class="btn btn-secondary" type="submit">Show</button></form>
+  </div>
+  <p class="mt-2 text-xs text-slate-500">Sector lists are curated from ATT&amp;CK group descriptions and are indicative.</p>
+</section>
+<div class="mb-4 flex flex-wrap items-center gap-3 text-sm">
+  <span class="text-2xl font-semibold">{{ matrix.summary.percent }}%</span>
+  <span class="badge cov-covered">{{ matrix.summary.covered }} covered</span><span class="badge cov-partial">{{ matrix.summary.partial }} partial</span><span class="badge cov-gap">{{ matrix.summary.gap }} gap</span>
+  <span class="text-slate-500">of {{ matrix.summary.total }} in-scope technique{{ matrix.summary.total|pluralize }} (sub-techniques inherit their parent's coverage)</span>
+</div>
+{% if scope.groups %}<p class="mb-3 text-xs text-slate-600">Groups: {% for g in scope.groups %}<a class="text-brand-700 hover:underline" href="{% url 'attack:group_detail' g.attack_id %}">{{ g.name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}</p>{% endif %}
+{% if not matrix.summary.total %}<div class="card p-8 text-center text-sm text-slate-500">No techniques in this scope{% if scope.kind == "risks" %}: link ATT&amp;CK techniques to your risks first{% endif %}.</div>{% else %}
+<div class="overflow-x-auto pb-4" role="region" aria-label="Coverage matrix" tabindex="0">
+  <div class="flex min-w-max gap-2">
+  {% for tactic, cells in matrix.columns %}{% if cells %}
+    <div class="w-44 shrink-0"><div class="sticky top-0 mb-2 rounded-md bg-ink-900 px-2 py-2 text-center text-xs font-semibold text-white">{{ tactic.name }}<div class="font-normal opacity-70">{{ cells|length }}</div></div>
+      <ul class="space-y-1">{% for cell in cells %}<li class="rounded-md border text-xs {% if cell.in_scope %}cov-{{ cell.coverage.status.css }} border-transparent{% else %}border-dashed border-slate-300 bg-white text-slate-500{% endif %}">
+        {% if cell.subtechniques %}<details><summary class="cursor-pointer px-2 py-1.5"><a class="font-medium hover:underline" href="{% url 'attack:technique_detail' cell.technique.attack_id %}" title="{{ cell.technique.attack_id }} · {{ cell.coverage.status.label }}">{{ cell.technique.name }}</a> <span class="opacity-70">({{ cell.sub_in_scope }}/{{ cell.subtechniques|length }})</span></summary>
+          <ul class="space-y-0.5 px-1 pb-1">{% for sub, cov, sin in cell.subtechniques %}<li class="rounded px-2 py-1 {% if sin %}cov-{{ cov.status.css }}{% else %}bg-white/60 text-slate-500{% endif %}"><a class="hover:underline" href="{% url 'attack:technique_detail' sub.attack_id %}" title="{{ sub.attack_id }} · {{ cov.status.label }}{% if cov.inherited %} (via parent){% endif %}">{{ sub.name }}</a></li>{% endfor %}</ul></details>
+        {% else %}<a class="block px-2 py-1.5 font-medium hover:underline" href="{% url 'attack:technique_detail' cell.technique.attack_id %}" title="{{ cell.technique.attack_id }} · {{ cell.coverage.status.label }}">{{ cell.technique.name }}</a>{% endif %}
+      </li>{% endfor %}</ul></div>
+  {% endif %}{% endfor %}
+  </div>
+</div>
+<p class="mt-2 text-xs text-slate-500">Colour = coverage by your controls (green covered, amber partial, red gap). Dashed = shown only because a sub-technique is in scope. Hover for IDs; colour is never the only signal: the status is in each tooltip and on the technique page.</p>
+{% endif %}
+{% endblock %}

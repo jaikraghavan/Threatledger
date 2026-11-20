@@ -50,3 +50,14 @@
   .req-gap { @apply bg-red-100 text-red-800; }
   .req-no_control { @apply bg-slate-200 text-slate-700; }
 }
+
+/* Printable reports (board report → browser "Save as PDF") */
+@media print {
+  @page { size: A4; margin: 14mm 12mm; }
+  .no-print { display: none !important; }
+  .page-break { break-before: page; }
+  .avoid-break { break-inside: avoid; }
+  body { background: #fff !important; }
+  a { color: inherit !important; text-decoration: none !important; }
+  .card { box-shadow: none !important; }
+}

@@ -1,0 +1,32 @@
+# Sector → threat groups, for the "sector" scope of the ATT&CK coverage matrix (PLAN.md Q9).
+#
+# ATT&CK has no sector field. These lists were curated from MITRE ATT&CK v20.1 group
+# descriptions that state the sectors each group has targeted (keyword scan, then the groups
+# with the broadest documented technique use). INDICATIVE: tailor to your own threat
+# intelligence. Unknown or revoked group IDs are ignored at runtime.
+schema: threatledger-sectors/1
+sectors:
+  financial:
+    label: Financial services
+    groups: ["G0082", "G0032", "G0096", "G0046", "G1015", "G0102", "G0037", "G0061", "G0049", "G0069"]
+  healthcare:
+    label: Healthcare & life sciences
+    groups: ["G0096", "G0059", "G0102", "G1015", "G0046", "G0087", "G1016", "G0065", "G0045"]
+  government:
+    label: Government & public sector
+    groups: ["G0016", "G0007", "G0094", "G0129", "G0034", "G0050", "G0059", "G0047", "G0010", "G0049"]
+  energy:
+    label: Energy & utilities
+    groups: ["G0034", "G0007", "G0094", "G0035", "G0049", "G0027", "G1048", "G0117", "G0045"]
+  technology:
+    label: Technology & telecoms
+    groups: ["G1045", "G0034", "G1015", "G0102", "G0082", "G0049", "G0069", "G1059", "G1004", "G0046"]
+  retail:
+    label: Retail & hospitality
+    groups: ["G0046", "G0037", "G0061", "G0053", "G1015", "G0096", "G1016", "G0087"]
+  manufacturing:
+    label: Manufacturing & industrial
+    groups: ["G0094", "G1015", "G0027", "G0035", "G0065", "G0045", "G1054", "G1004", "G0117", "G0060"]
+  education:
+    label: Education & research
+    groups: ["G0094", "G0096", "G0059", "G0016", "G0087", "G0065", "G0045", "G0125", "G1006", "G0010"]
