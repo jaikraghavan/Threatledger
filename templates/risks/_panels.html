@@ -1,0 +1,49 @@
+<div id="risk-panels" class="space-y-6">
+{% if panel_error %}<div class="rounded-md border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-800" role="alert">{{ panel_error }}</div>{% endif %}
+<section class="card p-5" aria-labelledby="tech-h">
+  <div class="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+    <h2 id="tech-h" class="font-semibold">ATT&amp;CK techniques ({{ technique_rows|length }})</h2>
+    {% if coverage_summary.total %}<div class="flex flex-wrap items-center gap-2 text-xs"><span class="badge cov-covered">{{ coverage_summary.covered }} covered</span><span class="badge cov-partial">{{ coverage_summary.partial }} partial</span><span class="badge cov-gap">{{ coverage_summary.gap }} gap</span><span class="font-medium text-slate-700">{{ coverage_summary.percent }}% threat coverage</span></div>{% endif %}
+  </div>
+  {% if technique_rows %}<div class="overflow-x-auto"><table class="data-table">
+    <thead><tr><th scope="col">Technique</th><th scope="col">Coverage</th><th scope="col">Controls</th>{% if can_edit %}<th scope="col"><span class="sr-only">Actions</span></th>{% endif %}</tr></thead>
+    <tbody class="divide-y divide-slate-100">{% for row in technique_rows %}{% with t=row.link.technique %}
+      <tr>
+        <td><a class="font-mono text-xs text-brand-700 hover:underline" href="{% url 'attack:technique_detail' t.attack_id %}">{{ t.attack_id }}</a> {{ t.name }}
+          {% if t.is_revoked %}<div class="mt-1 text-xs text-red-700">Revoked by MITRE{% if row.replacement %} → {{ row.replacement.attack_id }} {{ row.replacement.name }}{% endif %}</div>{% elif t.is_deprecated %}<div class="mt-1 text-xs text-amber-700">Deprecated by MITRE</div>{% endif %}</td>
+        <td><span class="badge cov-{{ row.coverage.status.css }}">{{ row.coverage.status.label }}</span>{% if row.coverage.inherited %}<div class="text-[11px] text-slate-500">via parent</div>{% endif %}</td>
+        <td class="text-xs">{% for c in row.controls %}<span class="badge status-{{ c.status }} mr-1 mt-1" title="{{ c.get_status_display }}">{{ c.ref }}</span>{% empty %}<span class="text-slate-400">none mapped</span>{% endfor %}</td>
+        {% if can_edit %}<td class="whitespace-nowrap text-right">
+          {% if row.replacement %}<button class="btn btn-secondary px-2 py-1 text-xs" hx-post="{% url 'risks:technique_remap' risk.ref row.link.pk %}" hx-target="#risk-panels" hx-swap="outerHTML">Use {{ row.replacement.attack_id }}</button>{% endif %}
+          <button class="text-xs text-slate-500 hover:text-red-700" hx-post="{% url 'risks:technique_remove' risk.ref row.link.pk %}" hx-target="#risk-panels" hx-swap="outerHTML" aria-label="Remove {{ t.attack_id }}">Remove</button></td>{% endif %}
+      </tr>{% endwith %}{% endfor %}</tbody></table></div>
+  {% else %}<p class="text-sm text-slate-500">No techniques linked. Link the ATT&amp;CK techniques an adversary would use to realise this scenario.</p>{% endif %}
+  {% if can_edit %}<div class="mt-4"><label class="label" for="tech-q">Add technique</label>
+    <input id="tech-q" name="q" type="search" class="field" placeholder="Search T1566, phishing, PowerShell…" autocomplete="off"
+      hx-get="{% url 'risks:technique_search' risk.ref %}" hx-trigger="input changed delay:250ms" hx-target="#technique-results">
+    <div id="technique-results" class="mt-2"></div></div>{% endif %}
+</section>
+
+<section class="card p-5" aria-labelledby="ctl-h">
+  <h2 id="ctl-h" class="mb-3 font-semibold">Controls ({{ control_links|length }})</h2>
+  {% if control_links %}<ul class="divide-y divide-slate-100 text-sm">{% for link in control_links %}
+    <li class="flex items-center justify-between gap-3 py-2"><div><span class="font-mono text-xs text-slate-500">{{ link.control.ref }}</span> {{ link.control.name }}
+      <span class="badge status-{{ link.control.status }} ml-1">{{ link.control.get_status_display }}</span>{% if link.control.owner %}<span class="ml-1 text-xs text-slate-500">{{ link.control.owner }}</span>{% endif %}</div>
+      {% if can_edit %}<button class="text-xs text-slate-500 hover:text-red-700" hx-post="{% url 'risks:control_remove' risk.ref link.pk %}" hx-target="#risk-panels" hx-swap="outerHTML" aria-label="Remove {{ link.control.ref }}">Remove</button>{% endif %}</li>
+  {% endfor %}</ul>{% else %}<p class="text-sm text-slate-500">No controls linked yet.</p>{% endif %}
+  {% if can_edit %}<div class="mt-4"><label class="label" for="ctl-q">Add control</label>
+    <input id="ctl-q" name="q" type="search" class="field" placeholder="Search by ref or name…" autocomplete="off"
+      hx-get="{% url 'risks:control_search' risk.ref %}" hx-trigger="input changed delay:250ms" hx-target="#control-results">
+    <div id="control-results" class="mt-2"></div></div>{% endif %}
+
+  {% if suggestions %}<div class="mt-5 rounded-md bg-brand-50 p-4"><h3 class="text-sm font-semibold text-brand-700">Suggested controls</h3>
+    <p class="mb-2 text-xs text-slate-600">Controls already mapped to this risk's techniques (directly or via an ATT&amp;CK mitigation).</p>
+    <ul class="space-y-2 text-sm">{% for s in suggestions %}<li class="flex items-start justify-between gap-3"><div><span class="font-mono text-xs text-slate-500">{{ s.control.ref }}</span> {{ s.control.name }} <span class="badge status-{{ s.control.status }} ml-1">{{ s.control.get_status_display }}</span>
+      <div class="text-xs text-slate-500">addresses {% for t in s.techniques %}{{ t.attack_id }}{% if not forloop.last %}, {% endif %}{% endfor %}</div></div>
+      {% if can_edit %}<button class="btn btn-secondary px-2 py-1 text-xs" hx-post="{% url 'risks:control_add' risk.ref %}" hx-vals='{"control": "{{ s.control.pk }}"}' hx-target="#risk-panels" hx-swap="outerHTML">Link</button>{% endif %}</li>{% endfor %}</ul></div>{% endif %}
+
+  {% if uncovered_mitigations %}<div class="mt-5"><h3 class="text-sm font-semibold">ATT&amp;CK mitigations with no control yet</h3>
+    <ul class="mt-2 space-y-1 text-sm">{% for m, techs in uncovered_mitigations %}<li><span class="font-mono text-xs text-slate-500">{{ m.attack_id }}</span> {{ m.name }} <span class="text-xs text-slate-500">· for {% for t in techs %}{{ t.attack_id }}{% if not forloop.last %}, {% endif %}{% endfor %}</span></li>{% endfor %}</ul>
+    <p class="mt-2 text-xs text-slate-500">Create a control that implements one of these (control library arrives in Phase 4).</p></div>{% endif %}
+</section>
+</div>

@@ -46,6 +46,13 @@ The design lives in [PLAN.md](PLAN.md). Read it before changing models or scorin
   must live in *other* apps, FK to `Technique` with `on_delete=PROTECT`, and never in the `*Technique` link tables the importer re-syncs.
   Use `Technique.objects.active()` for anything user-facing. Tactic order comes from `Tactic.order` (the matrix), never hard-coded:
   v19+ replaced Defense Evasion with Stealth plus Defense Impairment.
+- **Risk register** (`threatledger/risks`): always fetch risks/assets through `services.visible_risks(user)` /
+  `visible_assets(user)` (org + business-unit scope) and check `services.can_edit_risk()`; never `Risk.objects` in views.
+  Scores are `L × I` from `RiskMatrix` (per org); bands via `matrix.band(score)`; never store scores or bands.
+  Score changes go through `update_risk()` which writes `RiskScoreHistory`. Exports must use `exports.neutralise()`.
+- **Coverage** (`threatledger/coverage`): `engine.py` is pure; `selectors.coverage_for(technique_ids, org_id)` loads
+  the graph (direct control↔technique + control↔mitigation↔technique). Use it everywhere coverage is shown.
+- Test helpers for risks/controls/techniques: `threatledger/risks/tests/helpers.py`.
 - Test bundles: `threatledger/attack/tests/bundles.py` (`bundle_v1`/`bundle_v2`). Use `test_importer._load()` to load one in a fixture.
 - Django admin is **superuser-only** break-glass. Everyday admin features belong in the app, behind `can()`.
 - Settings: `config.settings.dev` (manage.py default), `.test` (pytest), `.prod` (wsgi/Docker; fails closed).

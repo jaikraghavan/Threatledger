@@ -16,6 +16,7 @@ dependencies = [
     "whitenoise>=6.7",
     "django-htmx>=1.19",
     "argon2-cffi>=23.1",
+    "openpyxl>=3.1",
 ]
 
 [dependency-groups]
@@ -43,11 +44,14 @@ extend-exclude = ["**/migrations/*.py"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "DJ", "S", "C4", "SIM", "RUF", "PT"]
-ignore = ["RUF012"]  # Django class attributes (Meta, fields) are intentionally mutable
+ignore = [
+    "RUF012",  # Django class attributes (Meta, fields) are intentionally mutable
+    "RUF001", "RUF002", "RUF003",  # UI copy deliberately uses typographic × – → characters
+]
 
 [tool.ruff.lint.per-file-ignores]
-"**/tests/**" = ["S101", "S105", "S106"]
-"tests/**" = ["S101", "S105", "S106"]
+"**/tests/**" = ["S101", "S105", "S106", "E501", "PT018"]
+"tests/**" = ["S101", "S105", "S106", "E501", "PT018"]
 "conftest.py" = ["S105"]
 
 [tool.ruff.lint.isort]

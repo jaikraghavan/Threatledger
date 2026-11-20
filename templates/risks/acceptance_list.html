@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Risk acceptances{% endblock %}
+{% block content %}
+<h1 class="mb-2 text-2xl font-semibold">Risk acceptances</h1>
+{% include "risks/_subnav.html" %}
+<nav class="mb-4 flex flex-wrap gap-2 text-sm" aria-label="Filter by status">{% for v, l in statuses %}<a href="?status={{ v }}" class="badge {% if status == v %}bg-brand-600 text-white{% else %}bg-slate-100 text-slate-700 hover:bg-slate-200{% endif %}">{{ l }}</a>{% endfor %}</nav>
+<div class="card overflow-x-auto"><table class="data-table">
+  <thead><tr><th scope="col">Risk</th><th scope="col">Justification</th><th scope="col">Requested</th><th scope="col">Expires</th><th scope="col">Decision</th></tr></thead>
+  <tbody class="divide-y divide-slate-100">{% for a in acceptances %}<tr>
+    <td class="whitespace-nowrap"><a class="font-mono text-xs text-brand-700 hover:underline" href="{% url 'risks:detail' a.risk.ref %}">{{ a.risk.ref }}</a><div class="text-xs">{{ a.risk.title|truncatechars:40 }}</div></td>
+    <td class="max-w-md text-xs">{{ a.justification|truncatechars:200 }}</td>
+    <td class="whitespace-nowrap text-xs">{{ a.requested_by }}<div class="text-slate-500">{{ a.requested_at|date:"Y-m-d" }}</div></td>
+    <td class="whitespace-nowrap text-xs">{{ a.expires_on|date:"Y-m-d" }}</td>
+    <td class="text-xs">{% if a.status == 'pending' and can_decide and a.requested_by_id != user.pk %}
+      <form method="post" action="{% url 'risks:acceptance_decide' a.pk %}" class="flex flex-wrap gap-1">{% csrf_token %}<input type="hidden" name="next_page" value="queue">
+        <input name="note" class="field w-40 py-1" placeholder="Note" aria-label="Decision note"><button name="decision" value="approve" class="btn btn-primary px-2 py-1 text-xs">Approve</button><button name="decision" value="reject" class="btn btn-secondary px-2 py-1 text-xs">Reject</button></form>
+      {% else %}{{ a.get_status_display }}{% if a.decided_by %} · {{ a.decided_by }}{% endif %}{% endif %}</td>
+  </tr>{% empty %}<tr><td colspan="5" class="py-8 text-center text-slate-500">Nothing here.</td></tr>{% endfor %}</tbody>
+</table></div>
+{% endblock %}

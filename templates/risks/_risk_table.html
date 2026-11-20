@@ -1,0 +1,24 @@
+<p class="mb-2 text-sm text-slate-600">{{ paginator.count|default:0 }} risk{{ paginator.count|pluralize }}</p>
+<div class="card overflow-x-auto">
+<table class="data-table">
+  <thead><tr><th scope="col">Ref</th><th scope="col">Risk</th><th scope="col">Owner</th><th scope="col">Inherent</th><th scope="col">Residual</th><th scope="col">Treatment</th><th scope="col">Status</th><th scope="col">Next review</th></tr></thead>
+  <tbody class="divide-y divide-slate-100">
+  {% for r in risks %}
+    <tr>
+      <td class="whitespace-nowrap font-mono text-xs"><a class="text-brand-700 hover:underline" href="{% url 'risks:detail' r.ref %}">{{ r.ref }}</a></td>
+      <td class="min-w-64"><a class="font-medium hover:underline" href="{% url 'risks:detail' r.ref %}">{{ r.title }}</a>
+        <div class="text-xs text-slate-500">{{ r.get_category_display }}{% if r.business_unit %} · {{ r.business_unit.name }}{% endif %}</div></td>
+      <td class="whitespace-nowrap text-xs">{{ r.owner|default:"—" }}</td>
+      <td class="whitespace-nowrap">{% include "risks/_score.html" with score=r.inherent_score %}</td>
+      <td class="whitespace-nowrap">{% include "risks/_score.html" with score=r.residual_score %}</td>
+      <td class="text-xs">{{ r.get_treatment_display }}</td>
+      <td class="text-xs">{{ r.get_status_display }}</td>
+      <td class="whitespace-nowrap text-xs {% if r.review_overdue %}font-semibold text-red-700{% endif %}">{{ r.next_review_date|date:"Y-m-d"|default:"—" }}{% if r.review_overdue %} · overdue{% endif %}</td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="8" class="py-10 text-center text-slate-500">No risks match.{% if can_edit and not filters.q %} <a class="text-brand-700 hover:underline" href="{% url 'risks:create' %}">Record the first one</a>.{% endif %}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% include "attack/_pagination.html" with target="#risk-table" %}

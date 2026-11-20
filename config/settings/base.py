@@ -50,6 +50,9 @@ INSTALLED_APPS = [
     "threatledger.accounts",
     "threatledger.audit",
     "threatledger.attack",
+    "threatledger.controls",
+    "threatledger.coverage",
+    "threatledger.risks",
 ]
 
 MIDDLEWARE = [
@@ -219,6 +222,8 @@ EMAIL_HOST_USER = env.str("EMAIL_HOST_USER", default="")
 EMAIL_HOST_PASSWORD = secret("EMAIL_HOST_PASSWORD", "") or ""
 EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
 DEFAULT_FROM_EMAIL = env.str("DEFAULT_FROM_EMAIL", default="threatledger@localhost")
+# Absolute base URL used in emails (no trailing slash).
+SITE_URL = env.str("SITE_URL", default="http://localhost:8000")
 
 # ------------------------------------------------------------------ logging
 LOG_LEVEL = env.str("LOG_LEVEL", default="INFO")

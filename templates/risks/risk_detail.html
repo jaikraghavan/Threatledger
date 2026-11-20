@@ -1,0 +1,65 @@
+{% extends "base.html" %}{% load risks tl %}
+{% block title %}{{ risk.ref }} {{ risk.title }}{% endblock %}
+{% block content %}
+<nav class="mb-3 text-sm text-slate-500" aria-label="Breadcrumb"><a class="hover:underline" href="{% url 'risks:list' %}">Risk register</a></nav>
+{% if risk.archived_at %}<div class="mb-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900" role="status">This risk is archived ({{ risk.archived_at|date:"Y-m-d" }}). It is excluded from the register, heatmaps and exports.</div>{% endif %}
+{% if risk.review_overdue %}<div class="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900" role="status">Review overdue since {{ risk.next_review_date|date:"Y-m-d" }}.</div>{% endif %}
+
+<div class="flex flex-wrap items-start justify-between gap-4">
+  <div><div class="font-mono text-sm text-slate-500">{{ risk.ref }} · {{ risk.get_category_display }}{% if risk.business_unit %} · {{ risk.business_unit.name }}{% endif %}</div>
+    <h1 class="text-2xl font-semibold">{{ risk.title }}</h1></div>
+  <div class="flex flex-wrap gap-2">
+    {% if can_edit %}<a class="btn btn-primary" href="{% url 'risks:edit' risk.ref %}">Edit</a>
+      <form method="post" action="{% url 'risks:archive' risk.ref %}">{% csrf_token %}<button class="btn btn-secondary" type="submit">Archive</button></form>
+    {% elif risk.archived_at and user|can:"edit_risks" %}<form method="post" action="{% url 'risks:archive' risk.ref %}">{% csrf_token %}<input type="hidden" name="restore" value="1"><button class="btn btn-secondary" type="submit">Restore</button></form>{% endif %}
+  </div>
+</div>
+
+<div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+  <div class="card p-4"><div class="text-xs uppercase tracking-wide text-slate-500">Inherent</div><div class="mt-1">{% include "risks/_score.html" with score=risk.inherent.value %}</div>
+    <div class="mt-1 text-xs text-slate-500">L{{ risk.inherent_likelihood }} × I{{ risk.inherent_impact }}</div></div>
+  <div class="card p-4"><div class="text-xs uppercase tracking-wide text-slate-500">Residual</div><div class="mt-1">{% include "risks/_score.html" with score=risk.residual.value %}</div>
+    <div class="mt-1 text-xs text-slate-500">L{{ risk.residual_likelihood }} × I{{ risk.residual_impact }}</div></div>
+  <div class="card p-4"><div class="text-xs uppercase tracking-wide text-slate-500">Treatment · status</div><div class="mt-1 font-medium">{{ risk.get_treatment_display }} · {{ risk.get_status_display }}</div>
+    <div class="mt-1 text-xs text-slate-500">Target {{ risk.target_date|date:"Y-m-d"|default:"—" }}</div></div>
+  <div class="card p-4"><div class="text-xs uppercase tracking-wide text-slate-500">Owner · next review</div><div class="mt-1 font-medium">{{ risk.owner|default:"Unassigned" }}</div>
+    <div class="mt-1 text-xs {% if risk.review_overdue %}font-semibold text-red-700{% else %}text-slate-500{% endif %}">{{ risk.next_review_date|date:"Y-m-d"|default:"No review date" }}</div></div>
+</div>
+
+<div class="mt-6 grid gap-6 lg:grid-cols-3">
+  <div class="space-y-6 lg:col-span-2">
+    <section class="card p-5"><h2 class="mb-2 font-semibold">Scenario</h2><p class="whitespace-pre-line text-sm leading-relaxed text-slate-700">{{ risk.scenario }}</p>
+      {% with assets=risk.assets.all %}{% if assets %}<div class="mt-4"><h3 class="text-xs uppercase tracking-wide text-slate-500">Affected assets</h3>
+        <ul class="mt-1 flex flex-wrap gap-2">{% for a in assets %}<li><a class="badge bg-slate-100 text-slate-700 hover:bg-slate-200" href="{% url 'risks:asset_detail' a.pk %}">{{ a.name }}{% if a.contains_personal_data %} · personal data{% endif %}</a></li>{% endfor %}</ul></div>{% endif %}{% endwith %}
+    </section>
+    {% include "risks/_panels.html" %}
+  </div>
+  <aside class="space-y-6">
+    <section class="card p-5"><h2 class="mb-3 font-semibold">Risk acceptance</h2>
+      {% for a in acceptances %}<div class="border-t border-slate-100 py-3 text-sm first:border-0 first:pt-0">
+        <div class="flex items-center justify-between gap-2"><span class="badge {% if a.status == 'approved' %}bg-green-100 text-green-800{% elif a.status == 'pending' %}bg-blue-100 text-blue-800{% else %}bg-slate-100 text-slate-700{% endif %}">{{ a.get_status_display }}</span><span class="text-xs text-slate-500">expires {{ a.expires_on|date:"Y-m-d" }}</span></div>
+        <p class="mt-2 whitespace-pre-line text-slate-700">{{ a.justification }}</p>
+        <p class="mt-1 text-xs text-slate-500">Requested by {{ a.requested_by }} {{ a.requested_at|date:"Y-m-d" }}{% if a.decided_by %} · {{ a.get_status_display|lower }} by {{ a.decided_by }} {{ a.decided_at|date:"Y-m-d" }}{% endif %}{% if a.decision_note %} — “{{ a.decision_note }}”{% endif %}</p>
+        {% if a.status == 'pending' and can_decide and a.requested_by_id != user.pk %}
+        <form method="post" action="{% url 'risks:acceptance_decide' a.pk %}" class="mt-2 space-y-2">{% csrf_token %}
+          <input name="note" class="field" placeholder="Decision note (optional)" maxlength="500" aria-label="Decision note">
+          <div class="flex gap-2"><button name="decision" value="approve" class="btn btn-primary">Approve</button><button name="decision" value="reject" class="btn btn-secondary">Reject</button></div></form>
+        {% elif a.status == 'pending' and a.requested_by_id == user.pk %}<p class="mt-2 text-xs text-slate-500">Awaiting a different approver (segregation of duties).</p>{% endif %}
+      </div>{% empty %}<p class="text-sm text-slate-500">No acceptance requested.</p>{% endfor %}
+      {% if can_request_acceptance %}<details class="mt-3"><summary class="cursor-pointer text-sm font-medium text-brand-700">Request formal acceptance…</summary>
+        <form method="post" action="{% url 'risks:acceptance_request' risk.ref %}" class="mt-3 space-y-3">{% csrf_token %}
+          <div><label class="label" for="id_justification">Justification</label>{{ acceptance_form.justification }}<p class="mt-1 text-xs text-slate-500">{{ acceptance_form.justification.help_text }}</p></div>
+          <div><label class="label" for="id_expires_on">Expires on</label>{{ acceptance_form.expires_on }}</div>
+          <button class="btn btn-primary" type="submit">Submit for approval</button></form></details>{% endif %}
+    </section>
+    <section class="card p-5"><h2 class="mb-3 font-semibold">Score history</h2>
+      <ol class="space-y-3 text-sm">{% for h in history %}<li class="border-l-2 border-slate-200 pl-3">
+        <div class="flex flex-wrap gap-2">{% include "risks/_score.html" with score=h.inherent_score %}<span aria-hidden="true">→</span>{% include "risks/_score.html" with score=h.residual_score %}</div>
+        <div class="mt-1 text-xs text-slate-500">{{ h.changed_at|date:"Y-m-d H:i" }} · {{ h.changed_by|default:"system" }}{% if h.reason %} — {{ h.reason }}{% endif %}</div></li>
+      {% empty %}<li class="text-slate-500">No history.</li>{% endfor %}</ol></section>
+    {% if audit_events is not None %}<section class="card p-5"><h2 class="mb-3 font-semibold">Audit trail</h2>
+      <ul class="space-y-2 text-xs">{% for e in audit_events %}<li><span class="text-slate-500">{{ e.at|date:"Y-m-d H:i" }}</span> {{ e.actor_label|default:"system" }} · {{ e.get_action_display|lower }}
+        {% for f, pair in e.changes.items %}<div class="pl-3 text-slate-600">{{ f }}: {% if pair.0 is not None %}<span class="line-through">{{ pair.0|truncatechars:40 }}</span> → {% endif %}{{ pair.1|default_if_none:""|truncatechars:40 }}</div>{% endfor %}</li>{% empty %}<li class="text-slate-500">No events.</li>{% endfor %}</ul></section>{% endif %}
+  </aside>
+</div>
+{% endblock %}

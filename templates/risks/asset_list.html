@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Assets{% endblock %}
+{% block content %}
+<div class="mb-2 flex flex-wrap items-center justify-between gap-3"><h1 class="text-2xl font-semibold">Assets</h1>
+  {% if can_edit %}<a class="btn btn-primary" href="{% url 'risks:asset_create' %}">New asset</a>{% endif %}</div>
+{% include "risks/_subnav.html" %}
+<form class="card mb-4 flex flex-wrap items-end gap-4 p-4" method="get" role="search">
+  <div><label class="label" for="a-q">Search</label><input id="a-q" name="q" type="search" class="field" value="{{ q }}"></div>
+  <label class="inline-flex items-center gap-2 text-sm"><input type="checkbox" name="personal" value="1" class="rounded border-slate-300"{% if personal %} checked{% endif %}> Holds personal data</label>
+  <button class="btn btn-secondary" type="submit">Filter</button>
+</form>
+<div class="card overflow-x-auto"><table class="data-table">
+  <thead><tr><th scope="col">Asset</th><th scope="col">Type</th><th scope="col">Criticality</th><th scope="col">Classification</th><th scope="col">Owner</th><th scope="col" class="text-right">Risks</th></tr></thead>
+  <tbody class="divide-y divide-slate-100">{% for a in assets %}<tr>
+    <td><a class="font-medium hover:underline" href="{% url 'risks:asset_detail' a.pk %}">{{ a.name }}</a>{% if a.contains_personal_data %} <span class="badge bg-purple-100 text-purple-800">personal data</span>{% endif %}<div class="text-xs text-slate-500">{{ a.business_unit.name|default:"" }}</div></td>
+    <td class="text-xs">{{ a.get_kind_display }}</td><td>{{ a.criticality }}/5</td><td class="text-xs">{{ a.get_data_classification_display }}</td>
+    <td class="text-xs">{{ a.owner|default:"—" }}</td><td class="text-right">{{ a.risk_count }}</td></tr>
+  {% empty %}<tr><td colspan="6" class="py-8 text-center text-slate-500">No assets yet.</td></tr>{% endfor %}</tbody>
+</table></div>
+{% include "attack/_pagination.html" %}
+{% endblock %}

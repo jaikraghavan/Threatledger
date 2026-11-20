@@ -1,0 +1,4 @@
+{% if q %}<ul class="divide-y divide-slate-100 rounded-md border border-slate-200 text-sm" role="listbox" aria-label="Matching controls">
+{% for c in results %}<li class="flex items-center justify-between gap-3 px-3 py-2"><div><span class="font-mono text-xs text-slate-500">{{ c.ref }}</span> {{ c.name }} <span class="badge status-{{ c.status }} ml-1">{{ c.get_status_display }}</span></div>
+  <button class="btn btn-secondary px-2 py-1 text-xs" hx-post="{% url 'risks:control_add' risk.ref %}" hx-vals='{"control": "{{ c.pk }}"}' hx-target="#risk-panels" hx-swap="outerHTML">Add</button></li>
+{% empty %}<li class="px-3 py-2 text-slate-500">No matching controls.</li>{% endfor %}</ul>{% endif %}

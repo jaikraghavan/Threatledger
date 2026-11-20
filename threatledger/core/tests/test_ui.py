@@ -13,7 +13,7 @@ def test_home_renders_role_navigation(client_for):
     response = client_for(Role.AUDITOR).get(reverse("core:home"))
     assert response.status_code == 200
     labels = [i["label"] for i in response.context["nav_items"]]
-    assert labels == ["Dashboard", "Techniques", "Threat groups", "Audit log"]
+    assert labels == ["Dashboard", "Risk register", "Techniques", "Threat groups", "Audit log"]
     assert b"Auditor (read-only)" in response.content
 
 
@@ -21,6 +21,7 @@ def test_viewer_does_not_see_audit_link(client_for):
     response = client_for(Role.VIEWER).get(reverse("core:home"))
     assert [i["label"] for i in response.context["nav_items"]] == [
         "Dashboard",
+        "Risk register",
         "Techniques",
         "Threat groups",
     ]

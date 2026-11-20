@@ -145,3 +145,42 @@ class HasCapability(BasePermission):
         if isinstance(rule, Cap):
             return can(request.user, rule, obj)
         return rule in (PUBLIC, AUTHENTICATED)
+
+
+_BU_CACHE_ATTR = "_tl_bu_scope_cache"
+
+
+def business_unit_scope(user: Any) -> frozenset[int] | None:
+    """Business units the user is limited to, or None for organisation-wide access.
+
+    Admins are never limited. Other roles are limited only if their membership lists
+    business units (PLAN.md Q11: optional BU scoping).
+    """
+    role = get_role(user)
+    if role is None:
+        return frozenset()
+    if role == Role.ADMIN:
+        return None
+    if hasattr(user, _BU_CACHE_ATTR):
+        return getattr(user, _BU_CACHE_ATTR)
+    from .models import Membership
+
+    ids = frozenset(
+        Membership.objects.filter(user=user).values_list("business_units", flat=True)
+    ) - {None}
+    scope = ids or None
+    setattr(user, _BU_CACHE_ATTR, scope)
+    return scope
+
+
+def current_organisation(user: Any) -> Any:
+    """The organisation the user works in (one per deployment; see Q11)."""
+    from threatledger.org.models import Organisation
+
+    from .models import Membership
+
+    if getattr(user, "is_authenticated", False) and not user.is_superuser:
+        membership = Membership.objects.filter(user=user).select_related("organisation").first()
+        if membership:
+            return membership.organisation
+    return Organisation.objects.current()

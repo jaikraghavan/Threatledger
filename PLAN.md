@@ -302,6 +302,15 @@ phase until you've seen the summary.
 - CSV and Excel export with **formula-injection protection** (prefix `'` for cells starting `= + - @ \t \r`, and Excel cells written as strings) *(Excel needs `openpyxl`, Q2)*
 - **Tests:** scoring/banding, history on change, export sanitisation, permission per role
 
+_Implementation notes (Phase 3, as built):_
+- `Control` + `ControlTechnique` + `ControlMitigation` models (and the coverage engine, `threatledger/coverage`) were
+  built in Phase 3 because risk linking and suggestions need them; Phase 4 adds the library UI, starter set, evidence, tests.
+- Business rules added: residual score may not exceed inherent; status "Accepted" is reachable only through an approved
+  acceptance (segregation of duties: requester ≠ approver); acceptances expire daily and re-open the risk.
+- Review reminders are a weekly-at-most email digest per owner (no in-app notification centre); risks due in ≤ 14 days or
+  overdue. Scheduled via Django-Q2 `risk-register-daily`, registered on `migrate`.
+- Optional BU scoping (Q11) is enforced in `risks.services.visible_risks/visible_assets/can_edit_risk`.
+
 ### Phase 4 — Controls & evidence
 - Control library CRUD; starter set (14 controls from the brief) with ATT&CK mitigation + technique mappings
 - Evidence upload: size limit (default 25 MB, configurable), extension **and** content sniffing allowlist (pdf, png, jpg, txt, csv, docx, xlsx…), random storage names, stored in a private volume outside `STATIC_ROOT`/web root, served only through a permission-checked view with `Content-Disposition: attachment` + `X-Content-Type-Options: nosniff`; link evidence validated as http(s) URLs

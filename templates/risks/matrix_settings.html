@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Risk matrix{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold">Risk matrix</h1>
+<p class="mb-4 text-sm text-slate-600">Score = likelihood × impact. Bands colour the heatmaps and drive reporting. Changes apply to every risk immediately (scores are never stored).</p>
+<form method="post" class="card max-w-3xl space-y-4 p-5" novalidate>{% csrf_token %}
+  {% include "partials/_form_errors.html" %}
+  {% include "partials/_field.html" with field=form.size %}
+  <div class="grid gap-4 sm:grid-cols-2">{% include "partials/_field.html" with field=form.likelihood_labels %}{% include "partials/_field.html" with field=form.impact_labels %}</div>
+  <div class="grid gap-4 sm:grid-cols-3">{% include "partials/_field.html" with field=form.low_max %}{% include "partials/_field.html" with field=form.medium_max %}{% include "partials/_field.html" with field=form.high_max %}</div>
+  <button class="btn btn-primary" type="submit">Save matrix</button>
+</form>
+{% endblock %}

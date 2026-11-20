@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}{{ asset.name }}{% endblock %}
+{% block content %}
+<nav class="mb-3 text-sm text-slate-500" aria-label="Breadcrumb"><a class="hover:underline" href="{% url 'risks:asset_list' %}">Assets</a></nav>
+<div class="flex flex-wrap items-start justify-between gap-4"><div><h1 class="text-2xl font-semibold">{{ asset.name }}</h1>
+  <p class="text-sm text-slate-600">{{ asset.get_kind_display }} · criticality {{ asset.criticality }}/5 · {{ asset.get_data_classification_display }}{% if asset.contains_personal_data %} · <strong>personal data</strong>{% endif %}</p></div>
+  {% if can_edit %}<a class="btn btn-primary" href="{% url 'risks:asset_edit' asset.pk %}">Edit</a>{% endif %}</div>
+{% if asset.description %}<p class="mt-4 max-w-3xl whitespace-pre-line text-sm text-slate-700">{{ asset.description }}</p>{% endif %}
+<section class="card mt-6 overflow-x-auto p-5"><h2 class="mb-3 font-semibold">Risks affecting this asset ({{ risks|length }})</h2>
+  <table class="data-table"><thead><tr><th scope="col">Ref</th><th scope="col">Risk</th><th scope="col">Residual</th><th scope="col">Status</th></tr></thead>
+  <tbody class="divide-y divide-slate-100">{% for r in risks %}<tr><td class="font-mono text-xs"><a class="text-brand-700 hover:underline" href="{% url 'risks:detail' r.ref %}">{{ r.ref }}</a></td><td>{{ r.title }}</td>
+    <td>{% include "risks/_score.html" with score=r.residual_score %}</td><td class="text-xs">{{ r.get_status_display }}</td></tr>
+  {% empty %}<tr><td colspan="4" class="py-6 text-center text-slate-500">No risks linked.</td></tr>{% endfor %}</tbody></table></section>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Risk register{% endblock %}
+{% block content %}
+<div class="mb-2 flex flex-wrap items-center justify-between gap-3">
+  <h1 class="text-2xl font-semibold">Risk register</h1>
+  <div class="flex flex-wrap gap-2">
+    {% if can_export %}<a class="btn btn-secondary" href="{% url 'risks:export' %}?format=csv&amp;{{ querystring }}">Export CSV</a>
+    <a class="btn btn-secondary" href="{% url 'risks:export' %}?format=xlsx&amp;{{ querystring }}">Export Excel</a>{% endif %}
+    {% if can_edit %}<a class="btn btn-primary" href="{% url 'risks:create' %}">New risk</a>{% endif %}
+  </div>
+</div>
+{% include "risks/_subnav.html" %}
+<form class="card mb-4 grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8" role="search"
+      hx-get="{% url 'risks:list' %}" hx-target="#risk-table" hx-push-url="true"
+      hx-trigger="input changed delay:300ms from:#f-q, change">
+  <div class="sm:col-span-2"><label class="label" for="f-q">Search</label><input id="f-q" name="q" type="search" class="field" value="{{ filters.q }}" placeholder="R-0001, ransomware…" autocomplete="off"></div>
+  <div><label class="label" for="f-status">Status</label><select id="f-status" name="status" class="field">
+    <option value="">All</option><option value="active"{% if filters.status == "active" %} selected{% endif %}>All except closed</option>
+    {% for v, l in statuses %}<option value="{{ v }}"{% if filters.status == v %} selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+  <div><label class="label" for="f-category">Category</label><select id="f-category" name="category" class="field"><option value="">All</option>
+    {% for v, l in categories %}<option value="{{ v }}"{% if filters.category == v %} selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+  <div><label class="label" for="f-band">Residual band</label><select id="f-band" name="band" class="field"><option value="">Any</option>
+    {% for v, l in bands %}<option value="{{ v }}"{% if filters.band == v %} selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+  <div><label class="label" for="f-bu">Business unit</label><select id="f-bu" name="bu" class="field"><option value="">All</option>
+    {% for bu in business_units %}<option value="{{ bu.pk }}"{% if filters.bu == bu.pk|stringformat:"s" %} selected{% endif %}>{{ bu.name }}</option>{% endfor %}</select></div>
+  <div><label class="label" for="f-review">Review</label><select id="f-review" name="review" class="field"><option value="">Any</option>
+    <option value="overdue"{% if filters.review == "overdue" %} selected{% endif %}>Overdue</option>
+    <option value="due30"{% if filters.review == "due30" %} selected{% endif %}>Due in 30 days</option></select></div>
+  <div><label class="label" for="f-sort">Sort by</label><select id="f-sort" name="sort" class="field">
+    {% for v, l in sorts %}<option value="{{ v }}"{% if filters.sort == v %} selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+  <div class="flex flex-wrap items-center gap-4 sm:col-span-2 lg:col-span-4 xl:col-span-8 text-sm">
+    <label class="inline-flex items-center gap-2"><input type="checkbox" name="owner" value="me" class="rounded border-slate-300"{% if filters.owner == "me" %} checked{% endif %}> Owned by me</label>
+    <label class="inline-flex items-center gap-2"><input type="checkbox" name="archived" value="1" class="rounded border-slate-300"{% if filters.archived %} checked{% endif %}> Archived only</label>
+    {% if filters.cell %}<input type="hidden" name="cell" value="{{ filters.cell }}"><span class="badge bg-brand-50 text-brand-700">Heatmap cell {{ filters.cell }}</span> <a class="text-brand-700 hover:underline" href="{% url 'risks:list' %}">clear</a>{% endif %}
+    {% if filters.technique %}<input type="hidden" name="technique" value="{{ filters.technique }}"><span class="badge bg-brand-50 text-brand-700">Technique {{ filters.technique }}</span> <a class="text-brand-700 hover:underline" href="{% url 'risks:list' %}">clear</a>{% endif %}
+  </div>
+</form>
+<div id="risk-table">{% include "risks/_risk_table.html" %}</div>
+{% endblock %}

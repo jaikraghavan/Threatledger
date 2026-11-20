@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}{% if risk %}Edit {{ risk.ref }}{% else %}New risk{% endif %}{% endblock %}
+{% block content %}
+<nav class="mb-3 text-sm text-slate-500" aria-label="Breadcrumb"><a class="hover:underline" href="{% url 'risks:list' %}">Risk register</a>{% if risk %} / <a class="hover:underline" href="{% url 'risks:detail' risk.ref %}">{{ risk.ref }}</a>{% endif %}</nav>
+<h1 class="mb-4 text-2xl font-semibold">{% if risk %}Edit {{ risk.ref }}{% else %}New risk{% endif %}</h1>
+<form method="post" class="space-y-6" novalidate>{% csrf_token %}
+  {% include "partials/_form_errors.html" %}
+  <section class="card grid gap-4 p-5 lg:grid-cols-2">
+    <h2 class="font-semibold lg:col-span-2">Risk</h2>
+    {% include "partials/_field.html" with field=form.title class="lg:col-span-2" %}
+    {% include "partials/_field.html" with field=form.scenario class="lg:col-span-2" %}
+    {% include "partials/_field.html" with field=form.category %}
+    {% include "partials/_field.html" with field=form.business_unit %}
+    {% include "partials/_field.html" with field=form.owner %}
+    {% include "partials/_field.html" with field=form.assets %}
+  </section>
+  <section class="card p-5">
+    <h2 class="font-semibold">Assessment</h2>
+    <p class="mb-4 text-sm text-slate-600">Score = likelihood × impact on a {{ matrix.size }}×{{ matrix.size }} matrix. Inherent is before controls, residual is with current controls. Residual can't exceed inherent.</p>
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {% include "partials/_field.html" with field=form.inherent_likelihood %}
+      {% include "partials/_field.html" with field=form.inherent_impact %}
+      {% include "partials/_field.html" with field=form.residual_likelihood %}
+      {% include "partials/_field.html" with field=form.residual_impact %}
+    </div>
+    {% if form.reason %}<div class="mt-4">{% include "partials/_field.html" with field=form.reason %}</div>{% endif %}
+  </section>
+  <section class="card grid gap-4 p-5 sm:grid-cols-2 lg:grid-cols-4">
+    <h2 class="font-semibold sm:col-span-2 lg:col-span-4">Treatment</h2>
+    {% include "partials/_field.html" with field=form.treatment %}
+    {% include "partials/_field.html" with field=form.status %}
+    {% include "partials/_field.html" with field=form.target_date %}
+    {% include "partials/_field.html" with field=form.next_review_date %}
+  </section>
+  <div class="flex gap-2"><button type="submit" class="btn btn-primary">{% if risk %}Save changes{% else %}Create risk{% endif %}</button>
+    <a class="btn btn-secondary" href="{% if risk %}{% url 'risks:detail' risk.ref %}{% else %}{% url 'risks:list' %}{% endif %}">Cancel</a></div>
+</form>
+{% endblock %}

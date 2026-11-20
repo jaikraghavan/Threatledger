@@ -12,9 +12,11 @@ from threatledger.accounts.roles import Cap
 # (label, url name, capability, icon). Later phases append entries here.
 NAV_ITEMS: list[tuple[str, str, Cap, str]] = [
     ("Dashboard", "core:home", Cap.VIEW_DASHBOARD, "home"),
+    ("Risk register", "risks:list", Cap.VIEW_RISKS, "list"),
     ("Techniques", "attack:technique_list", Cap.VIEW_ATTACK, "grid"),
     ("Threat groups", "attack:group_list", Cap.VIEW_ATTACK, "users"),
     ("Audit log", "audit:list", Cap.VIEW_AUDIT_LOG, "log"),
+    ("Risk matrix", "risks:matrix", Cap.MANAGE_SETTINGS, "settings"),
     ("ATT&CK data", "attack:data", Cap.RUN_IMPORTS, "database"),
 ]
 

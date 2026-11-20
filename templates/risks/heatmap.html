@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Heatmaps{% endblock %}
+{% block content %}
+<h1 class="mb-2 text-2xl font-semibold">Heatmaps</h1>
+{% include "risks/_subnav.html" %}
+<form class="card mb-4 flex flex-wrap items-end gap-3 p-4" method="get">
+  <div><label class="label" for="h-status">Status</label><select id="h-status" name="status" class="field">
+    <option value="">All</option><option value="active"{% if filters.status == "active" %} selected{% endif %}>All except closed</option>
+    {% for v, l in statuses %}<option value="{{ v }}"{% if filters.status == v %} selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+  <div><label class="label" for="h-cat">Category</label><select id="h-cat" name="category" class="field"><option value="">All</option>
+    {% for v, l in categories %}<option value="{{ v }}"{% if filters.category == v %} selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+  <div><label class="label" for="h-bu">Business unit</label><select id="h-bu" name="bu" class="field"><option value="">All</option>
+    {% for bu in business_units %}<option value="{{ bu.pk }}"{% if filters.bu == bu.pk|stringformat:"s" %} selected{% endif %}>{{ bu.name }}</option>{% endfor %}</select></div>
+  <button class="btn btn-secondary" type="submit">Apply</button>
+  <p class="text-sm text-slate-600">{{ total }} risk{{ total|pluralize }}. Click a cell to list its risks.</p>
+</form>
+<div class="grid gap-6 xl:grid-cols-2">
+{% for kind, title, grid in heatmaps %}
+  <section class="card p-5" aria-labelledby="hm-{{ kind }}">
+    <h2 id="hm-{{ kind }}" class="mb-3 font-semibold">{{ title }}</h2>
+    <div class="overflow-x-auto">
+    <table class="w-full border-separate border-spacing-1 text-center text-sm">
+      <caption class="sr-only">{{ title }}: number of risks by likelihood (rows) and impact (columns)</caption>
+      <thead><tr><th scope="col" class="w-28"></th>{% for i, label in impact_header %}<th scope="col" class="px-1 pb-1 text-xs font-medium text-slate-500">{{ i }}<div class="font-normal">{{ label }}</div></th>{% endfor %}</tr></thead>
+      <tbody>{% for row in grid %}<tr>
+        <th scope="row" class="pr-2 text-right text-xs font-medium text-slate-500">{{ row.likelihood }} · {{ row.label }}</th>
+        {% for cell in row.cells %}<td class="heat-{{ cell.band }} h-14 min-w-12 rounded-md p-0">
+          {% if cell.count %}<a class="flex h-14 flex-col items-center justify-center rounded-md font-semibold hover:ring-2 hover:ring-slate-700" href="{% url 'risks:list' %}?cell={{ kind }}:{{ cell.likelihood }}:{{ cell.impact }}&amp;status={{ filters.status }}&amp;category={{ filters.category }}&amp;bu={{ filters.bu }}" aria-label="{{ cell.count }} risks with likelihood {{ cell.likelihood }} and impact {{ cell.impact }}">{{ cell.count }}<span class="text-[10px] font-normal opacity-70">score {{ cell.score }}</span></a>
+          {% else %}<span class="flex h-14 flex-col items-center justify-center text-[10px] opacity-50">{{ cell.score }}</span>{% endif %}</td>{% endfor %}
+      </tr>{% endfor %}</tbody>
+      <tfoot><tr><td></td><td colspan="{{ matrix.size }}" class="pt-1 text-xs text-slate-500">Impact →</td></tr></tfoot>
+    </table></div>
+  </section>
+{% endfor %}
+</div>
+<section class="card mt-6 overflow-x-auto p-5"><h2 class="mb-3 font-semibold">By band</h2>
+  <table class="data-table"><thead><tr><th scope="col">Band</th><th scope="col">Score range</th><th scope="col" class="text-right">Inherent</th><th scope="col" class="text-right">Residual</th></tr></thead>
+  <tbody class="divide-y divide-slate-100">{% for b in band_counts %}<tr><td><span class="badge band-{{ b.band.value }}">{{ b.band.label }}</span></td>
+    <td class="text-xs text-slate-600">{% if b.band.value == "low" %}1–{{ matrix.low_max }}{% elif b.band.value == "medium" %}{{ matrix.low_max|add:1 }}–{{ matrix.medium_max }}{% elif b.band.value == "high" %}{{ matrix.medium_max|add:1 }}–{{ matrix.high_max }}{% else %}≥ {{ matrix.high_max|add:1 }}{% endif %}</td>
+    <td class="text-right"><a class="hover:underline" href="{% url 'risks:list' %}?band={{ b.band.value }}&amp;band_of=inherent">{{ b.inherent }}</a></td><td class="text-right"><a class="hover:underline" href="{% url 'risks:list' %}?band={{ b.band.value }}">{{ b.residual }}</a></td></tr>{% endfor %}</tbody></table>
+</section>
+{% endblock %}

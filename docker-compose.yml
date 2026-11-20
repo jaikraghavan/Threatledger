@@ -13,6 +13,7 @@ x-app: &app
     DJANGO_SECRET_KEY_FILE: /srv/secrets/django_secret_key
     DJANGO_ALLOWED_HOSTS: ${DOMAIN:-localhost},127.0.0.1
     DJANGO_CSRF_TRUSTED_ORIGINS: https://${DOMAIN:-localhost}
+    SITE_URL: https://${DOMAIN:-localhost}
     POSTGRES_HOST: db
     POSTGRES_DB: threatledger
     POSTGRES_USER: threatledger
