@@ -14,6 +14,10 @@ from threatledger.audit.services import record
 @receiver(user_logged_in)
 def on_login(sender: Any, request: Any, user: Any, **kwargs: Any) -> None:
     record(Action.LOGIN, user, actor=user)
+    if request is not None and hasattr(request, "session"):
+        from .mfa import SESSION_FLAG, has_mfa
+
+        request.session[SESSION_FLAG] = has_mfa(user)
 
 
 @receiver(user_logged_out)
@@ -34,3 +38,26 @@ def on_login_failed(
         object_repr=username,
         changes={"username": username},
     )
+
+
+def _on_locked_out(
+    sender: Any,
+    request: Any = None,
+    username: str | None = None,
+    ip_address: str | None = None,
+    **kwargs: Any,
+) -> None:
+    record(
+        Action.LOGIN_FAILED,
+        object_type="accounts.user",
+        object_repr=str(username or "")[:150],
+        changes={"locked_out": [None, True], "username": [None, str(username or "")[:150]]},
+    )
+
+
+try:
+    from axes.signals import user_locked_out
+
+    user_locked_out.connect(_on_locked_out, dispatch_uid="threatledger-axes-lockout")
+except ImportError:  # pragma: no cover
+    pass

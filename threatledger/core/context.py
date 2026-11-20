@@ -73,3 +73,8 @@ def normalise_ip(raw: str | None) -> str | None:
         prefix = 24 if ip.version == 4 else 48
         return str(ipaddress.ip_network(f"{ip}/{prefix}", strict=False).network_address)
     return str(ip)
+
+
+def axes_client_ip(request: HttpRequest) -> str | None:
+    """django-axes hook: same proxy-aware client IP the audit log uses."""
+    return client_ip(request)

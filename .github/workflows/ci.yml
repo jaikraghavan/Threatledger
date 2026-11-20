@@ -185,6 +185,36 @@ jobs:
           layer = json.loads(c.get('/coverage/navigator.json?scope=all', secure=True).content)
           assert layer['versions']['layer'] == '4.5' and len(layer['techniques']) > 600, len(layer['techniques'])
           print('reporting smoke OK')"
+      - name: Smoke test - security headers through Caddy, API token, demo data
+        run: |
+          headers=$(curl -fsk -D - -o /dev/null https://localhost/accounts/login/)
+          echo "$headers"
+          echo "$headers" | grep -qi "^content-security-policy: .*script-src 'self'"
+          if echo "$headers" | grep -qi "unsafe-inline"; then echo "CSP allows unsafe-inline"; exit 1; fi
+          echo "$headers" | grep -qi "^strict-transport-security: max-age="
+          echo "$headers" | grep -qi "^x-frame-options: DENY"
+          docker compose exec -T web python manage.py seed_demo --allow-production | tee demo.txt
+          grep -q "Demo data loaded" demo.txt
+          token=$(docker compose exec -T web python manage.py shell -c "
+          from threatledger.accounts.models import User
+          from threatledger.api.models import ApiToken
+          print(ApiToken.issue(User.objects.get(username='auditor'), 'ci', 1)[1])" | tail -1)
+          test "$(curl -fsk -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $token" https://localhost/api/v1/risks/)" = 200
+          test "$(curl -sk -o /dev/null -w '%{http_code}' -H 'Authorization: Bearer tl_00000000_invalidinvalidinvalid' https://localhost/api/v1/risks/)" = 401
+          curl -fsk -H "Authorization: Bearer $token" "https://localhost/api/v1/frameworks/" | grep -q NIST-800-53-R5
+      - name: Smoke test - PostgreSQL backup and restore round trip
+        run: |
+          docker compose exec -T web python manage.py backup | tee backup.txt
+          archive=$(grep -o '/srv/backups/threatledger-backup-[0-9TZ]*\.tar\.gz' backup.txt)
+          docker compose exec -T web python manage.py verify_backup "$archive"
+          before=$(docker compose exec -T web python manage.py shell -c "from threatledger.risks.models import Risk; print(Risk.objects.count())" | tail -1)
+          docker compose exec -T web python manage.py shell -c "from threatledger.risks.models import Risk; Risk.objects.filter(title__startswith='Ransomware').update(title='tampered after backup')"
+          docker compose exec -T web python manage.py restore "$archive" --force
+          after=$(docker compose exec -T web python manage.py shell -c "from threatledger.risks.models import Risk; print(Risk.objects.count(), Risk.objects.filter(title='tampered after backup').count())" | tail -1)
+          test "$after" = "$before 0"
+          docker compose exec -T web python manage.py audit_verify
+      - name: Performance check - 1,000 risks with full ATT&CK loaded
+        run: docker compose exec -T web python manage.py perf_check --risks 1000 --max-ms 2000
           docker compose exec -T web python manage.py audit_verify
       - name: Logs on failure
         if: failure()

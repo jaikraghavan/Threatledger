@@ -1,6 +1,6 @@
 # ThreatLedger — Implementation Plan
 
-Status: **DRAFT — awaiting approval**. No code will be written until this plan is approved.
+Status: **Approved and implemented** (phases 1–7, v0.1.0). Notes under each phase record how it was built.
 Open questions are collected in §11; defaults are marked so work can proceed if you accept them.
 
 ---
@@ -376,6 +376,23 @@ _Implementation notes (Phase 6, as built):_
 - `backup` / `restore` commands (pg_dump/pg_restore + media tarball, with checksum); documented restore drill
 - Performance check: `seed_perf` loads full ATT&CK + 1,000 risks + 200 controls; pytest perf test asserts key pages < N queries and < 500 ms server time
 - **Final:** README (screenshots, quick start, import, backup, config table, Mermaid architecture, "How to use this for GRC"), LICENSE Apache-2.0, CONTRIBUTING, SECURITY, CHANGELOG, demo seed (mid-size company: ~40 risks, ~60 assets, realistic BUs)
+
+_Implementation notes (Phase 7, as built):_
+- API v1 (`/api/v1/`): risks (list/retrieve/create/patch + link technique), controls (patch status/effectiveness/
+  description, owner-scoped), techniques with coverage, frameworks + requirements, coverage + Navigator, audit events.
+  Views declare `tl_access` (reads) and `tl_write_access` (writes). Personal tokens `tl_<prefix>_<secret>` stored as
+  SHA-256, prefix lookup + constant-time compare, expiry, revocation, last-used. OpenAPI via drf-spectacular at
+  `/api/v1/schema/`; docs are a self-hosted page (no Swagger CDN JS, so CSP stays strict).
+- Strict CSP via django-csp (`'self'` only; no inline script/style; enforced by a template scan test), HTMX configured
+  without eval/indicator styles; error pages use the stylesheet. Permissions-Policy, CORP, `no-store` on authenticated
+  pages. Idle timeout (30 min) + absolute session age (8 h).
+- django-axes lockout (5 failures per username+IP, 15 min), lockouts audited. TOTP MFA via django-otp with 10
+  single-use recovery codes, brute-force throttling, optional per user, enforceable per role (`MFA_REQUIRED_ROLES`).
+- Backup/restore: checksummed archive (pg_dump custom format / SQLite logical dump + media); restore verifies first,
+  refuses non-empty DB without `--force`, safe tar extraction. Image ships `postgresql-client-16` from PGDG with a
+  pinned key fingerprint. Real PostgreSQL round trip runs in CI's Docker smoke test.
+- `seed_demo` (Halcyon Freight Group: 60 assets, 30 risks, controls, evidence, tests, acceptances) and
+  `perf_check` (1,000 risks; all key pages < 550 ms locally with full ATT&CK v20.1).
 
 ---
 

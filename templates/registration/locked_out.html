@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}Account temporarily locked{% endblock %}
+{% block anon_content %}
+<div class="card w-full max-w-sm p-6" role="alert"><h1 class="text-lg font-semibold">Too many failed sign-in attempts</h1>
+<p class="mt-2 text-sm text-slate-600">Sign-in for this account from your location is locked for a short while. Try again later, or ask an administrator to unlock it.</p>
+<a class="btn btn-secondary mt-4" href="{% url 'accounts:login' %}">Back to sign in</a></div>
+{% endblock %}

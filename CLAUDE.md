@@ -65,6 +65,13 @@ The design lives in [PLAN.md](PLAN.md). Read it before changing models or scorin
   `reporting/services.py` (snapshots are for trends only). Matrix/Navigator in `coverage/matrix.py`.
   Charts: include `partials/_chart.html` with `id`/`data` (series dict with `labels` + `datasets`) and load
   `vendor/chart-4.6.1.umd.min.js` in `{% block head_scripts %}`. Never add inline `<script>` or `style=`.
+- **API** (`threatledger/api`): DRF views declare `tl_access` (GET) and `tl_write_access` (writes); writes call the
+  same services as the UI. Tokens: `api.models.ApiToken.issue()`; never store or log raw tokens.
+- **Security middleware**: CSP is strict. Never add `'unsafe-inline'`; `accounts/tests/test_security.py` scans all
+  templates for inline script/style/handlers. MFA enforcement and idle timeout live in `accounts/middleware.py` (after
+  MessageMiddleware). Lockout: django-axes (AUTHENTICATION_BACKENDS must keep Axes first).
+- **Ops commands**: `backup`, `verify_backup`, `restore --force`, `seed_demo`, `perf_check --risks 1000`.
+  Backups must run outside a DB transaction (tests use `django_db(transaction=True)`).
 - Test helpers for risks/controls/techniques: `threatledger/risks/tests/helpers.py`.
 - Test bundles: `threatledger/attack/tests/bundles.py` (`bundle_v1`/`bundle_v2`). Use `test_importer._load()` to load one in a fixture.
 - Django admin is **superuser-only** break-glass. Everyday admin features belong in the app, behind `can()`.

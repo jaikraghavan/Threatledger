@@ -42,15 +42,32 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PATH=/opt/venv/bin:$PATH \
     DJANGO_SETTINGS_MODULE=config.settings.prod \
     STATIC_ROOT=/app/staticfiles \
-    MEDIA_ROOT=/srv/media
+    MEDIA_ROOT=/srv/media \
+    BACKUP_DIR=/srv/backups
+
+# PostgreSQL 16 client tools (pg_dump/pg_restore must match the server major version) from
+# the official PGDG repository; the signing key's fingerprint is pinned and checked.
+ARG PGDG_KEY_FPR=B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8
+RUN set -eu; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends ca-certificates curl gnupg; \
+    curl -fsSL -o /tmp/pgdg.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc; \
+    fpr="$(gpg --show-keys --with-colons /tmp/pgdg.asc | awk -F: '/^fpr:/ {print $10; exit}')"; \
+    test "$fpr" = "$PGDG_KEY_FPR"; \
+    gpg --dearmor -o /usr/share/keyrings/pgdg.gpg /tmp/pgdg.asc; \
+    echo "deb [signed-by=/usr/share/keyrings/pgdg.gpg] https://apt.postgresql.org/pub/repos/apt bookworm-pgdg main" > /etc/apt/sources.list.d/pgdg.list; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends postgresql-client-16; \
+    apt-get purge -y curl gnupg; apt-get autoremove -y; \
+    rm -rf /var/lib/apt/lists/* /tmp/pgdg.asc /root/.gnupg
 
 # /srv/secrets is 0711: postgres/redis (other uids) may open their known password files but
 # cannot list the directory; the Django key file itself is 0600 (see deploy/init_secrets.py).
 RUN groupadd --gid 10001 app \
  && useradd --uid 10001 --gid app --no-create-home --home-dir /app --shell /usr/sbin/nologin app \
- && mkdir -p /srv/media /srv/secrets \
- && chown app:app /srv/media /srv/secrets \
- && chmod 0750 /srv/media \
+ && mkdir -p /srv/media /srv/secrets /srv/backups \
+ && chown app:app /srv/media /srv/secrets /srv/backups \
+ && chmod 0750 /srv/media /srv/backups \
  && chmod 0711 /srv/secrets
 
 COPY --from=builder /opt/venv /opt/venv

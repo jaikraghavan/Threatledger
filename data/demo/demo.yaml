@@ -1,0 +1,583 @@
+# Demo data for `manage.py seed_demo`: Halcyon Freight Group (fictional), a ~1,500-person
+# logistics & e-commerce company operating in the UK, EU and India. Any resemblance to a
+# real organisation is coincidental. Dates are offsets in days from "today".
+schema: threatledger-demo/1
+organisation: Halcyon Freight Group
+business_units: [Corporate, Engineering, Operations, Finance, Customer Services]
+
+assets:
+  # name, type, business unit, criticality, classification, personal data
+  - [Customer portal (halcyon.example), application, Engineering, 5, confidential, true]
+  - [Shipment tracking API, application, Engineering, 5, internal, true]
+  - [Warehouse management system, application, Operations, 5, internal, false]
+  - [Route optimisation service, application, Engineering, 4, internal, false]
+  - [Payments gateway integration, application, Finance, 5, restricted, true]
+  - [ERP (finance & procurement), saas, Finance, 5, confidential, true]
+  - [HR & payroll platform, saas, Corporate, 4, restricted, true]
+  - [CRM, saas, Customer Services, 4, confidential, true]
+  - [Customer support ticketing, saas, Customer Services, 3, confidential, true]
+  - [Microsoft 365 tenant, cloud_service, Corporate, 5, confidential, true]
+  - [Identity provider (SSO), cloud_service, Corporate, 5, restricted, true]
+  - [AWS production account, cloud_service, Engineering, 5, confidential, true]
+  - [AWS data lake, data_store, Engineering, 4, confidential, true]
+  - [Customer database (PostgreSQL), data_store, Engineering, 5, restricted, true]
+  - [Order history archive, data_store, Operations, 3, confidential, true]
+  - [Backup vault, data_store, Engineering, 5, restricted, true]
+  - [Source code repositories, saas, Engineering, 4, confidential, false]
+  - [CI/CD pipeline, application, Engineering, 4, internal, false]
+  - [Container registry, cloud_service, Engineering, 4, internal, false]
+  - [Kubernetes cluster (prod), server, Engineering, 5, internal, false]
+  - [Data centre core network, network, Operations, 5, internal, false]
+  - [Warehouse Wi-Fi, network, Operations, 3, internal, false]
+  - [Site-to-site VPN, network, Operations, 4, internal, false]
+  - [Remote access VPN, network, Corporate, 4, internal, false]
+  - [Firewall cluster, network, Operations, 5, internal, false]
+  - [Domain controllers, server, Corporate, 5, restricted, true]
+  - [File servers, server, Corporate, 3, confidential, true]
+  - [Print & scan servers, server, Corporate, 2, internal, false]
+  - ["Corporate laptops (~1,200)", endpoint, Corporate, 4, confidential, true]
+  - [Warehouse handheld scanners, endpoint, Operations, 3, internal, false]
+  - [Delivery driver mobile app, application, Operations, 4, internal, true]
+  - [Driver smartphones, endpoint, Operations, 3, internal, true]
+  - [Telematics & fleet tracking, cloud_service, Operations, 4, internal, true]
+  - ["Warehouse OT (conveyors, sorters)", facility, Operations, 4, internal, false]
+  - [Building access control, facility, Corporate, 3, internal, true]
+  - [CCTV, facility, Operations, 2, internal, true]
+  - [Head office, facility, Corporate, 3, internal, false]
+  - [Distribution centre Birmingham, facility, Operations, 4, internal, false]
+  - [Distribution centre Rotterdam, facility, Operations, 4, internal, false]
+  - [Distribution centre Pune, facility, Operations, 4, internal, false]
+  - [Customer contact centre, facility, Customer Services, 3, internal, true]
+  - [Email marketing platform, saas, Customer Services, 3, confidential, true]
+  - [Web analytics, saas, Engineering, 2, internal, true]
+  - [Data warehouse (BI), data_store, Finance, 4, confidential, true]
+  - [Treasury & banking portals, saas, Finance, 5, restricted, false]
+  - [Accounts payable process, other, Finance, 4, confidential, false]
+  - [Customs & freight forwarding EDI, application, Operations, 4, confidential, true]
+  - [Carrier partner portal, application, Operations, 3, internal, true]
+  - [Managed service provider (IT support), people, Corporate, 4, internal, false]
+  - [Cloud hosting provider, cloud_service, Engineering, 5, internal, false]
+  - [Payroll bureau, people, Corporate, 3, restricted, true]
+  - [Privileged administrators, people, Corporate, 5, internal, false]
+  - [Finance team, people, Finance, 4, internal, false]
+  - [Customer service agents, people, Customer Services, 3, internal, false]
+  - [Developers, people, Engineering, 3, internal, false]
+  - [Executive team, people, Corporate, 4, internal, false]
+  - [Secrets manager, cloud_service, Engineering, 5, restricted, false]
+  - [Logging & SIEM platform, cloud_service, Engineering, 4, confidential, true]
+  - [Mobile device management, cloud_service, Corporate, 3, internal, false]
+  - [Status page & public website, application, Customer Services, 2, public, false]
+
+# Starter controls: status, effectiveness, owner, days since last test (null = never), result
+controls:
+  CTL-MFA:      [implemented,     4, controlowner, 60,  pass]
+  CTL-EDR:      [implemented,     4, controlowner, 120, pass]
+  CTL-PATCH:    [partial,         3, controlowner, 200, partial]
+  CTL-PAM:      [partial,         2, riskmanager,  400, fail]
+  CTL-BACKUP:   [implemented,     3, controlowner, 90,  pass]
+  CTL-SIEM:     [partial,         3, controlowner, 30,  partial]
+  CTL-SEGMENT:  [planned,         null, riskmanager, null, null]
+  CTL-EMAIL:    [implemented,     4, controlowner, 45,  pass]
+  CTL-AWARE:    [implemented,     3, riskmanager,  150, pass]
+  CTL-IR:       [partial,         2, riskmanager,  500, fail]
+  CTL-VENDOR:   [planned,         null, riskmanager, null, null]
+  CTL-HARDEN:   [partial,         3, controlowner, 300, partial]
+  CTL-DLP:      [not_implemented, null, null,      null, null]
+  CTL-PASSWORD: [implemented,     4, controlowner, 100, pass]
+
+evidence:
+  # control, title, url, valid for (days from today; negative = expired)
+  - [CTL-MFA, Conditional access policy export, https://wiki.halcyon.example/sec/mfa-policy, 300]
+  - [CTL-EDR, EDR deployment coverage report, https://wiki.halcyon.example/sec/edr-coverage, 20]
+  - [CTL-BACKUP, Quarterly restore test record, https://tickets.halcyon.example/OPS-4411, 60]
+  - [CTL-EMAIL, DMARC aggregate report (p=reject), https://wiki.halcyon.example/sec/dmarc, 180]
+  - [CTL-AWARE, Phishing simulation results Q3, https://wiki.halcyon.example/sec/phish-q3, -5]
+  - [CTL-PATCH, Vulnerability SLA dashboard, https://grafana.halcyon.example/d/vuln-sla, 25]
+
+risks:
+  # title, category, business unit, owner, inherent [L,I], residual [L,I], treatment, status,
+  # target (days), next review (days), assets, techniques, controls, scenario
+  - title: Ransomware encrypts warehouse and finance systems
+    category: cyber
+    bu: Operations
+    owner: riskmanager
+    inherent: [4, 5]
+    residual: [3, 5]
+    treatment: mitigate
+    status: in_treatment
+    target: 120
+    review: 30
+    assets: [Warehouse management system, File servers, ERP (finance & procurement), Backup vault]
+    techniques: [T1566.001, T1204.002, T1059.001, T1021.001, T1486, T1490]
+    controls: [CTL-EDR, CTL-BACKUP, CTL-EMAIL, CTL-SEGMENT, CTL-IR]
+    scenario: >-
+      A criminal affiliate phishes a warehouse supervisor, runs a PowerShell loader, moves
+      laterally over RDP and encrypts the WMS and file servers, deleting shadow copies. Picking
+      stops at three distribution centres for several days; contractual SLA penalties apply.
+  - title: Business email compromise diverts supplier payments
+    category: fraud
+    bu: Finance
+    owner: riskmanager
+    inherent: [4, 4]
+    residual: [2, 4]
+    treatment: mitigate
+    status: in_treatment
+    target: 60
+    review: 45
+    assets: [Microsoft 365 tenant, Accounts payable process, Finance team]
+    techniques: [T1566.002, T1078.004, T1114.003, T1534]
+    controls: [CTL-MFA, CTL-EMAIL, CTL-AWARE]
+    scenario: >-
+      An attacker phishes an accounts-payable clerk's Microsoft 365 credentials, adds a mailbox
+      forwarding rule and impersonates a freight carrier to change bank details. A single
+      fraudulent payment run could exceed £400k.
+  - title: Credential stuffing takes over customer accounts
+    category: cyber
+    bu: Engineering
+    owner: riskmanager
+    inherent: [5, 3]
+    residual: [3, 3]
+    treatment: mitigate
+    status: open
+    target: 90
+    review: 60
+    assets: [Customer portal (halcyon.example), Customer database (PostgreSQL)]
+    techniques: [T1110.004, T1078]
+    controls: [CTL-MFA, CTL-PASSWORD]
+    scenario: >-
+      Botnets replay breached username/password pairs against the customer portal, redirecting
+      deliveries and harvesting addresses. Customer MFA is optional, so residual likelihood stays
+      material.
+  - title: Exploitation of an internet-facing application vulnerability
+    category: cyber
+    bu: Engineering
+    owner: riskmanager
+    inherent: [4, 5]
+    residual: [3, 4]
+    treatment: mitigate
+    status: in_treatment
+    target: 45
+    review: -10
+    assets: [Customer portal (halcyon.example), Shipment tracking API, Kubernetes cluster (prod)]
+    techniques: [T1190, T1505.003, T1059.004]
+    controls: [CTL-PATCH, CTL-HARDEN, CTL-SIEM]
+    scenario: >-
+      A public exploit for a framework used by the tracking API is weaponised within days of
+      disclosure. Patching of internet-facing services currently runs behind the 14-day SLA.
+  - title: Personal data breach from misconfigured cloud storage
+    category: data_privacy
+    bu: Engineering
+    owner: riskmanager
+    inherent: [3, 5]
+    residual: [2, 4]
+    treatment: mitigate
+    status: open
+    target: 90
+    review: 30
+    assets: [AWS data lake, AWS production account]
+    techniques: [T1530, T1537]
+    controls: [CTL-HARDEN, CTL-DLP, CTL-SIEM]
+    scenario: >-
+      A data-lake bucket holding customer addresses is made public during a migration. Exposure
+      of UK, EU and Indian personal data triggers GDPR and DPDP Act breach notification duties.
+  - title: Compromise of a managed service provider
+    category: third_party
+    bu: Corporate
+    owner: riskmanager
+    inherent: [3, 5]
+    residual: [3, 4]
+    treatment: mitigate
+    status: open
+    target: 180
+    review: 90
+    assets: [Managed service provider (IT support), Domain controllers]
+    techniques: [T1199, T1078, T1219]
+    controls: [CTL-VENDOR, CTL-PAM, CTL-MFA]
+    scenario: >-
+      The MSP's remote management tooling is hijacked and used to push malware to Halcyon
+      endpoints with standing domain-admin credentials.
+  - title: Software supply chain compromise via a dependency
+    category: third_party
+    bu: Engineering
+    owner: riskmanager
+    inherent: [3, 4]
+    residual: [2, 4]
+    treatment: mitigate
+    status: open
+    target: 150
+    review: 120
+    assets: [CI/CD pipeline, Source code repositories, Container registry]
+    techniques: [T1195.001, T1195.002]
+    controls: [CTL-VENDOR, CTL-HARDEN]
+    scenario: >-
+      A typosquatted package or a compromised maintainer account injects malicious code into a
+      build, which is then deployed to production and the driver app.
+  - title: Privileged account misuse by an insider
+    category: people
+    bu: Corporate
+    owner: riskmanager
+    inherent: [2, 5]
+    residual: [2, 4]
+    treatment: mitigate
+    status: in_treatment
+    target: 90
+    review: 30
+    assets: [Privileged administrators, Domain controllers, AWS production account]
+    techniques: [T1078.002, T1098, T1136.002]
+    controls: [CTL-PAM, CTL-SIEM]
+    scenario: >-
+      A disgruntled administrator with standing privileges creates a backdoor account before
+      leaving. PAM is only partly rolled out and the last access review failed.
+  - title: Theft of credentials from endpoints
+    category: cyber
+    bu: Corporate
+    owner: controlowner
+    inherent: [3, 4]
+    residual: [2, 3]
+    treatment: mitigate
+    status: open
+    target: 120
+    review: 60
+    assets: ["Corporate laptops (~1,200)", Domain controllers]
+    techniques: [T1003.001, T1555.003, T1552.001]
+    controls: [CTL-EDR, CTL-HARDEN, CTL-PAM]
+    scenario: >-
+      Infostealer malware dumps LSASS and browser-stored passwords, giving attackers VPN and SaaS
+      access.
+  - title: Exfiltration of customer data to cloud storage
+    category: data_privacy
+    bu: Customer Services
+    owner: riskmanager
+    inherent: [3, 4]
+    residual: [3, 4]
+    treatment: mitigate
+    status: open
+    target: 200
+    review: 60
+    assets: [CRM, Customer support ticketing, Customer database (PostgreSQL)]
+    techniques: [T1567.002, T1048, T1213]
+    controls: [CTL-DLP, CTL-SIEM]
+    scenario: >-
+      An attacker or departing agent exports CRM records and uploads them to personal cloud
+      storage. No DLP is in place yet.
+  - title: DDoS takes the customer portal and tracking API offline
+    category: operational
+    bu: Engineering
+    owner: riskmanager
+    inherent: [3, 3]
+    residual: [2, 3]
+    treatment: transfer
+    status: open
+    target: null
+    review: 180
+    assets: [Customer portal (halcyon.example), Shipment tracking API]
+    techniques: [T1498, T1499]
+    controls: [CTL-SEGMENT]
+    scenario: >-
+      A volumetric attack during peak season degrades tracking for retailers. CDN DDoS protection
+      and cyber insurance transfer most of the impact.
+  - title: Destructive wiper attack on backups
+    category: cyber
+    bu: Engineering
+    owner: riskmanager
+    inherent: [2, 5]
+    residual: [1, 5]
+    treatment: mitigate
+    status: open
+    target: null
+    review: 90
+    assets: [Backup vault, AWS production account]
+    techniques: [T1485, T1490, T1078.004]
+    controls: [CTL-BACKUP, CTL-MFA, CTL-PAM]
+    scenario: >-
+      Attackers who reach the cloud console delete snapshots and backups before deploying a
+      wiper. Immutable, separately administered backups limit the residual risk.
+  - title: Phishing of delivery drivers' mobile accounts
+    category: cyber
+    bu: Operations
+    owner: controlowner
+    inherent: [4, 2]
+    residual: [3, 2]
+    treatment: accept
+    status: accepted
+    target: null
+    review: 120
+    assets: [Driver smartphones, Delivery driver mobile app]
+    techniques: [T1566.002, T1078]
+    controls: [CTL-AWARE]
+    scenario: >-
+      SMS phishing harvests driver app logins to view route manifests. Impact is limited because
+      the app exposes only the current day's drops.
+    acceptance: [approved, "Low impact; the app shows one day's route only; revisit when MDM rollout completes.", 150]
+  - title: Legacy warehouse OT cannot be patched
+    category: operational
+    bu: Operations
+    owner: riskmanager
+    inherent: [3, 4]
+    residual: [3, 3]
+    treatment: accept
+    status: accepted
+    target: null
+    review: 60
+    assets: ["Warehouse OT (conveyors, sorters)", Warehouse Wi-Fi]
+    techniques: [T1210, T1021]
+    controls: [CTL-SEGMENT]
+    scenario: >-
+      Sorter controllers run an unsupported OS that the vendor will not certify for patching until
+      the 2027 refresh. Compensating isolation is planned.
+    acceptance: [approved, "Vendor refresh funded for Q2 2027; interim network isolation and monitoring.", 20]
+  - title: Weak joiner-mover-leaver process leaves orphaned access
+    category: people
+    bu: Corporate
+    owner: riskmanager
+    inherent: [4, 3]
+    residual: [3, 3]
+    treatment: mitigate
+    status: open
+    target: 90
+    review: -20
+    assets: [Identity provider (SSO), HR & payroll platform]
+    techniques: [T1078]
+    controls: [CTL-PAM]
+    scenario: >-
+      Leavers keep SaaS access for weeks because HR events don't trigger deprovisioning
+      automatically.
+  - title: Session token theft bypasses MFA
+    category: cyber
+    bu: Corporate
+    owner: riskmanager
+    inherent: [3, 4]
+    residual: [3, 3]
+    treatment: mitigate
+    status: open
+    target: 120
+    review: 45
+    assets: [Microsoft 365 tenant, Identity provider (SSO)]
+    techniques: [T1557, T1539, T1550.004]
+    controls: [CTL-MFA, CTL-SIEM]
+    scenario: >-
+      Adversary-in-the-middle phishing kits steal session cookies after the user completes MFA.
+      Phishing-resistant authenticators are only issued to administrators so far.
+  - title: Leaked cloud access keys in source code
+    category: cyber
+    bu: Engineering
+    owner: controlowner
+    inherent: [3, 4]
+    residual: [2, 3]
+    treatment: mitigate
+    status: in_treatment
+    target: 30
+    review: 30
+    assets: [Source code repositories, Secrets manager, AWS production account]
+    techniques: [T1552.001, T1078.004]
+    controls: [CTL-HARDEN, CTL-PAM]
+    scenario: >-
+      A developer commits long-lived AWS keys to a public fork. Secret scanning is enabled on the
+      main organisation only.
+  - title: Failure to notify a breach within regulatory deadlines
+    category: compliance
+    bu: Corporate
+    owner: riskmanager
+    inherent: [3, 4]
+    residual: [2, 4]
+    treatment: mitigate
+    status: open
+    target: 60
+    review: 60
+    assets: [Customer database (PostgreSQL), HR & payroll platform]
+    techniques: []
+    controls: [CTL-IR]
+    scenario: >-
+      An incident affecting Indian and EU customers is not assessed quickly enough to meet the
+      72-hour GDPR and DPDP Board intimation expectations, leading to regulatory penalties.
+  - title: Inadequate vendor due diligence for new carriers
+    category: third_party
+    bu: Operations
+    owner: riskmanager
+    inherent: [3, 3]
+    residual: [3, 3]
+    treatment: mitigate
+    status: open
+    target: 180
+    review: 90
+    assets: [Carrier partner portal, Customs & freight forwarding EDI]
+    techniques: [T1199]
+    controls: [CTL-VENDOR]
+    scenario: >-
+      Small regional carriers are onboarded onto the EDI and partner portal without a security
+      assessment.
+  - title: Lost or stolen laptops expose confidential data
+    category: data_privacy
+    bu: Corporate
+    owner: controlowner
+    inherent: [4, 2]
+    residual: [2, 2]
+    treatment: mitigate
+    status: open
+    target: null
+    review: 180
+    assets: ["Corporate laptops (~1,200)"]
+    techniques: [T1005]
+    controls: [CTL-DLP, CTL-HARDEN]
+    scenario: >-
+      About 40 laptops are lost each year. Full-disk encryption is enforced; residual risk is low.
+  - title: Payment card data exposure in the checkout flow
+    category: compliance
+    bu: Finance
+    owner: riskmanager
+    inherent: [2, 5]
+    residual: [1, 4]
+    treatment: transfer
+    status: open
+    target: null
+    review: 120
+    assets: [Payments gateway integration, Customer portal (halcyon.example)]
+    techniques: [T1185, T1059.007]
+    controls: [CTL-HARDEN, CTL-PATCH]
+    scenario: >-
+      A web-skimming script injected into the checkout page captures card details. Hosted payment
+      fields keep card data off Halcyon systems, transferring most scope to the PSP.
+  - title: Unauthorised physical access to a distribution centre
+    category: physical
+    bu: Operations
+    owner: riskmanager
+    inherent: [3, 3]
+    residual: [2, 3]
+    treatment: mitigate
+    status: open
+    target: null
+    review: 180
+    assets: [Distribution centre Birmingham, Building access control, CCTV]
+    techniques: []
+    controls: []
+    scenario: >-
+      Tailgating at a loading bay gives access to high-value consignments and the warehouse IT
+      room.
+  - title: Over-reliance on a single cloud region
+    category: operational
+    bu: Engineering
+    owner: riskmanager
+    inherent: [2, 4]
+    residual: [2, 3]
+    treatment: mitigate
+    status: in_treatment
+    target: 240
+    review: 90
+    assets: [AWS production account, Cloud hosting provider]
+    techniques: []
+    controls: [CTL-BACKUP]
+    scenario: >-
+      A prolonged regional outage at the cloud provider halts tracking and order intake; the
+      disaster recovery runbook has not been tested end to end.
+  - title: Malicious macro documents bypass email filtering
+    category: cyber
+    bu: Customer Services
+    owner: controlowner
+    inherent: [3, 3]
+    residual: [2, 2]
+    treatment: mitigate
+    status: open
+    target: null
+    review: 120
+    assets: [Customer support ticketing, "Corporate laptops (~1,200)"]
+    techniques: [T1566.001, T1204.002]
+    controls: [CTL-EMAIL, CTL-HARDEN, CTL-EDR]
+    scenario: >-
+      Customer service agents open "proof of delivery" attachments from unknown senders as part of
+      their job. Internet macros are blocked by policy.
+  - title: Command-and-control over web protocols goes undetected
+    category: cyber
+    bu: Engineering
+    owner: controlowner
+    inherent: [3, 4]
+    residual: [3, 3]
+    treatment: mitigate
+    status: open
+    target: 150
+    review: 60
+    assets: [Logging & SIEM platform, "Corporate laptops (~1,200)"]
+    techniques: [T1071.001, T1105, T1041]
+    controls: [CTL-SIEM, CTL-EDR]
+    scenario: >-
+      Beaconing implants blend into HTTPS traffic; proxy logs are not yet in the SIEM.
+  - title: Privilege escalation through unpatched endpoints
+    category: cyber
+    bu: Corporate
+    owner: controlowner
+    inherent: [3, 4]
+    residual: [2, 3]
+    treatment: mitigate
+    status: open
+    target: 90
+    review: 90
+    assets: ["Corporate laptops (~1,200)", File servers]
+    techniques: [T1068, T1053.005, T1547.001]
+    controls: [CTL-PATCH, CTL-EDR, CTL-HARDEN]
+    scenario: >-
+      Local privilege-escalation exploits and scheduled-task persistence survive on laptops that
+      miss monthly patching while offline.
+  - title: Telematics vendor breach exposes driver location data
+    category: third_party
+    bu: Operations
+    owner: riskmanager
+    inherent: [3, 3]
+    residual: [3, 3]
+    treatment: accept
+    status: open
+    target: null
+    review: 30
+    assets: [Telematics & fleet tracking]
+    techniques: [T1199]
+    controls: [CTL-VENDOR]
+    scenario: >-
+      The telematics SaaS provider is breached, exposing historical driver locations, which is
+      personal data under GDPR and the DPDP Act.
+    acceptance: [pending, "Contract renewal in Q3 adds audit rights; vendor holds ISO 27001.", 365]
+  - title: Network discovery and lateral movement in flat networks
+    category: cyber
+    bu: Operations
+    owner: riskmanager
+    inherent: [4, 4]
+    residual: [4, 3]
+    treatment: mitigate
+    status: open
+    target: 210
+    review: 45
+    assets: [Data centre core network, Warehouse Wi-Fi, Site-to-site VPN]
+    techniques: [T1046, T1018, T1021.002]
+    controls: [CTL-SEGMENT, CTL-SIEM]
+    scenario: >-
+      Warehouse, office and server networks share flat VLANs across sites, so a single
+      compromised handheld can reach the domain controllers.
+  - title: Loss of key security staff
+    category: people
+    bu: Corporate
+    owner: riskmanager
+    inherent: [3, 3]
+    residual: [3, 2]
+    treatment: mitigate
+    status: open
+    target: null
+    review: 180
+    assets: [Privileged administrators]
+    techniques: []
+    controls: []
+    scenario: >-
+      Two engineers hold most knowledge of the identity and backup platforms; resignation would
+      slow incident response.
+  - title: Regulatory non-compliance with HIPAA for US healthcare logistics contract
+    category: compliance
+    bu: Operations
+    owner: riskmanager
+    inherent: [2, 4]
+    residual: [2, 3]
+    treatment: mitigate
+    status: draft
+    target: 270
+    review: 60
+    assets: [Customs & freight forwarding EDI, Order history archive]
+    techniques: []
+    controls: [CTL-IR, CTL-BACKUP, CTL-MFA]
+    scenario: >-
+      A planned contract to move medical supplies for a US hospital network would make Halcyon a
+      business associate handling ePHI on shipping manifests.

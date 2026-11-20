@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Two-factor authentication{% endblock %}
+{% block content %}
+<div class="max-w-xl">
+<h1 class="mb-4 text-2xl font-semibold">Two-factor authentication</h1>
+{% if enabled %}
+  <div class="card space-y-3 p-5"><p class="text-sm"><span class="badge bg-green-100 text-green-800">On</span> Your account requires a code from your authenticator app at sign-in.</p>
+    <p class="text-sm text-slate-600">{{ remaining }} unused recovery code{{ remaining|pluralize }} left.</p>
+    {% if required %}<p class="text-sm text-slate-600">Your role requires two-factor authentication, so it can't be turned off. Lost your device? Ask an administrator to reset it.</p>
+    {% else %}<form method="post" class="flex flex-wrap items-end gap-2">{% csrf_token %}<input type="hidden" name="action" value="disable">
+      <div><label class="label" for="dis">Current code</label><input id="dis" name="otp_token" class="field" inputmode="numeric" autocomplete="one-time-code" required></div>
+      <button class="btn btn-secondary" type="submit">Turn off</button></form>{% endif %}</div>
+{% else %}
+  {% if required %}<div class="mb-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-900" role="alert">Your role requires two-factor authentication. Set it up to continue.</div>{% endif %}
+  <div class="card space-y-4 p-5">
+    <ol class="list-decimal space-y-2 pl-5 text-sm text-slate-700"><li>Open an authenticator app (e.g. Microsoft Authenticator, Google Authenticator, 1Password).</li><li>Scan this QR code, or enter the key manually.</li><li>Enter the 6-digit code it shows.</li></ol>
+    <div class="flex flex-wrap items-center gap-6"><div class="h-48 w-48 rounded-md border border-slate-200 bg-white p-2 [&>svg]:h-full [&>svg]:w-full" aria-label="QR code for your authenticator app" role="img">{{ qr_svg|safe }}</div>
+      <div class="text-sm"><div class="label">Manual key</div><code class="block break-all rounded bg-slate-100 px-2 py-1 font-mono">{{ manual_key }}</code></div></div>
+    <form method="post" class="flex flex-wrap items-end gap-2">{% csrf_token %}<input type="hidden" name="action" value="enable">
+      <div><label class="label" for="otp">Code</label><input id="otp" name="otp_token" class="field" inputmode="numeric" autocomplete="one-time-code" required maxlength="8"></div>
+      <button class="btn btn-primary" type="submit">Turn on</button></form>
+  </div>
+{% endif %}
+</div>
+{% endblock %}

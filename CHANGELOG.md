@@ -1,0 +1,36 @@
+# Changelog
+
+All notable changes to this project are documented here. The format follows
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
+[Semantic Versioning](https://semver.org/).
+
+## [Unreleased]
+
+## [0.1.0] - 2026-11-21
+
+First public release.
+
+### Added
+- **Foundation:** Django 5.2 app with role-based access (Admin, Risk Manager, Control Owner, Auditor,
+  Viewer), deny-by-default views, business-unit scoping, an immutable hash-chained audit log, health
+  checks, JSON logging with secret scrubbing, and a Docker Compose stack (PostgreSQL 16, Redis, worker,
+  Caddy HTTPS) with generated secrets.
+- **ATT&CK:** idempotent import of Enterprise ATT&CK STIX 2.1 (download or offline file). Revoked and
+  deprecated objects are flagged with replacements and never deleted. Includes a technique browser,
+  technique and group pages, and the v18+ detection-strategy model.
+- **Risk register:** configurable matrix, inherent and residual heatmaps, score history, technique and
+  control linking with live coverage, suggested controls, one-click remap of revoked techniques, risk
+  acceptance with segregation of duties and expiry, review reminders, and CSV/Excel export safe against
+  formula injection.
+- **Controls & evidence:** control library, a 14-control starter set with indicative ATT&CK mitigation
+  mappings, validated private evidence uploads, expiry alerts, and testing records.
+- **Frameworks & compliance:** NIST SP 800-53 r5 (full text from OSCAL, with baselines), ISO/IEC
+  27001:2022 Annex A, SOC 2 TSC, HIPAA Security Rule, CIS Controls v8 and India DPDP Act 2023. Adds a
+  framework importer (JSON/YAML/CSV), derived requirement status, gap views, the cross-framework view,
+  and CTID ATT&CK↔NIST mappings.
+- **Coverage & reporting:** ATT&CK coverage matrix (risks, all, threat group or sector scope),
+  Navigator layer 4.5 export, executive dashboard, printable board report, and daily trend snapshots.
+- **API & hardening:** REST API v1 with hashed personal tokens, OpenAPI schema and self-hosted docs,
+  rate limiting, strict CSP and security headers, idle and absolute session timeouts, account lockout,
+  optional or role-enforced TOTP MFA with recovery codes, checksummed backup/restore, demo data
+  (`seed_demo`) and a 1,000-risk performance check (`perf_check`).

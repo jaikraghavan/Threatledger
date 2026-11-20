@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Recovery codes{% endblock %}
+{% block content %}
+<div class="card max-w-xl space-y-4 p-6"><h1 class="text-lg font-semibold">Two-factor authentication is on</h1>
+  <p class="text-sm text-slate-700">Save these recovery codes somewhere safe. Each works once if you lose your device. <strong>They won't be shown again.</strong></p>
+  <ul class="grid grid-cols-2 gap-2 font-mono text-sm">{% for c in codes %}<li class="rounded bg-slate-100 px-2 py-1">{{ c }}</li>{% endfor %}</ul>
+  <a class="btn btn-primary" href="{% url 'core:home' %}">Done</a></div>
+{% endblock %}

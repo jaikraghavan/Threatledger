@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}API documentation{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold">{{ info.title }}</h1>
+<p class="mt-1 max-w-3xl text-sm text-slate-600">{{ info.description }}</p>
+<div class="mt-4 flex flex-wrap gap-2"><a class="btn btn-secondary" href="{% url 'api:schema' %}">OpenAPI schema (YAML)</a><a class="btn btn-secondary" href="{% url 'api:schema' %}?format=json">OpenAPI schema (JSON)</a><a class="btn btn-primary" href="{% url 'accounts:tokens' %}">Manage API tokens</a></div>
+<section class="card mt-6 p-5 text-sm"><h2 class="mb-2 font-semibold">Quick start</h2>
+<pre class="overflow-x-auto rounded-md bg-ink-900 p-3 text-xs text-slate-100"><code>curl -H "Authorization: Bearer tl_xxxxxxxx_…" https://{{ request.get_host }}/api/v1/risks/
+curl -X PATCH -H "Authorization: Bearer …" -H "Content-Type: application/json" \
+     -d '{"status": "implemented"}' https://{{ request.get_host }}/api/v1/controls/CTL-MFA/</code></pre>
+<p class="mt-2 text-slate-600">Tokens act with your role's permissions; every write is audited. Rate limits apply per user.</p></section>
+<div class="card mt-6 overflow-x-auto"><table class="data-table"><thead><tr><th scope="col">Method</th><th scope="col">Path</th><th scope="col">Description</th><th scope="col">Query parameters</th></tr></thead>
+<tbody class="divide-y divide-slate-100">{% for op in operations %}<tr><td><span class="badge {% if op.method == 'GET' %}bg-blue-100 text-blue-800{% else %}bg-amber-100 text-amber-800{% endif %}">{{ op.method }}</span></td><td class="whitespace-nowrap font-mono text-xs">{{ op.path }}</td><td class="text-xs">{{ op.summary }}</td><td class="font-mono text-xs">{{ op.params|join:", " }}</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

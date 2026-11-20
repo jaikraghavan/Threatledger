@@ -43,7 +43,12 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "drf_spectacular",
     "django_htmx",
+    "axes",
+    "django_otp",
+    "django_otp.plugins.otp_totp",
+    "django_otp.plugins.otp_static",
     "django_q",
     "threatledger.core",
     "threatledger.org",
@@ -55,6 +60,7 @@ INSTALLED_APPS = [
     "threatledger.risks",
     "threatledger.frameworks",
     "threatledger.reporting",
+    "threatledger.api",
 ]
 
 MIDDLEWARE = [
@@ -65,10 +71,16 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django_otp.middleware.OTPMiddleware",
     "threatledger.core.middleware.UserContextMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
+    "threatledger.accounts.middleware.IdleTimeoutMiddleware",
+    "threatledger.accounts.middleware.MfaEnforcementMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "threatledger.core.middleware.SecurityHeadersMiddleware",
+    "csp.middleware.CSPMiddleware",
     "django_htmx.middleware.HtmxMiddleware",
+    "axes.middleware.AxesMiddleware",  # must be last (django-axes docs)
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -151,6 +163,10 @@ else:
 
 # ------------------------------------------------------------------ auth
 AUTH_USER_MODEL = "accounts.User"
+AUTHENTICATION_BACKENDS = [
+    "axes.backends.AxesStandaloneBackend",  # lockout check first
+    "django.contrib.auth.backends.ModelBackend",
+]
 LOGIN_URL = "accounts:login"
 LOGIN_REDIRECT_URL = "core:home"
 LOGOUT_REDIRECT_URL = "accounts:login"
@@ -170,7 +186,9 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # ------------------------------------------------------------------ sessions & cookies
-SESSION_COOKIE_AGE = env.int("SESSION_COOKIE_AGE", default=8 * 60 * 60)
+SESSION_COOKIE_AGE = env.int("SESSION_COOKIE_AGE", default=8 * 60 * 60)  # absolute lifetime
+# Sign out after this many seconds without a request (0 disables).
+SESSION_IDLE_TIMEOUT = env.int("SESSION_IDLE_TIMEOUT", default=30 * 60)
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_SAMESITE = "Lax"
@@ -209,8 +227,18 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
 # ------------------------------------------------------------------ REST framework
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
+        "threatledger.api.authentication.ApiTokenAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ],
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": env.str("API_THROTTLE_ANON", default="30/hour"),
+        "user": env.str("API_THROTTLE_USER", default="2000/hour"),
+    },
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_PERMISSION_CLASSES": [
         "threatledger.accounts.permissions.HasCapability",
     ],
@@ -218,6 +246,52 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 50,
 }
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "ThreatLedger API",
+    "DESCRIPTION": "Threat-informed GRC: risks, ATT&CK coverage, controls and compliance. "
+    "Authenticate with `Authorization: Bearer <token>` (create tokens under Account → API tokens).",
+    "VERSION": "1",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "SERVE_PERMISSIONS": ["rest_framework.permissions.IsAuthenticated"],
+    "COMPONENT_SPLIT_REQUEST": True,
+}
+
+# ------------------------------------------------------------------ security headers
+# Strict CSP: no inline scripts or styles anywhere (tests enforce this on templates).
+CONTENT_SECURITY_POLICY = {
+    "DIRECTIVES": {
+        "default-src": ["'self'"],
+        "script-src": ["'self'"],
+        "style-src": ["'self'"],
+        "img-src": ["'self'", "data:"],
+        "font-src": ["'self'"],
+        "connect-src": ["'self'"],
+        "object-src": ["'none'"],
+        "base-uri": ["'self'"],
+        "form-action": ["'self'"],
+        "frame-ancestors": ["'none'"],
+    }
+}
+PERMISSIONS_POLICY = "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+
+# ------------------------------------------------------------------ account lockout (django-axes)
+AXES_ENABLED = env.bool("AXES_ENABLED", default=True)
+AXES_FAILURE_LIMIT = env.int("AXES_FAILURE_LIMIT", default=5)
+AXES_COOLOFF_TIME = env.int("AXES_COOLOFF_MINUTES", default=15) / 60  # hours
+AXES_LOCKOUT_PARAMETERS = [["username", "ip_address"]]
+AXES_RESET_ON_SUCCESS = True
+AXES_LOCKOUT_TEMPLATE = "registration/locked_out.html"
+AXES_CLIENT_IP_CALLABLE = "threatledger.core.context.axes_client_ip"
+AXES_SENSITIVE_PARAMETERS = ["password", "otp_token", "token"]
+
+# ------------------------------------------------------------------ MFA (django-otp, TOTP)
+# Roles that must enrol in MFA before using the app (e.g. "admin,risk_manager"). Empty = optional.
+MFA_REQUIRED_ROLES = env.list("MFA_REQUIRED_ROLES", default=[])
+OTP_TOTP_ISSUER = env.str("OTP_TOTP_ISSUER", default="ThreatLedger")
+
+# ------------------------------------------------------------------ backups
+BACKUP_DIR = Path(env.str("BACKUP_DIR", default=str(BASE_DIR / "backups")))
 
 # ------------------------------------------------------------------ audit
 # "full" keeps the client IP (useful for investigations); "truncated" drops the last

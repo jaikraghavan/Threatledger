@@ -15,7 +15,6 @@ from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import UploadedFile
 from django.core.mail import send_mail
 from django.db import transaction
-from django.db.models import QuerySet
 from django.urls import reverse
 from django.utils import timezone
 
@@ -29,6 +28,7 @@ from threatledger.org.models import Organisation
 from .models import (
     Control,
     ControlMitigation,
+    ControlQuerySet,
     ControlStatus,
     ControlTechnique,
     ControlTest,
@@ -51,7 +51,7 @@ class ControlError(ValueError):
 
 
 # ----------------------------------------------------------------------------- access
-def visible_controls(user: Any) -> QuerySet[Control]:
+def visible_controls(user: Any) -> ControlQuerySet:
     org = current_organisation(user)
     if org is None or not can(user, Cap.VIEW_CONTROLS):
         return Control.objects.none()

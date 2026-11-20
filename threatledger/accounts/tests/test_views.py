@@ -76,4 +76,6 @@ def test_api_me_returns_role_and_capabilities(client_for):
 
 
 def test_api_me_rejects_anonymous(client):
-    assert client.get(reverse("api:me")).status_code == 403
+    response = client.get(reverse("api:me"))
+    assert response.status_code == 401
+    assert response["WWW-Authenticate"].startswith("Bearer")

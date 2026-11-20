@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}API tokens{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold">API tokens</h1>
+<p class="mb-4 max-w-2xl text-sm text-slate-600">Tokens let scripts and integrations use the <a class="text-brand-700 hover:underline" href="{% url 'api:docs' %}">REST API</a> with <em>your</em> permissions. Treat them like passwords. Only a hash is stored, so a lost token can't be recovered: revoke it and create a new one.</p>
+{% if new_token %}<div class="mb-4 rounded-md border border-green-200 bg-green-50 p-4 text-sm text-green-900" role="status"><p class="font-medium">Copy your new token now. It won't be shown again.</p><code class="mt-2 block break-all rounded bg-white px-2 py-1 font-mono text-xs">{{ new_token }}</code></div>{% endif %}
+<form method="post" class="card mb-6 flex flex-wrap items-end gap-3 p-4">{% csrf_token %}
+  <div><label class="label" for="t-name">Name</label><input id="t-name" name="name" class="field" maxlength="100" placeholder="CI pipeline" required></div>
+  <div><label class="label" for="t-days">Expires after</label><select id="t-days" name="days" class="field"><option value="30">30 days</option><option value="90" selected>90 days</option><option value="365">1 year</option></select></div>
+  <button class="btn btn-primary" type="submit">Create token</button></form>
+<div class="card overflow-x-auto"><table class="data-table"><thead><tr><th scope="col">Name</th><th scope="col">Token</th><th scope="col">Created</th><th scope="col">Last used</th><th scope="col">Expires</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead>
+<tbody class="divide-y divide-slate-100">{% for t in tokens %}<tr>
+  <td>{{ t.name }}</td><td class="font-mono text-xs">tl_{{ t.prefix }}_…</td><td class="text-xs">{{ t.created_at|date:"Y-m-d" }}</td><td class="text-xs">{{ t.last_used_at|date:"Y-m-d H:i"|default:"never" }}</td>
+  <td class="text-xs">{% if t.revoked_at %}<span class="badge bg-slate-200 text-slate-700">revoked</span>{% elif not t.is_active %}<span class="badge bg-red-100 text-red-800">expired</span>{% else %}{{ t.expires_at|date:"Y-m-d" }}{% endif %}</td>
+  <td>{% if t.is_active %}<form method="post">{% csrf_token %}<input type="hidden" name="revoke" value="{{ t.pk }}"><button class="text-xs text-slate-500 hover:text-red-700" type="submit">Revoke</button></form>{% endif %}</td>
+</tr>{% empty %}<tr><td colspan="6" class="py-6 text-center text-slate-500">No tokens yet.</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

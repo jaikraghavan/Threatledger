@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="htmx-config" content='{"includeIndicatorStyles": false, "allowEval": false, "allowScriptTags": false}'>
   <title>{% block title %}ThreatLedger{% endblock %} · ThreatLedger</title>
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
   <script src="{% static 'vendor/htmx-2.0.4.min.js' %}" defer></script>
@@ -29,6 +30,8 @@
       <div class="ml-auto flex items-center gap-4 text-sm">
         <span class="text-slate-600">{{ user }} <span class="badge bg-slate-100 text-slate-700">{{ tl_role }}</span></span>
         <a href="{% url 'accounts:password_change' %}" class="text-slate-600 hover:text-slate-900">Password</a>
+        <a href="{% url 'accounts:mfa_setup' %}" class="text-slate-600 hover:text-slate-900">Two-factor</a>
+        <a href="{% url 'accounts:tokens' %}" class="text-slate-600 hover:text-slate-900">API tokens</a>
         <form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}
           <button type="submit" class="text-slate-600 hover:text-slate-900">Sign out</button>
         </form>

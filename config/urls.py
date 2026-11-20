@@ -15,7 +15,7 @@ urlpatterns = [
     path("frameworks/", include("threatledger.frameworks.urls")),
     path("coverage/", include("threatledger.coverage.urls")),
     path("reports/", include("threatledger.reporting.urls")),
-    path("api/v1/", include("threatledger.core.api_urls")),
+    path("api/v1/", include("threatledger.api.urls")),
     path("admin/", admin.site.urls),
 ]
 

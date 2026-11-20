@@ -21,6 +21,7 @@ x-app: &app
     REDIS_HOST: redis
     REDIS_PASSWORD_FILE: /srv/secrets/redis_password
     MEDIA_ROOT: /srv/media
+    BACKUP_DIR: /srv/backups
   read_only: true
   tmpfs:
     - /tmp
@@ -82,6 +83,7 @@ services:
     volumes:
       - secrets:/srv/secrets:ro
       - media:/srv/media
+      - backups:/srv/backups
     depends_on:
       db:
         condition: service_healthy
@@ -122,6 +124,7 @@ services:
     networks: [frontend]
 
 volumes:
+  backups:
   secrets:
   pgdata:
   redisdata:

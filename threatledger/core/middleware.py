@@ -48,3 +48,21 @@ class UserContextMiddleware:
             finally:
                 reset_context(token)
         return self.get_response(request)
+
+
+class SecurityHeadersMiddleware:
+    """Headers not covered by Django's SecurityMiddleware or django-csp."""
+
+    def __init__(self, get_response: Callable[[HttpRequest], HttpResponse]) -> None:
+        self.get_response = get_response
+
+    def __call__(self, request: HttpRequest) -> HttpResponse:
+        from django.conf import settings
+
+        response = self.get_response(request)
+        response.setdefault("Permissions-Policy", settings.PERMISSIONS_POLICY)
+        response.setdefault("Cross-Origin-Resource-Policy", "same-origin")
+        if getattr(request, "user", None) is not None and request.user.is_authenticated:
+            # Authenticated pages hold sensitive data: never cache them in shared caches.
+            response.setdefault("Cache-Control", "private, no-store")
+        return response

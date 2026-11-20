@@ -5,7 +5,7 @@ import os
 from django.core.management.utils import get_random_secret_key
 
 from .base import *  # noqa: F403
-from .base import BASE_DIR, env
+from .base import BASE_DIR, REST_FRAMEWORK, env
 
 DEBUG = False
 SECRET_KEY = get_random_secret_key()
@@ -36,3 +36,9 @@ STORAGES = {
     "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
 }
 LOGGING = {"version": 1, "disable_existing_loggers": False}
+
+REST_FRAMEWORK = {
+    **REST_FRAMEWORK,
+    "DEFAULT_THROTTLE_RATES": {"anon": "1000/minute", "user": "10000/minute"},
+}
+BACKUP_DIR = BASE_DIR / ".test-backups"

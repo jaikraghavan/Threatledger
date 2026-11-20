@@ -134,17 +134,28 @@ class AccessControlMixin:
         return super().dispatch(request, *args, **kwargs)  # type: ignore[misc]
 
 
+SAFE_METHODS = ("GET", "HEAD", "OPTIONS")
+
+
+def _api_rule(request: Any, view: Any) -> Access | None:
+    """``tl_access`` for reads; ``tl_write_access`` (if set) for unsafe methods."""
+    if request.method not in SAFE_METHODS and getattr(view, "tl_write_access", None) is not None:
+        return view.tl_write_access
+    return getattr(view, "tl_access", None)
+
+
 class HasCapability(BasePermission):
-    """DRF default permission class. Views declare ``tl_access`` like template views."""
+    """DRF default permission class. Views declare ``tl_access`` (reads) and optionally
+    ``tl_write_access`` (POST/PUT/PATCH/DELETE), just like template views."""
 
     def has_permission(self, request: Any, view: Any) -> bool:
-        rule = getattr(view, "tl_access", None)
+        rule = _api_rule(request, view)
         if rule is None:
             return False
         return check_access(request.user, rule)
 
     def has_object_permission(self, request: Any, view: Any, obj: Any) -> bool:
-        rule = getattr(view, "tl_access", None)
+        rule = _api_rule(request, view)
         if isinstance(rule, Cap):
             return can(request.user, rule, obj)
         return rule in (PUBLIC, AUTHENTICATED)
