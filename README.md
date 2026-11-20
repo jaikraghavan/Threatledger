@@ -42,6 +42,17 @@ Re-importing is safe and idempotent. Techniques MITRE revokes are kept and flagg
 their replacement, so your mappings never break. Importing an older version over a newer one is refused
 unless you pass `--allow-downgrade`.
 
+## Load the starter control library
+
+```sh
+docker compose exec web python manage.py seed_controls
+```
+
+This loads 14 common controls (MFA, EDR, patching, PAM, backups, SIEM, segmentation, email security,
+awareness training, IR plan, vendor risk, hardening, DLP, password policy). Each has indicative ATT&CK
+mitigation mappings and starts as *not implemented*. Set each control's real status, and coverage
+updates everywhere. Admins and risk managers can also load the library from **Controls** in the app.
+
 ## Local development
 
 ```sh

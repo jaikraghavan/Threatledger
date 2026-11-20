@@ -21,5 +21,6 @@ EMAIL_BACKEND = env.str("EMAIL_BACKEND", default="django.core.mail.backends.cons
 WHITENOISE_AUTOREFRESH = True
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "evidence": STORAGES["evidence"],  # noqa: F405
     "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
 }

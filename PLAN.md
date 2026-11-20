@@ -317,6 +317,17 @@ _Implementation notes (Phase 3, as built):_
 - Expiry alerts (daily job: expiring in 30/7/0 days), control test records, "test overdue" flags
 - **Tests:** upload validation (bad type, spoofed type, oversized, path traversal names), access control on download, expiry job
 
+_Implementation notes (Phase 4, as built):_
+- Starter library (`data/controls/starter.yaml`, `manage.py seed_controls` or the in-app button): 14 controls loaded as
+  *not implemented* with indicative M-id mappings verified against ATT&CK v20.1 (CTL-IR has no ATT&CK mapping).
+- Control owners edit only status/effectiveness/description of their own controls; design fields, mappings and
+  archiving are risk-manager/admin. Evidence is archived (never deleted) to preserve the audit trail.
+- Evidence: extension allowlist + magic-byte/structure sniffing (OOXML must be a real package without `vbaProject.bin`;
+  text must be UTF-8 and not HTML/SVG/XML); random extension-less storage names in a private storage
+  (`EVIDENCE_ROOT`, default `MEDIA_ROOT/evidence`); downloads are permission-checked, audited attachments with
+  `nosniff` + `CSP: sandbox`. Expiry alerts at 30 days, 7 days and expiry, once each (daily `controls-daily` job).
+- Testing records update `last_tested_at`/`last_test_result` (newest test wins); `test_frequency_days` drives "overdue".
+
 ### Phase 5 — Frameworks & compliance
 - Framework importer: `import_framework file.{csv,json,yaml}` with a documented schema + validation report (dry-run mode)
 - Seeds (all flagged **"indicative — verify against official text"**): NIST 800-53 r5, ISO 27001:2022 Annex A, SOC 2 TSC, HIPAA Security Rule, CIS Controls v8, India DPDP Act 2023 — *content depth depends on licensing, Q1*

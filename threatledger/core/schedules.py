@@ -7,8 +7,9 @@ from typing import Any
 from django.db import DatabaseError
 
 JOBS = [
-    # (name, function, schedule type)
+    # (name, function, schedule type "D" = daily)
     ("risk-register-daily", "threatledger.risks.tasks.daily", "D"),
+    ("controls-daily", "threatledger.controls.tasks.daily", "D"),
 ]
 
 

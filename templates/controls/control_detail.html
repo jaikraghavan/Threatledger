@@ -1,0 +1,64 @@
+{% extends "base.html" %}{% load tl %}
+{% block title %}{{ control.ref }} {{ control.name }}{% endblock %}
+{% block content %}
+<nav class="mb-3 text-sm text-slate-500" aria-label="Breadcrumb"><a class="hover:underline" href="{% url 'controls:list' %}">Controls</a></nav>
+{% if control.archived_at %}<div class="mb-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900" role="status">Archived {{ control.archived_at|date:"Y-m-d" }}: excluded from coverage and suggestions.</div>{% endif %}
+<div class="flex flex-wrap items-start justify-between gap-4">
+  <div><div class="font-mono text-sm text-slate-500">{{ control.ref }} · {{ control.get_control_type_display }}</div><h1 class="text-2xl font-semibold">{{ control.name }}</h1></div>
+  <div class="flex flex-wrap gap-2">
+    {% if can_edit %}<a class="btn btn-primary" href="{% url 'controls:edit' control.ref %}">{% if can_edit_fully %}Edit{% else %}Update status{% endif %}</a>{% endif %}
+    {% if user|can:"edit_any_control" %}<form method="post" action="{% url 'controls:archive' control.ref %}">{% csrf_token %}{% if control.archived_at %}<input type="hidden" name="restore" value="1">{% endif %}<button class="btn btn-secondary" type="submit">{% if control.archived_at %}Restore{% else %}Archive{% endif %}</button></form>{% endif %}
+  </div>
+</div>
+<div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+  <div class="card p-4"><div class="text-xs uppercase tracking-wide text-slate-500">Status</div><div class="mt-1"><span class="badge status-{{ control.status }}">{{ control.get_status_display }}</span></div></div>
+  <div class="card p-4"><div class="text-xs uppercase tracking-wide text-slate-500">Effectiveness</div><div class="mt-1 font-medium">{% if control.effectiveness %}{{ control.effectiveness }}/5{% else %}Not assessed{% endif %}</div></div>
+  <div class="card p-4"><div class="text-xs uppercase tracking-wide text-slate-500">Owner</div><div class="mt-1 font-medium">{{ control.owner|default:"Unassigned" }}</div></div>
+  <div class="card p-4"><div class="text-xs uppercase tracking-wide text-slate-500">Last tested</div><div class="mt-1 font-medium {% if control.test_overdue %}text-red-700{% endif %}">{% if control.last_tested_at %}{{ control.last_tested_at|date:"Y-m-d" }} · {{ control.get_last_test_result_display }}{% else %}Never{% endif %}</div>
+    <div class="text-xs text-slate-500">{% if control.next_test_due %}next due {{ control.next_test_due|date:"Y-m-d" }}{% else %}test every {{ control.test_frequency_days }} days{% endif %}{% if control.test_overdue %} · overdue{% endif %}</div></div>
+</div>
+<div class="mt-6 grid gap-6 lg:grid-cols-3">
+  <div class="space-y-6 lg:col-span-2">
+    {% if control.description %}<section class="card p-5"><h2 class="mb-2 font-semibold">Description</h2><p class="whitespace-pre-line text-sm text-slate-700">{{ control.description }}</p></section>{% endif %}
+    {% include "controls/_mappings.html" %}
+    <section class="card p-5" aria-labelledby="ev-h"><h2 id="ev-h" class="mb-3 font-semibold">Evidence ({{ evidence|length }})</h2>
+      {% if can_view_evidence %}
+      <ul class="divide-y divide-slate-100 text-sm">{% for e in evidence %}<li class="flex flex-wrap items-start justify-between gap-3 py-2">
+        <div>{% if e.kind == "file" %}<a class="font-medium text-brand-700 hover:underline" href="{% url 'controls:evidence_download' e.pk %}">{{ e.title }}</a> <span class="text-xs text-slate-500">{{ e.original_filename }} · {{ e.size|filesizeformat }}</span>
+          {% else %}<a class="font-medium text-brand-700 hover:underline" href="{{ e.url }}" target="_blank" rel="noopener noreferrer nofollow">{{ e.title }} ↗</a>{% endif %}
+          <div class="text-xs text-slate-500">{{ e.uploaded_by }} · {{ e.uploaded_at|date:"Y-m-d" }}{% if e.sha256 %} · sha256 {{ e.sha256|slice:":12" }}…{% endif %}</div>
+          {% if e.description %}<div class="text-xs text-slate-600">{{ e.description }}</div>{% endif %}</div>
+        <div class="flex items-center gap-2">{% if e.valid_until %}<span class="badge {% if e.is_expired %}bg-red-100 text-red-800{% elif e|expires_soon %}bg-amber-100 text-amber-800{% else %}bg-slate-100 text-slate-700{% endif %}">{% if e.is_expired %}expired{% else %}valid to{% endif %} {{ e.valid_until|date:"Y-m-d" }}</span>{% endif %}
+          {% if can_upload %}<form method="post" action="{% url 'controls:evidence_archive' e.pk %}">{% csrf_token %}<button class="text-xs text-slate-500 hover:text-red-700" type="submit">Archive</button></form>{% endif %}</div>
+      </li>{% empty %}<li class="py-2 text-slate-500">No evidence yet.</li>{% endfor %}</ul>
+      {% else %}<p class="text-sm text-slate-500">Evidence is visible to auditors, control owners and risk managers.</p>{% endif %}
+      {% if can_upload %}<div class="mt-4 grid gap-4 md:grid-cols-2">
+        <form method="post" enctype="multipart/form-data" action="{% url 'controls:evidence_add' control.ref %}" class="space-y-3 rounded-md border border-slate-200 p-4">{% csrf_token %}
+          <h3 class="text-sm font-semibold">Upload file</h3><p class="text-xs text-slate-500">PDF, images, text/CSV/JSON, Word/Excel/PowerPoint (no macros). Max {{ max_upload_mb }} MB.</p>
+          {% include "partials/_field.html" with field=file_form.file %}{% include "partials/_field.html" with field=file_form.title %}{% include "partials/_field.html" with field=file_form.valid_until %}{% include "partials/_field.html" with field=file_form.description %}
+          <button class="btn btn-primary" type="submit">Upload</button></form>
+        <form method="post" action="{% url 'controls:evidence_add' control.ref %}" class="space-y-3 rounded-md border border-slate-200 p-4">{% csrf_token %}<input type="hidden" name="kind" value="link">
+          <h3 class="text-sm font-semibold">Add link</h3><p class="text-xs text-slate-500">e.g. a ticket, wiki page or dashboard. Links are stored, never fetched.</p>
+          {% include "partials/_field.html" with field=link_form.title %}{% include "partials/_field.html" with field=link_form.url %}{% include "partials/_field.html" with field=link_form.valid_until %}
+          <button class="btn btn-primary" type="submit">Add link</button></form>
+      </div>{% endif %}
+    </section>
+  </div>
+  <aside class="space-y-6">
+    <section class="card p-5"><h2 class="mb-3 font-semibold">Linked risks ({{ risks|length }})</h2>
+      <ul class="space-y-2 text-sm">{% for r in risks %}<li><a class="font-mono text-xs text-brand-700 hover:underline" href="{% url 'risks:detail' r.ref %}">{{ r.ref }}</a> {{ r.title }}</li>{% empty %}<li class="text-slate-500">Not linked to any risk.</li>{% endfor %}</ul></section>
+    <section class="card p-5"><h2 class="mb-3 font-semibold">Testing</h2>
+      <ol class="space-y-3 text-sm">{% for t in tests %}<li class="border-l-2 {% if t.result == 'pass' %}border-green-400{% elif t.result == 'fail' %}border-red-400{% else %}border-amber-400{% endif %} pl-3">
+        <div class="font-medium">{{ t.tested_on|date:"Y-m-d" }} · {{ t.get_result_display }}</div><div class="text-xs text-slate-500">{{ t.get_method_display }} · {{ t.tester }}</div>
+        {% if t.notes %}<p class="mt-1 whitespace-pre-line text-xs text-slate-600">{{ t.notes }}</p>{% endif %}
+        {% with evs=t.evidence.all %}{% if evs %}<div class="mt-1 text-xs text-slate-500">Evidence: {% for e in evs %}{{ e.title }}{% if not forloop.last %}, {% endif %}{% endfor %}</div>{% endif %}{% endwith %}</li>
+      {% empty %}<li class="text-slate-500">No tests recorded.</li>{% endfor %}</ol>
+      {% if can_edit %}<details class="mt-4"><summary class="cursor-pointer text-sm font-medium text-brand-700">Record a test…</summary>
+        <form method="post" action="{% url 'controls:test_record' control.ref %}" class="mt-3 space-y-3">{% csrf_token %}
+          {% include "partials/_field.html" with field=test_form.tested_on %}{% include "partials/_field.html" with field=test_form.method %}{% include "partials/_field.html" with field=test_form.result %}{% include "partials/_field.html" with field=test_form.notes %}
+          {% if test_form.evidence.field.queryset.exists %}<fieldset><legend class="label">Evidence used</legend>{{ test_form.evidence }}</fieldset>{% endif %}
+          <button class="btn btn-primary" type="submit">Save test</button></form></details>{% endif %}
+    </section>
+  </aside>
+</div>
+{% endblock %}

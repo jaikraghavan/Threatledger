@@ -7,40 +7,12 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
-from threatledger.accounts.models import User
-from threatledger.accounts.permissions import business_unit_scope, current_organisation
-from threatledger.org.models import BusinessUnit
+from threatledger.accounts.permissions import current_organisation
+from threatledger.core.forms import DATE, org_users, scoped_business_units
+from threatledger.core.forms import style_form as _style
 
 from . import services
 from .models import SCORE_FIELDS, Asset, Risk, RiskMatrix, RiskStatus
-
-DATE = forms.DateInput(attrs={"type": "date", "class": "field"})
-
-
-def _style(form: forms.BaseForm) -> None:
-    for name, field in form.fields.items():
-        widget = field.widget
-        if isinstance(widget, forms.CheckboxInput):
-            widget.attrs.setdefault("class", "rounded border-slate-300")
-        elif isinstance(widget, forms.CheckboxSelectMultiple):
-            continue
-        else:
-            widget.attrs.setdefault("class", "field")
-        widget.attrs.setdefault("id", f"id_{name}")
-
-
-def org_users(user: Any) -> Any:
-    org = current_organisation(user)
-    return User.objects.filter(is_active=True, memberships__organisation=org).order_by(
-        "first_name", "username"
-    )
-
-
-def scoped_business_units(user: Any) -> Any:
-    org = current_organisation(user)
-    qs = BusinessUnit.objects.filter(organisation=org)
-    scope = business_unit_scope(user)
-    return qs.filter(pk__in=scope) if scope is not None else qs
 
 
 class RiskForm(forms.ModelForm):

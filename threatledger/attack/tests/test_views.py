@@ -223,7 +223,7 @@ def test_nav_shows_attack_links_by_role(client_for):
     ("url", "limit"),
     [
         (LIST, 12),
-        (reverse("attack:technique_detail", args=["T1059.001"]), 15),
+        (reverse("attack:technique_detail", args=["T1059.001"]), 25),
         (reverse("attack:group_list"), 7),
         (reverse("attack:group_detail", args=["G0001"]), 10),
     ],

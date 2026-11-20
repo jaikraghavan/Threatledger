@@ -919,6 +919,7 @@ dependencies = [
     { name = "gunicorn" },
     { name = "openpyxl" },
     { name = "psycopg", extra = ["binary"] },
+    { name = "pyyaml" },
     { name = "redis" },
     { name = "whitenoise" },
 ]
@@ -948,6 +949,7 @@ requires-dist = [
     { name = "gunicorn", specifier = ">=23.0" },
     { name = "openpyxl", specifier = ">=3.1" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.2" },
+    { name = "pyyaml", specifier = ">=6.0" },
     { name = "redis", specifier = ">=5.0" },
     { name = "whitenoise", specifier = ">=6.7" },
 ]

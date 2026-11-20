@@ -189,10 +189,20 @@ STATIC_ROOT = Path(env.str("STATIC_ROOT", default=str(BASE_DIR / "staticfiles"))
 STATICFILES_DIRS = [BASE_DIR / "static"]
 # Evidence lives here. It is NOT served by whitenoise/Caddy: only via permission-checked views.
 MEDIA_ROOT = Path(env.str("MEDIA_ROOT", default=str(BASE_DIR / "media")))
+EVIDENCE_ROOT = Path(env.str("EVIDENCE_ROOT", default=str(MEDIA_ROOT / "evidence")))
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    # Private: no base_url, never served directly; downloads go through a permission check.
+    "evidence": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+        "OPTIONS": {"location": EVIDENCE_ROOT, "base_url": None, "file_permissions_mode": 0o640},
+    },
     "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
 }
+EVIDENCE_MAX_BYTES = env.int("EVIDENCE_MAX_BYTES", default=25 * 1024 * 1024)
+# Uploads above this are streamed to a temp file instead of held in memory.
+FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
 
 # ------------------------------------------------------------------ REST framework
 REST_FRAMEWORK = {

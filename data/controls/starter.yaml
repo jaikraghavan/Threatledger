@@ -1,0 +1,135 @@
+# ThreatLedger starter control library.
+#
+# Loaded by `manage.py seed_controls` (or "Load starter controls" in the app). Idempotent:
+# existing controls (matched by ref) are never overwritten.
+#
+# ATT&CK mappings are INDICATIVE — a sensible starting point, not an assessment. Review and
+# tailor them to how each control is actually deployed in your environment.
+# Mitigation IDs verified against MITRE ATT&CK Enterprise v20.1.
+
+controls:
+  - ref: CTL-MFA
+    name: Multi-factor authentication
+    type: preventive
+    description: >-
+      MFA enforced for all remote access, cloud/SaaS applications, email and privileged
+      accounts, using phishing-resistant factors (FIDO2/passkeys) where possible.
+    mitigations: [M1032]
+    techniques: [T1078, T1110, T1133]
+
+  - ref: CTL-EDR
+    name: Endpoint detection & response
+    type: detective
+    description: >-
+      EDR agent deployed on all workstations and servers with behavioural blocking enabled,
+      alerts triaged 24×7 and tamper protection on.
+    mitigations: [M1040, M1049, M1038]
+    techniques: [T1059, T1003, T1486]
+
+  - ref: CTL-PATCH
+    name: Vulnerability & patch management
+    type: preventive
+    description: >-
+      Authenticated vulnerability scanning at least weekly; critical/internet-facing
+      vulnerabilities remediated within 14 days, others within 30 days.
+    mitigations: [M1051, M1016]
+    techniques: [T1190]
+
+  - ref: CTL-PAM
+    name: Privileged access management
+    type: preventive
+    description: >-
+      Privileged accounts vaulted, separated from day-to-day accounts, just-in-time
+      elevation, session recording, and quarterly access reviews.
+    mitigations: [M1026, M1018]
+    techniques: []
+
+  - ref: CTL-BACKUP
+    name: Immutable backups & restore testing
+    type: corrective
+    description: >-
+      3-2-1 backups with at least one offline/immutable copy; restores tested quarterly
+      against documented RTO/RPO.
+    mitigations: [M1053]
+    techniques: [T1486]
+
+  - ref: CTL-SIEM
+    name: Centralised logging & SIEM monitoring
+    type: detective
+    description: >-
+      Security-relevant logs (identity, endpoint, network, cloud) forwarded to a SIEM with
+      12-month retention, use-case driven detections and an on-call alert process.
+    mitigations: [M1047]
+    techniques: []
+
+  - ref: CTL-SEGMENT
+    name: Network segmentation
+    type: preventive
+    description: >-
+      Production, user, management and OT networks segmented with default-deny rules
+      between zones; egress filtering at the perimeter.
+    mitigations: [M1030, M1037, M1035]
+    techniques: []
+
+  - ref: CTL-EMAIL
+    name: Email security gateway
+    type: preventive
+    description: >-
+      Inbound email filtering with attachment sandboxing, URL rewriting, SPF/DKIM/DMARC
+      enforcement and external-sender banners.
+    mitigations: [M1049, M1031, M1054, M1021]
+    techniques: [T1566]
+
+  - ref: CTL-AWARE
+    name: Security awareness training
+    type: preventive
+    description: >-
+      Annual mandatory training plus quarterly phishing simulations; targeted refreshers
+      for repeat clickers and high-risk roles.
+    mitigations: [M1017]
+    techniques: [T1566]
+
+  - ref: CTL-IR
+    name: Incident response plan & exercises
+    type: corrective
+    description: >-
+      Documented, approved incident response plan with roles, playbooks (ransomware, BEC,
+      data breach) and regulatory notification steps; tabletop exercise at least annually.
+    mitigations: []
+    techniques: []
+
+  - ref: CTL-VENDOR
+    name: Third-party / vendor risk management
+    type: preventive
+    description: >-
+      Security due diligence before onboarding suppliers, contractual security and breach
+      notification clauses, tiered reassessment, and least-privilege third-party access.
+    mitigations: []
+    techniques: [T1195, T1199]
+
+  - ref: CTL-HARDEN
+    name: Secure configuration & hardening
+    type: preventive
+    description: >-
+      CIS-benchmark based baselines for operating systems and cloud services, application
+      allow-listing, macros blocked from the internet, unused features removed.
+    mitigations: [M1042, M1028, M1038, M1050]
+    techniques: []
+
+  - ref: CTL-DLP
+    name: Data loss prevention
+    type: detective
+    description: >-
+      DLP policies on email, web and endpoint for classified and personal data, with
+      encryption of sensitive data at rest and in transit.
+    mitigations: [M1057, M1041]
+    techniques: [T1048, T1567]
+
+  - ref: CTL-PASSWORD
+    name: Password policy & credential hygiene
+    type: preventive
+    description: >-
+      Minimum 14-character passphrases, banned-password list, breached-credential screening,
+      no forced periodic rotation (NIST SP 800-63B), unique local admin passwords (LAPS).
+    mitigations: [M1027, M1036]
+    techniques: [T1110]

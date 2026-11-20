@@ -179,7 +179,32 @@ class TechniqueDetailView(AccessControlMixin, DetailView):
         )
         ctx["replacement"] = t.replacement() if t.is_revoked else None
         ctx["replaces"] = t.replaces.order_by("attack_id")
+        ctx.update(_org_context(self.request.user, t))
         return ctx
+
+
+def _org_context(user: Any, technique: Technique) -> dict[str, Any]:
+    """This organisation's coverage of the technique and the risks that cite it."""
+    from threatledger.accounts.permissions import can, current_organisation
+    from threatledger.accounts.roles import Cap
+    from threatledger.controls.models import Control
+    from threatledger.coverage.selectors import coverage_for
+    from threatledger.risks.services import visible_risks
+
+    org = current_organisation(user)
+    if org is None:
+        return {}
+    cov = coverage_for([technique.pk], org.pk)[technique.pk]
+    ids = set(cov.control_ids)
+    if technique.parent_id:
+        ids |= coverage_for([technique.parent_id], org.pk)[technique.parent_id].control_ids
+    return {
+        "org_coverage": cov,
+        "org_controls": Control.objects.filter(pk__in=ids).order_by("ref")
+        if can(user, Cap.VIEW_CONTROLS)
+        else [],
+        "org_risks": visible_risks(user).live().filter(techniques=technique).order_by("ref"),
+    }
 
 
 class GroupListView(AccessControlMixin, _HtmxPartialMixin, ListView):

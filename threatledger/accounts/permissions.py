@@ -18,6 +18,7 @@ from typing import Any, Final
 from django.contrib.auth.views import redirect_to_login
 from django.core.exceptions import ImproperlyConfigured, PermissionDenied
 from django.http import HttpRequest, HttpResponse
+from django.http.response import HttpResponseBase
 from rest_framework.permissions import BasePermission
 
 from .roles import ROLE_CAPABILITIES, Cap, Role
@@ -102,12 +103,14 @@ def _deny(request: HttpRequest, rule: Access) -> HttpResponse:
     raise PermissionDenied
 
 
-def access(rule: Access) -> Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]:
+def access(
+    rule: Access,
+) -> Callable[[Callable[..., HttpResponseBase]], Callable[..., HttpResponseBase]]:
     """Decorator for function views."""
 
-    def decorator(view: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
+    def decorator(view: Callable[..., HttpResponseBase]) -> Callable[..., HttpResponseBase]:
         @functools.wraps(view)
-        def wrapped(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        def wrapped(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponseBase:
             if not check_access(request.user, rule):
                 return _deny(request, rule)
             return view(request, *args, **kwargs)

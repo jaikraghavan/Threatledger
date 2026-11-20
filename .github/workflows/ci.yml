@@ -147,6 +147,10 @@ jobs:
               c.execute(\"select count(*) from pg_indexes where indexname like 'attack_%_trgm'\")
               assert c.fetchone()[0] == 3, 'trigram indexes missing'
           print('ATT&CK smoke OK')"
+          docker compose exec -T web python manage.py seed --allow-production
+          docker compose exec -T web python manage.py seed_controls | tee controls.txt
+          grep -q "Created 14" controls.txt
+          if grep -q "not found" controls.txt; then echo "starter mappings reference missing ATT&CK IDs"; exit 1; fi
           docker compose exec -T web python manage.py audit_verify
       - name: Logs on failure
         if: failure()

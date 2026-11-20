@@ -1,0 +1,4 @@
+{% if q|length >= 2 %}<ul class="divide-y divide-slate-100 rounded-md border border-slate-200 text-sm" role="listbox" aria-label="Matches">
+{% for r in results %}<li class="flex items-center justify-between gap-3 px-3 py-2"><div><span class="font-mono text-xs text-slate-500">{{ r.attack_id }}</span> {% if r.parent %}<span class="text-slate-500">{{ r.parent.name }}:</span> {% endif %}{{ r.name }}</div>
+  <button class="btn btn-secondary px-2 py-1 text-xs" hx-post="{% url 'controls:mapping_add' control.ref %}" hx-vals='{"kind": "{{ kind }}", "id": "{{ r.pk }}"}' hx-target="#control-mappings" hx-swap="outerHTML">Add</button></li>
+{% empty %}<li class="px-3 py-2 text-slate-500">No matches.</li>{% endfor %}</ul>{% endif %}

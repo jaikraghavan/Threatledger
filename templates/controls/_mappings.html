@@ -1,0 +1,22 @@
+<section id="control-mappings" class="card p-5" aria-labelledby="map-h">
+  {% if mapping_error %}<div class="mb-3 rounded-md border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-800" role="alert">{{ mapping_error }}</div>{% endif %}
+  <h2 id="map-h" class="font-semibold">ATT&amp;CK mappings</h2>
+  <p class="mb-4 text-xs text-slate-500">This control covers a technique if mapped directly, or if it implements an ATT&amp;CK mitigation for it. Seeded mappings are indicative; review them.</p>
+  <div class="grid gap-6 md:grid-cols-2">
+    <div><h3 class="mb-2 text-sm font-semibold">Mitigations implemented ({{ mitigation_links|length }})</h3>
+      <ul class="space-y-1 text-sm">{% for l in mitigation_links %}<li class="flex items-center justify-between gap-2"><span><span class="font-mono text-xs text-slate-500">{{ l.mitigation.attack_id }}</span> {{ l.mitigation.name }}{% if l.source == "seed" %} <span class="badge bg-slate-100 text-slate-600">indicative</span>{% endif %}</span>
+        {% if can_map %}<button class="text-xs text-slate-500 hover:text-red-700" hx-post="{% url 'controls:mapping_remove' control.ref 'mitigation' l.pk %}" hx-target="#control-mappings" hx-swap="outerHTML" aria-label="Remove {{ l.mitigation.attack_id }}">Remove</button>{% endif %}</li>
+      {% empty %}<li class="text-slate-500">None.</li>{% endfor %}</ul>
+      {% if can_map %}<input type="search" name="q" class="field mt-2" placeholder="Add mitigation: M1032, backup…" aria-label="Search mitigations" autocomplete="off"
+        hx-get="{% url 'controls:mapping_search' control.ref %}?kind=mitigation" hx-trigger="input changed delay:250ms" hx-target="#mit-results"><div id="mit-results" class="mt-2"></div>{% endif %}</div>
+    <div><h3 class="mb-2 text-sm font-semibold">Techniques mapped directly ({{ technique_links|length }})</h3>
+      <ul class="space-y-1 text-sm">{% for l in technique_links %}<li class="flex items-center justify-between gap-2"><span><a class="font-mono text-xs text-brand-700 hover:underline" href="{% url 'attack:technique_detail' l.technique.attack_id %}">{{ l.technique.attack_id }}</a> {{ l.technique.name }}{% if l.technique.is_revoked %} <span class="badge bg-red-100 text-red-800">revoked</span>{% endif %}</span>
+        {% if can_map %}<button class="text-xs text-slate-500 hover:text-red-700" hx-post="{% url 'controls:mapping_remove' control.ref 'technique' l.pk %}" hx-target="#control-mappings" hx-swap="outerHTML" aria-label="Remove {{ l.technique.attack_id }}">Remove</button>{% endif %}</li>
+      {% empty %}<li class="text-slate-500">None.</li>{% endfor %}</ul>
+      {% if can_map %}<input type="search" name="q" class="field mt-2" placeholder="Add technique: T1566, phishing…" aria-label="Search techniques" autocomplete="off"
+        hx-get="{% url 'controls:mapping_search' control.ref %}?kind=technique" hx-trigger="input changed delay:250ms" hx-target="#tech-results"><div id="tech-results" class="mt-2"></div>{% endif %}</div>
+  </div>
+  <details class="mt-5"><summary class="cursor-pointer text-sm font-medium">Techniques this control addresses ({{ covered|length }})</summary>
+    <ul class="mt-2 max-h-80 space-y-1 overflow-y-auto text-xs">{% for c in covered %}<li><a class="font-mono text-brand-700 hover:underline" href="{% url 'attack:technique_detail' c.technique.attack_id %}">{{ c.technique.attack_id }}</a> {{ c.technique.name }}
+      <span class="text-slate-500">— {% if c.direct %}direct{% if c.via %}, {% endif %}{% endif %}{% for m in c.via %}via {{ m.attack_id }}{% if not forloop.last %}, {% endif %}{% endfor %}</span></li>{% empty %}<li class="text-slate-500">No techniques yet: add mappings above.</li>{% endfor %}</ul></details>
+</section>

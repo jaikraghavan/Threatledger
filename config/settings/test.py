@@ -32,6 +32,7 @@ EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 MEDIA_ROOT = BASE_DIR / ".test-media"
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.InMemoryStorage"},
+    "evidence": {"BACKEND": "django.core.files.storage.InMemoryStorage"},
     "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
 }
 LOGGING = {"version": 1, "disable_existing_loggers": False}

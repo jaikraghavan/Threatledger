@@ -52,6 +52,10 @@ The design lives in [PLAN.md](PLAN.md). Read it before changing models or scorin
   Score changes go through `update_risk()` which writes `RiskScoreHistory`. Exports must use `exports.neutralise()`.
 - **Coverage** (`threatledger/coverage`): `engine.py` is pure; `selectors.coverage_for(technique_ids, org_id)` loads
   the graph (direct control↔technique + control↔mitigation↔technique). Use it everywhere coverage is shown.
+- **Controls** (`threatledger/controls`): permissions via `services.can_edit/can_edit_fully/can_upload/can_map`;
+  owners are limited to `services.OWNER_FIELDS`. Evidence uploads must go through `uploads.validate_upload()` and
+  `services.add_file_evidence()`; never serve evidence from MEDIA_URL. Download only via `controls:evidence_download`.
+  Recurring jobs are registered in `threatledger/core/schedules.py` (`JOBS`).
 - Test helpers for risks/controls/techniques: `threatledger/risks/tests/helpers.py`.
 - Test bundles: `threatledger/attack/tests/bundles.py` (`bundle_v1`/`bundle_v2`). Use `test_importer._load()` to load one in a fixture.
 - Django admin is **superuser-only** break-glass. Everyday admin features belong in the app, behind `can()`.

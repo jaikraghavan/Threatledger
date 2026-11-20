@@ -44,6 +44,6 @@
 
   {% if uncovered_mitigations %}<div class="mt-5"><h3 class="text-sm font-semibold">ATT&amp;CK mitigations with no control yet</h3>
     <ul class="mt-2 space-y-1 text-sm">{% for m, techs in uncovered_mitigations %}<li><span class="font-mono text-xs text-slate-500">{{ m.attack_id }}</span> {{ m.name }} <span class="text-xs text-slate-500">· for {% for t in techs %}{{ t.attack_id }}{% if not forloop.last %}, {% endif %}{% endfor %}</span></li>{% endfor %}</ul>
-    <p class="mt-2 text-xs text-slate-500">Create a control that implements one of these (control library arrives in Phase 4).</p></div>{% endif %}
+    <p class="mt-2 text-xs text-slate-500">Implement one of these by mapping it to a control in the <a class="text-brand-700 hover:underline" href="{% url 'controls:list' %}">control library</a>.</p></div>{% endif %}
 </section>
 </div>

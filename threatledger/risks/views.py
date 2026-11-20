@@ -105,7 +105,7 @@ class RiskListView(AccessControlMixin, ListView):
 
 
 def _bus(user: Any) -> Any:
-    from .forms import scoped_business_units
+    from threatledger.core.forms import scoped_business_units
 
     return scoped_business_units(user)
 

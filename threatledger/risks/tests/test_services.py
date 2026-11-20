@@ -354,10 +354,11 @@ class TestReminders:
     def test_daily_task_and_schedule_registration(self):
         from django_q.models import Schedule
 
-        from threatledger.risks.schedules import ensure_schedules
+        from threatledger.core.schedules import ensure_schedules
         from threatledger.risks.tasks import daily
 
         ensure_schedules()
         ensure_schedules()
         assert Schedule.objects.filter(name="risk-register-daily").count() == 1
+        assert Schedule.objects.filter(name="controls-daily").count() == 1
         assert daily() == "expired=0 reminder_emails=0"

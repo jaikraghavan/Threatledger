@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Evidence register{% endblock %}
+{% block content %}
+<nav class="mb-3 text-sm text-slate-500" aria-label="Breadcrumb"><a class="hover:underline" href="{% url 'controls:list' %}">Controls</a></nav>
+<h1 class="mb-2 text-2xl font-semibold">Evidence register</h1>
+<nav class="mb-4 flex gap-2 text-sm" aria-label="Filter"><a href="?" class="badge {% if not due %}bg-brand-600 text-white{% else %}bg-slate-100 text-slate-700{% endif %}">All</a><a href="?due=30" class="badge {% if due == '30' %}bg-brand-600 text-white{% else %}bg-slate-100 text-slate-700{% endif %}">Expiring in 30 days</a><a href="?due=expired" class="badge {% if due == 'expired' %}bg-brand-600 text-white{% else %}bg-slate-100 text-slate-700{% endif %}">Expired</a></nav>
+<div class="card overflow-x-auto"><table class="data-table">
+  <thead><tr><th scope="col">Control</th><th scope="col">Evidence</th><th scope="col">Added</th><th scope="col">Valid until</th></tr></thead>
+  <tbody class="divide-y divide-slate-100">{% for e in evidence_items %}<tr>
+    <td class="whitespace-nowrap"><a class="font-mono text-xs text-brand-700 hover:underline" href="{% url 'controls:detail' e.control.ref %}">{{ e.control.ref }}</a></td>
+    <td>{% if e.kind == "file" %}<a class="text-brand-700 hover:underline" href="{% url 'controls:evidence_download' e.pk %}">{{ e.title }}</a>{% else %}<a class="text-brand-700 hover:underline" href="{{ e.url }}" target="_blank" rel="noopener noreferrer nofollow">{{ e.title }} ↗</a>{% endif %}</td>
+    <td class="whitespace-nowrap text-xs">{{ e.uploaded_at|date:"Y-m-d" }} · {{ e.uploaded_by }}</td>
+    <td class="whitespace-nowrap text-xs {% if e.is_expired %}font-semibold text-red-700{% endif %}">{{ e.valid_until|date:"Y-m-d"|default:"—" }}{% if e.is_expired %} · expired{% endif %}</td>
+  </tr>{% empty %}<tr><td colspan="4" class="py-8 text-center text-slate-500">Nothing here.</td></tr>{% endfor %}</tbody>
+</table></div>
+{% include "attack/_pagination.html" %}
+{% endblock %}

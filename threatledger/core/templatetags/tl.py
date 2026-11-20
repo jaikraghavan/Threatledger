@@ -18,3 +18,17 @@ def can(user: Any, capability: str) -> bool:
     except ValueError:
         return False
     return _can(user, cap)
+
+
+@register.filter
+def get_item(mapping: Any, key: Any) -> Any:
+    """``{{ counts|get_item:status }}`` dictionary lookup."""
+    try:
+        return mapping.get(key)
+    except AttributeError:
+        return None
+
+
+@register.filter
+def expires_soon(evidence: Any, days: int = 30) -> bool:
+    return bool(evidence.expires_within(int(days)))
