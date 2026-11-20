@@ -291,11 +291,20 @@ def test_throttling_is_configured(settings):
     assert rf["DEFAULT_THROTTLE_RATES"]["anon"] == "30/hour"
 
 
-def test_openapi_schema_validates_without_warnings(tmp_path):
-    """drf-spectacular warnings also fail `check --deploy` in CI; catch them here first."""
-    from django.core.management import call_command
+def test_openapi_schema_validates_without_warnings(tmp_path, django_assert_num_queries):
+    """drf-spectacular warnings also fail `check --deploy` in CI, which runs against an
+    unmigrated database: schema generation must not touch the database at all.
 
+    Also resets drf-spectacular's once-per-process warning cache so earlier schema
+    generation in this test run can't hide warnings.
+    """
+    from django.core.management import call_command
+    from drf_spectacular.drainage import GENERATOR_STATS
+
+    GENERATOR_STATS.reset()
     out = tmp_path / "schema.yaml"
-    call_command("spectacular", "--file", str(out), "--validate", "--fail-on-warn")
+    with django_assert_num_queries(0):
+        call_command("spectacular", "--file", str(out), "--validate", "--fail-on-warn")
     text = out.read_text()
-    assert "ApiToken" in text and "bearerFormat" in text
+    assert "ApiToken" in text
+    assert "bearerFormat" in text

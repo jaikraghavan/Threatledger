@@ -98,6 +98,8 @@ class RiskViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.Creat
     http_method_names = ["get", "post", "patch", "head", "options"]
 
     def get_queryset(self) -> QuerySet[Risk]:
+        if getattr(self, "swagger_fake_view", False):  # OpenAPI generation: no real user/org
+            return Risk.objects.none()
         qs = (
             risk_services.visible_risks(self.request.user)
             .live()
@@ -114,7 +116,8 @@ class RiskViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.Creat
 
     def get_serializer_context(self) -> dict[str, Any]:
         ctx = dict(super().get_serializer_context())
-        ctx["matrix"] = RiskMatrix.for_org(_org(self.request))
+        if not getattr(self, "swagger_fake_view", False):
+            ctx["matrix"] = RiskMatrix.for_org(_org(self.request))
         return ctx
 
     def perform_create(self, serializer: Any) -> None:
@@ -172,6 +175,8 @@ class ControlViewSet(
     http_method_names = ["get", "patch", "head", "options"]
 
     def get_queryset(self) -> QuerySet[Control]:
+        if getattr(self, "swagger_fake_view", False):  # OpenAPI generation: no real user/org
+            return Control.objects.none()
         qs = control_services.visible_controls(self.request.user).live().select_related("owner")
         status_ = self.request.query_params.get("status")
         if status_:
@@ -200,6 +205,8 @@ class TechniqueViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewset
         return super().list(request, *args, **kwargs)
 
     def get_queryset(self) -> QuerySet[Technique]:
+        if getattr(self, "swagger_fake_view", False):  # OpenAPI generation: no real user/org
+            return Technique.objects.none()
         qs = Technique.objects.all() if self.action == "retrieve" else Technique.objects.active()
         q = self.request.query_params.get("q", "").strip()
         if q:
@@ -215,6 +222,8 @@ class TechniqueViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewset
         )
 
     def get_serializer(self, *args: Any, **kwargs: Any) -> Any:
+        if getattr(self, "swagger_fake_view", False):
+            return super().get_serializer(*args, **kwargs)
         instance = args[0] if args else None
         items = (
             list(instance)
