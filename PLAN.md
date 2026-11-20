@@ -364,7 +364,8 @@ _Implementation notes (Phase 6, as built):_
   one entry per technique–tactic pair using each technique's own tactics, colour + score + control refs.
 - Dashboard (home) and printable board report (`/reports/board/`, browser print → PDF per Q10); trends come from
   daily snapshots (`reporting-daily` job / `take_snapshots`), risk score chart from `RiskScoreHistory`.
-- Chart.js 4.6.1 vendored (MIT, sha256 87364cc2…); all JS in `static/js/app.js`, data via `json_script` blocks:
+- Chart.js 4.6.1 vendored (MIT; upstream sha256 87364cc2…, trailing `sourceMappingURL` comment removed so manifest
+  storage doesn't look for an unshipped .map → stored file sha256 c17f2ce4…); all JS in `static/js/app.js`, data via `json_script` blocks:
   no inline scripts or style attributes (CSP-ready). Every chart has a "View data" table fallback.
 
 ### Phase 7 — API & hardening
