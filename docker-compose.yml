@@ -1,0 +1,134 @@
+# ThreatLedger stack: `docker compose up -d`, then open https://localhost
+# Secrets are generated on first start into the `secrets` volume (see deploy/init_secrets.py).
+name: threatledger
+
+x-app: &app
+  build: .
+  image: threatledger:local
+  env_file:
+    - path: .env
+      required: false
+  environment: &app-env
+    DJANGO_SETTINGS_MODULE: config.settings.prod
+    DJANGO_SECRET_KEY_FILE: /srv/secrets/django_secret_key
+    DJANGO_ALLOWED_HOSTS: ${DOMAIN:-localhost},127.0.0.1
+    DJANGO_CSRF_TRUSTED_ORIGINS: https://${DOMAIN:-localhost}
+    POSTGRES_HOST: db
+    POSTGRES_DB: threatledger
+    POSTGRES_USER: threatledger
+    POSTGRES_PASSWORD_FILE: /srv/secrets/postgres_password
+    REDIS_HOST: redis
+    REDIS_PASSWORD_FILE: /srv/secrets/redis_password
+    MEDIA_ROOT: /srv/media
+  read_only: true
+  tmpfs:
+    - /tmp
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  restart: unless-stopped
+  networks: [backend]
+
+services:
+  init:
+    <<: *app
+    command: ["init-secrets"]
+    volumes:
+      - secrets:/srv/secrets
+    restart: "no"
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: threatledger
+      POSTGRES_USER: threatledger
+      POSTGRES_PASSWORD_FILE: /srv/secrets/postgres_password
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - secrets:/srv/secrets:ro
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U threatledger -d threatledger"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    security_opt: ["no-new-privileges:true"]
+    restart: unless-stopped
+    networks: [backend]
+
+  redis:
+    image: redis:7.4-alpine
+    command: ["redis-server", "/srv/secrets/redis.conf"]
+    volumes:
+      - redisdata:/data
+      - secrets:/srv/secrets:ro
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli --no-auth-warning -a \"$$(cat /srv/secrets/redis_password)\" ping | grep -q PONG"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    security_opt: ["no-new-privileges:true"]
+    restart: unless-stopped
+    networks: [backend]
+
+  web:
+    <<: *app
+    command: ["web"]
+    volumes:
+      - secrets:/srv/secrets:ro
+      - media:/srv/media
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks: [backend, frontend]
+
+  worker:
+    <<: *app
+    command: ["worker"]
+    volumes:
+      - secrets:/srv/secrets:ro
+      - media:/srv/media
+    depends_on:
+      web:
+        condition: service_healthy
+    healthcheck:
+      disable: true
+    # frontend gives the worker outbound internet for ATT&CK / CTID downloads (Phase 2+)
+    networks: [backend, frontend]
+
+  caddy:
+    image: caddy:2.8-alpine
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      web:
+        condition: service_healthy
+    security_opt: ["no-new-privileges:true"]
+    restart: unless-stopped
+    networks: [frontend]
+
+volumes:
+  secrets:
+  pgdata:
+  redisdata:
+  media:
+  caddy_data:
+  caddy_config:
+
+networks:
+  backend:
+    internal: true
+  frontend:

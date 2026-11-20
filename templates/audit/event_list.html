@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Audit log{% endblock %}
+{% block content %}
+<div class="mb-4 flex flex-wrap items-end justify-between gap-4">
+  <div><h1 class="text-2xl font-semibold">Audit log</h1><p class="text-sm text-slate-600">Append-only, hash-chained record of every change.</p></div>
+  <form class="flex flex-wrap items-end gap-2" hx-get="{% url 'audit:list' %}" hx-target="#audit-table" hx-push-url="true" hx-trigger="change, keyup changed delay:300ms from:input">
+    <div><label class="label" for="f-action">Action</label>
+      <select id="f-action" name="action" class="field"><option value="">All</option>{% for v, l in actions %}<option value="{{ v }}"{% if filters.action == v %} selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+    <div><label class="label" for="f-actor">Actor</label><input id="f-actor" name="actor" class="field" value="{{ filters.actor }}" placeholder="username"></div>
+    <div><label class="label" for="f-type">Object type</label><input id="f-type" name="object_type" class="field" value="{{ filters.object_type }}" placeholder="e.g. accounts.user"></div>
+  </form>
+</div>
+<div id="audit-table">{% include "audit/_event_table.html" %}</div>
+{% endblock %}

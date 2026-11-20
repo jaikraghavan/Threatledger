@@ -1,0 +1,147 @@
+"""Server-side authorisation. Deny by default.
+
+Every view must declare ``tl_access``: ``PUBLIC``, ``AUTHENTICATED`` or a :class:`Cap`.
+- Class-based views: inherit :class:`AccessControlMixin` and set ``tl_access``.
+- Function views: decorate with ``@access(...)``.
+- DRF views: set ``tl_access``; :class:`HasCapability` is the default permission class.
+
+A view without a declaration is refused at runtime, and ``tests/test_url_sweep.py`` fails
+the build if any URL resolves to an undeclared view.
+"""
+
+from __future__ import annotations
+
+import functools
+from collections.abc import Callable
+from typing import Any, Final
+
+from django.contrib.auth.views import redirect_to_login
+from django.core.exceptions import ImproperlyConfigured, PermissionDenied
+from django.http import HttpRequest, HttpResponse
+from rest_framework.permissions import BasePermission
+
+from .roles import ROLE_CAPABILITIES, Cap, Role
+
+PUBLIC: Final = "public"
+AUTHENTICATED: Final = "authenticated"
+Access = Cap | str
+
+# Ownership-scoped capability -> capability that lifts the ownership restriction.
+_OWNERSHIP_OVERRIDES: dict[Cap, Cap] = {
+    Cap.EDIT_OWN_CONTROL: Cap.EDIT_ANY_CONTROL,
+    Cap.UPLOAD_EVIDENCE: Cap.EDIT_ANY_CONTROL,
+}
+
+_ROLE_CACHE_ATTR = "_tl_role_cache"
+
+
+def get_role(user: Any) -> Role | None:
+    """The user's role in the deployment's organisation, or None."""
+    if user is None or not getattr(user, "is_authenticated", False) or not user.is_active:
+        return None
+    if user.is_superuser:
+        return Role.ADMIN
+    if hasattr(user, _ROLE_CACHE_ATTR):
+        return getattr(user, _ROLE_CACHE_ATTR)
+    from .models import Membership
+
+    membership = (
+        Membership.objects.filter(user=user).order_by("organisation_id").only("role").first()
+    )
+    role = Role(membership.role) if membership else None
+    setattr(user, _ROLE_CACHE_ATTR, role)
+    return role
+
+
+def clear_role_cache(user: Any) -> None:
+    if hasattr(user, _ROLE_CACHE_ATTR):
+        delattr(user, _ROLE_CACHE_ATTR)
+
+
+def capabilities(user: Any) -> frozenset[Cap]:
+    role = get_role(user)
+    return ROLE_CAPABILITIES[role] if role else frozenset()
+
+
+def can(user: Any, cap: Cap, obj: Any = None) -> bool:
+    """May ``user`` exercise ``cap`` (optionally on ``obj``)?"""
+    caps = capabilities(user)
+    if cap not in caps:
+        return False
+    override = _OWNERSHIP_OVERRIDES.get(cap)
+    if obj is not None and override is not None and override not in caps:
+        return getattr(obj, "owner_id", None) == user.pk
+    return True
+
+
+def check_access(user: Any, rule: Access) -> bool:
+    if rule == PUBLIC:
+        return True
+    if not getattr(user, "is_authenticated", False):
+        return False
+    if rule == AUTHENTICATED:
+        return True
+    if isinstance(rule, Cap):
+        return can(user, rule)
+    raise ImproperlyConfigured(f"Unknown access rule: {rule!r}")
+
+
+def _deny(request: HttpRequest, rule: Access) -> HttpResponse:
+    if not request.user.is_authenticated:
+        if getattr(request, "htmx", False):
+            from django.conf import settings
+            from django.shortcuts import resolve_url
+
+            response = HttpResponse(status=401)
+            response["HX-Redirect"] = resolve_url(settings.LOGIN_URL)
+            return response
+        return redirect_to_login(request.get_full_path())
+    from threatledger.audit.services import record_permission_denied
+
+    record_permission_denied(request, str(rule))
+    raise PermissionDenied
+
+
+def access(rule: Access) -> Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]:
+    """Decorator for function views."""
+
+    def decorator(view: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
+        @functools.wraps(view)
+        def wrapped(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+            if not check_access(request.user, rule):
+                return _deny(request, rule)
+            return view(request, *args, **kwargs)
+
+        wrapped.tl_access = rule  # type: ignore[attr-defined]
+        return wrapped
+
+    return decorator
+
+
+class AccessControlMixin:
+    """Mixin for class-based views. Subclasses MUST set ``tl_access``."""
+
+    tl_access: Access | None = None
+
+    def dispatch(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        if self.tl_access is None:
+            raise ImproperlyConfigured(f"{type(self).__name__} does not declare tl_access")
+        if not check_access(request.user, self.tl_access):
+            return _deny(request, self.tl_access)
+        return super().dispatch(request, *args, **kwargs)  # type: ignore[misc]
+
+
+class HasCapability(BasePermission):
+    """DRF default permission class. Views declare ``tl_access`` like template views."""
+
+    def has_permission(self, request: Any, view: Any) -> bool:
+        rule = getattr(view, "tl_access", None)
+        if rule is None:
+            return False
+        return check_access(request.user, rule)
+
+    def has_object_permission(self, request: Any, view: Any, obj: Any) -> bool:
+        rule = getattr(view, "tl_access", None)
+        if isinstance(rule, Cap):
+            return can(request.user, rule, obj)
+        return rule in (PUBLIC, AUTHENTICATED)

@@ -1,0 +1,20 @@
+# DOMAIN=localhost (default) uses Caddy's internal CA; set DOMAIN to a public name for Let's Encrypt.
+{$DOMAIN:localhost} {
+	encode zstd gzip
+
+	header {
+		-Server
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "same-origin"
+		Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
+	}
+
+	# Evidence uploads are limited in Django too (Phase 4); this is the outer bound.
+	request_body {
+		max_size 30MB
+	}
+
+	reverse_proxy web:8000 {
+		header_up X-Request-ID {http.request.uuid}
+	}
+}

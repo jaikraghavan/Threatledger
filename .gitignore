@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Local state & secrets
+.env
+.env.*
+!.env.example
+db.sqlite3
+media/
+.test-media/
+staticfiles/
+static/css/app.css
+.bin/
+data/attack/*.json
+docker-compose.override.yml

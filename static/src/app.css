@@ -1,0 +1,25 @@
+@import "tailwindcss";
+@source "../../templates";
+@source "../../threatledger";
+
+@theme {
+  --color-brand-50: #eef6ff;
+  --color-brand-100: #d9eaff;
+  --color-brand-500: #2f6fde;
+  --color-brand-600: #1f57bd;
+  --color-brand-700: #1b4799;
+  --color-ink-900: #0f172a;
+}
+
+@layer components {
+  .btn { @apply inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500; }
+  .btn-primary { @apply bg-brand-600 text-white hover:bg-brand-700; }
+  .btn-secondary { @apply border border-slate-300 bg-white text-slate-700 hover:bg-slate-50; }
+  .card { @apply rounded-lg border border-slate-200 bg-white shadow-sm; }
+  .field { @apply block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500 focus:outline-none; }
+  .label { @apply mb-1 block text-sm font-medium text-slate-700; }
+  .data-table { @apply min-w-full divide-y divide-slate-200 text-sm; }
+  .data-table th { @apply bg-slate-50 px-3 py-2 text-left text-xs font-semibold tracking-wide text-slate-600 uppercase; }
+  .data-table td { @apply px-3 py-2 align-top text-slate-700; }
+  .badge { @apply inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium; }
+}
