@@ -30,14 +30,16 @@ DROP FUNCTION IF EXISTS audit_auditevent_append_only();
 """
 
 
+# params=None: static DDL, no interpolation. The plpgsql '%' format placeholder must reach
+# PostgreSQL untouched (with params=() psycopg would treat it as a query parameter).
 def forward(apps, schema_editor):
     if schema_editor.connection.vendor == "postgresql":
-        schema_editor.execute(FORWARD)
+        schema_editor.execute(FORWARD, params=None)
 
 
 def reverse(apps, schema_editor):
     if schema_editor.connection.vendor == "postgresql":
-        schema_editor.execute(REVERSE)
+        schema_editor.execute(REVERSE, params=None)
 
 
 class Migration(migrations.Migration):

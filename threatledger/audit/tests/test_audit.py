@@ -119,6 +119,10 @@ def test_audit_verify_command_detects_raw_sql_tampering(org):
 )
 def test_postgres_trigger_blocks_raw_modification(org, sql):
     record(Action.CREATE, org)
+    # The test runs inside a transaction holding deferred FK checks; PostgreSQL refuses
+    # TRUNCATE while those are pending, before our trigger fires. Flush them first.
+    with connection.cursor() as cursor:
+        cursor.execute("SET CONSTRAINTS ALL IMMEDIATE")
     with (
         pytest.raises(DatabaseError, match="append-only"),
         transaction.atomic(),
