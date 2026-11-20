@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Cross-framework view{% endblock %}
+{% block content %}
+<nav class="mb-3 text-sm text-slate-500" aria-label="Breadcrumb"><a class="hover:underline" href="{% url 'frameworks:list' %}">Compliance</a></nav>
+<h1 class="text-2xl font-semibold">Cross-framework view</h1>
+<p class="mb-4 text-sm text-slate-600">One control, many obligations: implement it once and every requirement below moves.</p>
+<form method="get" class="mb-4" role="search"><label class="label" for="xq">Find a control</label><input id="xq" name="q" type="search" class="field max-w-sm" value="{{ q }}"></form>
+<div class="space-y-4">{% for row in rows %}
+  <section class="card p-5"><div class="flex flex-wrap items-baseline justify-between gap-2"><h2 class="font-semibold"><a class="hover:underline" href="{% url 'controls:detail' row.control.ref %}"><span class="font-mono text-sm text-slate-500">{{ row.control.ref }}</span> {{ row.control.name }}</a> <span class="badge status-{{ row.control.status }} ml-1">{{ row.control.get_status_display }}</span></h2>
+    <p class="text-sm font-medium text-slate-700">satisfies {{ row.requirement_count }} requirement{{ row.requirement_count|pluralize }} across {{ row.framework_count }} framework{{ row.framework_count|pluralize }}</p></div>
+    <dl class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{% for fw, reqs in row.by_framework.items %}<div><dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ fw.name }}</dt>
+      <dd class="mt-1 flex flex-wrap gap-1">{% for r in reqs %}<a class="badge bg-slate-100 text-slate-700 hover:bg-slate-200" href="{% url 'frameworks:requirement' fw.code r.pk %}" title="{{ r.title }}">{{ r.ref }}</a>{% endfor %}</dd></div>{% endfor %}</dl></section>
+{% empty %}<p class="card p-6 text-center text-sm text-slate-500">No control is mapped to any requirement yet.</p>{% endfor %}</div>
+{% endblock %}

@@ -1,0 +1,116 @@
+# Seeded by ThreatLedger. INDICATIVE: verify against the official text.
+# Plain-language summaries of the Act's obligations, not the statutory text.
+schema: threatledger-framework/1
+framework:
+  code: DPDP-2023
+  name: India Digital Personal Data Protection Act, 2023
+  version: 2023 (No. 22 of 2023)
+  publisher: Government of India (MeitY)
+  source_url: https://www.meity.gov.in/data-protection-framework
+  licence_note: Indian statute. Section headings follow the Act; descriptions are plain-language summaries. Read
+    with the DPDP Rules for prescribed forms and timelines.
+  content_level: summary
+  description: Obligations of Data Fiduciaries processing digital personal data in India.
+requirements:
+- ref: CH-II
+  title: Obligations of Data Fiduciary
+  is_domain: true
+- ref: S.4
+  title: Grounds for processing personal data
+  text: Process personal data only for a lawful purpose, with the Data Principal's consent or for a legitimate use
+    under section 7.
+  parent: CH-II
+- ref: S.5
+  title: Notice
+  text: Give an itemised notice of the personal data and purpose, how to exercise rights and how to complain to
+    the Board, with or before the consent request (and for consents given before the Act).
+  parent: CH-II
+- ref: S.6
+  title: Consent
+  text: Consent must be free, specific, informed, unconditional and unambiguous by clear affirmative action, limited
+    to necessary data, and as easy to withdraw as to give; consent managers may be used.
+  parent: CH-II
+- ref: S.7
+  title: Certain legitimate uses
+  text: Identify processing relying on legitimate uses (e.g. data voluntarily provided for a specified purpose,
+    legal obligations, employment, medical emergencies) instead of consent.
+  parent: CH-II
+- ref: S.8(1)
+  title: Responsibility for compliance
+  text: The Data Fiduciary is responsible for compliance, including for processing done on its behalf by a Data
+    Processor.
+  parent: CH-II
+- ref: S.8(2)
+  title: Data Processors under valid contract
+  text: Engage or involve Data Processors only under a valid contract.
+  parent: CH-II
+- ref: S.8(3)
+  title: Completeness, accuracy and consistency
+  text: Ensure personal data is complete, accurate and consistent where used for decisions about the Data Principal
+    or disclosed to another Data Fiduciary.
+  parent: CH-II
+- ref: S.8(4)
+  title: Technical and organisational measures
+  text: Implement appropriate technical and organisational measures to ensure effective observance of the Act.
+  parent: CH-II
+- ref: S.8(5)
+  title: Reasonable security safeguards
+  text: Protect personal data in your possession or control, including processing by Data Processors, with reasonable
+    security safeguards to prevent a personal data breach.
+  parent: CH-II
+- ref: S.8(6)
+  title: Personal data breach intimation
+  text: Inform the Data Protection Board and each affected Data Principal of a personal data breach, in the form
+    and manner prescribed.
+  parent: CH-II
+- ref: S.8(7)
+  title: Erasure and retention limits
+  text: Erase personal data (and have processors erase it) once consent is withdrawn or the purpose is no longer
+    served, unless retention is required by law.
+  parent: CH-II
+- ref: S.8(9)
+  title: Published contact for data protection queries
+  text: Publish the business contact information of the Data Protection Officer or a person able to answer questions
+    about processing.
+  parent: CH-II
+- ref: S.8(10)
+  title: Grievance redressal mechanism
+  text: Establish an effective mechanism to redress grievances of Data Principals.
+  parent: CH-II
+- ref: S.9
+  title: Processing personal data of children
+  text: Obtain verifiable parental consent; do not process in ways likely to harm a child's well-being, and no tracking,
+    behavioural monitoring or targeted advertising directed at children.
+  parent: CH-II
+- ref: S.10
+  title: Additional obligations of Significant Data Fiduciaries
+  text: 'If notified as significant: appoint a Data Protection Officer based in India, an independent data auditor,
+    and carry out periodic DPIAs and audits.'
+  parent: CH-II
+- ref: CH-III
+  title: Rights of Data Principal (fiduciary duties to support them)
+  is_domain: true
+- ref: S.11
+  title: Right to access information about personal data
+  text: Provide a summary of personal data processed, processing activities and the identities of others it was
+    shared with, on request.
+  parent: CH-III
+- ref: S.12
+  title: Right to correction and erasure
+  text: Correct, complete, update or erase personal data on request, subject to legal retention requirements.
+  parent: CH-III
+- ref: S.13
+  title: Right of grievance redressal
+  text: Respond to grievances within the prescribed period before the Data Principal approaches the Board.
+  parent: CH-III
+- ref: S.14
+  title: Right to nominate
+  text: Allow Data Principals to nominate a person to exercise their rights in case of death or incapacity.
+  parent: CH-III
+- ref: CH-IV
+  title: Special provisions
+  is_domain: true
+- ref: S.16
+  title: Processing outside India
+  text: Do not transfer personal data to countries or territories restricted by Central Government notification.
+  parent: CH-IV

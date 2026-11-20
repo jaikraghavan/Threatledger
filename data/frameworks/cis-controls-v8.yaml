@@ -1,0 +1,526 @@
+# Seeded by ThreatLedger. INDICATIVE: verify against the official text.
+schema: threatledger-framework/1
+framework:
+  code: CIS-V8
+  name: CIS Critical Security Controls v8
+  version: '8'
+  publisher: Center for Internet Security
+  source_url: https://www.cisecurity.org/controls/v8
+  licence_note: 'CIS Controls are CC BY-NC-SA 4.0: safeguard numbers and paraphrased titles only. Implementation
+    Groups are not included.'
+  content_level: reference
+  description: 18 controls and 153 safeguards. Use N/A to scope to your Implementation Group.
+requirements:
+- ref: '1'
+  title: Inventory and control of enterprise assets
+  is_domain: true
+- ref: '1.1'
+  title: Maintain a detailed enterprise asset inventory
+  parent: '1'
+- ref: '1.2'
+  title: Address unauthorised assets
+  parent: '1'
+- ref: '1.3'
+  title: Use an active asset discovery tool
+  parent: '1'
+- ref: '1.4'
+  title: Use DHCP logging to update the asset inventory
+  parent: '1'
+- ref: '1.5'
+  title: Use a passive asset discovery tool
+  parent: '1'
+- ref: '2'
+  title: Inventory and control of software assets
+  is_domain: true
+- ref: '2.1'
+  title: Maintain a software inventory
+  parent: '2'
+- ref: '2.2'
+  title: Ensure authorised software is supported
+  parent: '2'
+- ref: '2.3'
+  title: Address unauthorised software
+  parent: '2'
+- ref: '2.4'
+  title: Use automated software inventory tools
+  parent: '2'
+- ref: '2.5'
+  title: Allowlist authorised software
+  parent: '2'
+- ref: '2.6'
+  title: Allowlist authorised libraries
+  parent: '2'
+- ref: '2.7'
+  title: Allowlist authorised scripts
+  parent: '2'
+- ref: '3'
+  title: Data protection
+  is_domain: true
+- ref: '3.1'
+  title: Data management process
+  parent: '3'
+- ref: '3.2'
+  title: Data inventory
+  parent: '3'
+- ref: '3.3'
+  title: Data access control lists
+  parent: '3'
+- ref: '3.4'
+  title: Enforce data retention
+  parent: '3'
+- ref: '3.5'
+  title: Securely dispose of data
+  parent: '3'
+- ref: '3.6'
+  title: Encrypt data on end-user devices
+  parent: '3'
+- ref: '3.7'
+  title: Data classification scheme
+  parent: '3'
+- ref: '3.8'
+  title: Document data flows
+  parent: '3'
+- ref: '3.9'
+  title: Encrypt data on removable media
+  parent: '3'
+- ref: '3.10'
+  title: Encrypt sensitive data in transit
+  parent: '3'
+- ref: '3.11'
+  title: Encrypt sensitive data at rest
+  parent: '3'
+- ref: '3.12'
+  title: Segment data processing and storage by sensitivity
+  parent: '3'
+- ref: '3.13'
+  title: Deploy data loss prevention
+  parent: '3'
+- ref: '3.14'
+  title: Log sensitive data access
+  parent: '3'
+- ref: '4'
+  title: Secure configuration of enterprise assets and software
+  is_domain: true
+- ref: '4.1'
+  title: Secure configuration process
+  parent: '4'
+- ref: '4.2'
+  title: Secure configuration process for network infrastructure
+  parent: '4'
+- ref: '4.3'
+  title: Automatic session locking
+  parent: '4'
+- ref: '4.4'
+  title: Firewall on servers
+  parent: '4'
+- ref: '4.5'
+  title: Firewall on end-user devices
+  parent: '4'
+- ref: '4.6'
+  title: Securely manage enterprise assets and software
+  parent: '4'
+- ref: '4.7'
+  title: Manage default accounts
+  parent: '4'
+- ref: '4.8'
+  title: Uninstall or disable unnecessary services
+  parent: '4'
+- ref: '4.9'
+  title: Configure trusted DNS servers
+  parent: '4'
+- ref: '4.10'
+  title: Automatic lockout on portable devices
+  parent: '4'
+- ref: '4.11'
+  title: Remote wipe for portable devices
+  parent: '4'
+- ref: '4.12'
+  title: Separate enterprise workspaces on mobile devices
+  parent: '4'
+- ref: '5'
+  title: Account management
+  is_domain: true
+- ref: '5.1'
+  title: Inventory of accounts
+  parent: '5'
+- ref: '5.2'
+  title: Use unique passwords
+  parent: '5'
+- ref: '5.3'
+  title: Disable dormant accounts
+  parent: '5'
+- ref: '5.4'
+  title: Restrict administrator privileges to dedicated accounts
+  parent: '5'
+- ref: '5.5'
+  title: Inventory of service accounts
+  parent: '5'
+- ref: '5.6'
+  title: Centralise account management
+  parent: '5'
+- ref: '6'
+  title: Access control management
+  is_domain: true
+- ref: '6.1'
+  title: Access granting process
+  parent: '6'
+- ref: '6.2'
+  title: Access revoking process
+  parent: '6'
+- ref: '6.3'
+  title: MFA for externally-exposed applications
+  parent: '6'
+- ref: '6.4'
+  title: MFA for remote network access
+  parent: '6'
+- ref: '6.5'
+  title: MFA for administrative access
+  parent: '6'
+- ref: '6.6'
+  title: Inventory of authentication and authorisation systems
+  parent: '6'
+- ref: '6.7'
+  title: Centralise access control
+  parent: '6'
+- ref: '6.8'
+  title: Role-based access control
+  parent: '6'
+- ref: '7'
+  title: Continuous vulnerability management
+  is_domain: true
+- ref: '7.1'
+  title: Vulnerability management process
+  parent: '7'
+- ref: '7.2'
+  title: Remediation process
+  parent: '7'
+- ref: '7.3'
+  title: Automated operating system patch management
+  parent: '7'
+- ref: '7.4'
+  title: Automated application patch management
+  parent: '7'
+- ref: '7.5'
+  title: Automated vulnerability scans of internal assets
+  parent: '7'
+- ref: '7.6'
+  title: Automated vulnerability scans of externally-exposed assets
+  parent: '7'
+- ref: '7.7'
+  title: Remediate detected vulnerabilities
+  parent: '7'
+- ref: '8'
+  title: Audit log management
+  is_domain: true
+- ref: '8.1'
+  title: Audit log management process
+  parent: '8'
+- ref: '8.2'
+  title: Collect audit logs
+  parent: '8'
+- ref: '8.3'
+  title: Adequate audit log storage
+  parent: '8'
+- ref: '8.4'
+  title: Standardise time synchronisation
+  parent: '8'
+- ref: '8.5'
+  title: Collect detailed audit logs
+  parent: '8'
+- ref: '8.6'
+  title: Collect DNS query audit logs
+  parent: '8'
+- ref: '8.7'
+  title: Collect URL request audit logs
+  parent: '8'
+- ref: '8.8'
+  title: Collect command-line audit logs
+  parent: '8'
+- ref: '8.9'
+  title: Centralise audit logs
+  parent: '8'
+- ref: '8.10'
+  title: Retain audit logs
+  parent: '8'
+- ref: '8.11'
+  title: Conduct audit log reviews
+  parent: '8'
+- ref: '8.12'
+  title: Collect service provider logs
+  parent: '8'
+- ref: '9'
+  title: Email and web browser protections
+  is_domain: true
+- ref: '9.1'
+  title: Use only supported browsers and email clients
+  parent: '9'
+- ref: '9.2'
+  title: Use DNS filtering services
+  parent: '9'
+- ref: '9.3'
+  title: Network-based URL filters
+  parent: '9'
+- ref: '9.4'
+  title: Restrict unnecessary browser and email extensions
+  parent: '9'
+- ref: '9.5'
+  title: Implement DMARC
+  parent: '9'
+- ref: '9.6'
+  title: Block unnecessary file types
+  parent: '9'
+- ref: '9.7'
+  title: Email server anti-malware
+  parent: '9'
+- ref: '10'
+  title: Malware defenses
+  is_domain: true
+- ref: '10.1'
+  title: Deploy anti-malware software
+  parent: '10'
+- ref: '10.2'
+  title: Automatic anti-malware signature updates
+  parent: '10'
+- ref: '10.3'
+  title: Disable autorun and autoplay for removable media
+  parent: '10'
+- ref: '10.4'
+  title: Automatic anti-malware scanning of removable media
+  parent: '10'
+- ref: '10.5'
+  title: Enable anti-exploitation features
+  parent: '10'
+- ref: '10.6'
+  title: Centrally manage anti-malware
+  parent: '10'
+- ref: '10.7'
+  title: Behaviour-based anti-malware
+  parent: '10'
+- ref: '11'
+  title: Data recovery
+  is_domain: true
+- ref: '11.1'
+  title: Data recovery process
+  parent: '11'
+- ref: '11.2'
+  title: Automated backups
+  parent: '11'
+- ref: '11.3'
+  title: Protect recovery data
+  parent: '11'
+- ref: '11.4'
+  title: Isolated instance of recovery data
+  parent: '11'
+- ref: '11.5'
+  title: Test data recovery
+  parent: '11'
+- ref: '12'
+  title: Network infrastructure management
+  is_domain: true
+- ref: '12.1'
+  title: Keep network infrastructure up to date
+  parent: '12'
+- ref: '12.2'
+  title: Secure network architecture
+  parent: '12'
+- ref: '12.3'
+  title: Securely manage network infrastructure
+  parent: '12'
+- ref: '12.4'
+  title: Network architecture documentation
+  parent: '12'
+- ref: '12.5'
+  title: Centralise network authentication, authorisation and auditing
+  parent: '12'
+- ref: '12.6'
+  title: Secure network management and communication protocols
+  parent: '12'
+- ref: '12.7'
+  title: Remote devices connect via VPN and AAA
+  parent: '12'
+- ref: '12.8'
+  title: Dedicated resources for administrative work
+  parent: '12'
+- ref: '13'
+  title: Network monitoring and defense
+  is_domain: true
+- ref: '13.1'
+  title: Centralise security event alerting
+  parent: '13'
+- ref: '13.2'
+  title: Host-based intrusion detection
+  parent: '13'
+- ref: '13.3'
+  title: Network intrusion detection
+  parent: '13'
+- ref: '13.4'
+  title: Traffic filtering between network segments
+  parent: '13'
+- ref: '13.5'
+  title: Manage access control for remote assets
+  parent: '13'
+- ref: '13.6'
+  title: Collect network traffic flow logs
+  parent: '13'
+- ref: '13.7'
+  title: Host-based intrusion prevention
+  parent: '13'
+- ref: '13.8'
+  title: Network intrusion prevention
+  parent: '13'
+- ref: '13.9'
+  title: Port-level access control
+  parent: '13'
+- ref: '13.10'
+  title: Application layer filtering
+  parent: '13'
+- ref: '13.11'
+  title: Tune security event alerting thresholds
+  parent: '13'
+- ref: '14'
+  title: Security awareness and skills training
+  is_domain: true
+- ref: '14.1'
+  title: Security awareness programme
+  parent: '14'
+- ref: '14.2'
+  title: Recognise social engineering attacks
+  parent: '14'
+- ref: '14.3'
+  title: Authentication best practices
+  parent: '14'
+- ref: '14.4'
+  title: Data handling best practices
+  parent: '14'
+- ref: '14.5'
+  title: Causes of unintentional data exposure
+  parent: '14'
+- ref: '14.6'
+  title: Recognise and report security incidents
+  parent: '14'
+- ref: '14.7'
+  title: Recognise missing security updates
+  parent: '14'
+- ref: '14.8'
+  title: Dangers of insecure networks
+  parent: '14'
+- ref: '14.9'
+  title: Role-specific security training
+  parent: '14'
+- ref: '15'
+  title: Service provider management
+  is_domain: true
+- ref: '15.1'
+  title: Inventory of service providers
+  parent: '15'
+- ref: '15.2'
+  title: Service provider management policy
+  parent: '15'
+- ref: '15.3'
+  title: Classify service providers
+  parent: '15'
+- ref: '15.4'
+  title: Security requirements in service provider contracts
+  parent: '15'
+- ref: '15.5'
+  title: Assess service providers
+  parent: '15'
+- ref: '15.6'
+  title: Monitor service providers
+  parent: '15'
+- ref: '15.7'
+  title: Securely decommission service providers
+  parent: '15'
+- ref: '16'
+  title: Application software security
+  is_domain: true
+- ref: '16.1'
+  title: Secure application development process
+  parent: '16'
+- ref: '16.2'
+  title: Process to accept and address vulnerabilities
+  parent: '16'
+- ref: '16.3'
+  title: Root cause analysis of security vulnerabilities
+  parent: '16'
+- ref: '16.4'
+  title: Inventory of third-party software components
+  parent: '16'
+- ref: '16.5'
+  title: Up-to-date and trusted third-party components
+  parent: '16'
+- ref: '16.6'
+  title: Severity rating for application vulnerabilities
+  parent: '16'
+- ref: '16.7'
+  title: Standard hardening templates for application infrastructure
+  parent: '16'
+- ref: '16.8'
+  title: Separate production and non-production systems
+  parent: '16'
+- ref: '16.9'
+  title: Train developers in secure coding
+  parent: '16'
+- ref: '16.10'
+  title: Secure design principles
+  parent: '16'
+- ref: '16.11'
+  title: Vetted modules for application security components
+  parent: '16'
+- ref: '16.12'
+  title: Code-level security checks
+  parent: '16'
+- ref: '16.13'
+  title: Application penetration testing
+  parent: '16'
+- ref: '16.14'
+  title: Threat modelling
+  parent: '16'
+- ref: '17'
+  title: Incident response management
+  is_domain: true
+- ref: '17.1'
+  title: Designate incident handling personnel
+  parent: '17'
+- ref: '17.2'
+  title: Contact information for incident reporting
+  parent: '17'
+- ref: '17.3'
+  title: Process for reporting incidents
+  parent: '17'
+- ref: '17.4'
+  title: Incident response process
+  parent: '17'
+- ref: '17.5'
+  title: Assign key roles and responsibilities
+  parent: '17'
+- ref: '17.6'
+  title: Communication during incident response
+  parent: '17'
+- ref: '17.7'
+  title: Routine incident response exercises
+  parent: '17'
+- ref: '17.8'
+  title: Post-incident reviews
+  parent: '17'
+- ref: '17.9'
+  title: Security incident thresholds
+  parent: '17'
+- ref: '18'
+  title: Penetration testing
+  is_domain: true
+- ref: '18.1'
+  title: Penetration testing programme
+  parent: '18'
+- ref: '18.2'
+  title: Periodic external penetration tests
+  parent: '18'
+- ref: '18.3'
+  title: Remediate penetration test findings
+  parent: '18'
+- ref: '18.4'
+  title: Validate security measures
+  parent: '18'
+- ref: '18.5'
+  title: Periodic internal penetration tests
+  parent: '18'

@@ -53,6 +53,19 @@ awareness training, IR plan, vendor risk, hardening, DLP, password policy). Each
 mitigation mappings and starts as *not implemented*. Set each control's real status, and coverage
 updates everywhere. Admins and risk managers can also load the library from **Controls** in the app.
 
+## Load compliance frameworks
+
+```sh
+docker compose exec web python manage.py seed_frameworks        # NIST 800-53 r5, ISO 27001, SOC 2, HIPAA, CIS v8, DPDP
+docker compose exec web python manage.py import_ctid_mappings   # ATT&CK ↔ NIST 800-53 (CTID Mappings Explorer)
+docker compose exec web python manage.py import_framework my-framework.yaml --dry-run
+```
+
+NIST SP 800-53 r5 ships with its full official text (from NIST's OSCAL catalog). ISO 27001, SOC 2 and
+CIS v8 ship with identifiers and short titles only, for licensing reasons; import your licensed text with
+`import_framework`. HIPAA and the DPDP Act ship with plain-language summaries. All seeded mappings are
+**indicative**: verify them against the official text.
+
 ## Local development
 
 ```sh

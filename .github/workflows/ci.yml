@@ -151,6 +151,25 @@ jobs:
           docker compose exec -T web python manage.py seed_controls | tee controls.txt
           grep -q "Created 14" controls.txt
           if grep -q "not found" controls.txt; then echo "starter mappings reference missing ATT&CK IDs"; exit 1; fi
+      - name: Smoke test - frameworks, CTID mappings and compliance inside the stack
+        run: |
+          docker compose exec -T web python manage.py seed_frameworks | tee fw.txt
+          grep -q "Starter control → requirement mappings created: 146" fw.txt
+          docker compose exec -T web python manage.py import_ctid_mappings | tee ctid.txt
+          grep -q "0 unknown control" ctid.txt
+          docker compose exec -T web python manage.py shell -c "
+          from threatledger.frameworks.models import Framework
+          from threatledger.frameworks.services import framework_result
+          from threatledger.controls.models import Control
+          from threatledger.org.models import Organisation
+          org = Organisation.objects.current()
+          fw = Framework.objects.get(code='HIPAA-SR')
+          before = framework_result(fw, org).summary.percent
+          Control.objects.filter(ref='CTL-BACKUP').update(status='implemented')
+          after = framework_result(fw, org).summary.percent
+          assert after > before, (before, after)
+          print('compliance smoke OK', before, '->', after)"
+          docker compose exec -T web python manage.py audit_verify
           docker compose exec -T web python manage.py audit_verify
       - name: Logs on failure
         if: failure()

@@ -337,6 +337,20 @@ _Implementation notes (Phase 4, as built):_
 - Cross-framework view: "control CTL-MFA-01 satisfies 7 requirements across 4 frameworks"
 - **Tests:** importer validation, status rules, % formula, cascade test — *flip one control and assert coverage, risk view and every framework % change* (the core-idea acceptance test)
 
+_Implementation notes (Phase 5, as built):_
+- Seeds in `data/frameworks/`: NIST SP 800-53 r5 is generated from NIST's official OSCAL catalog
+  (`scripts/build_nist_80053.py`, full text + Low/Moderate/High baselines, 1,014 controls/enhancements, withdrawn
+  omitted). ISO 27001:2022 (93), SOC 2 TSC (61) and CIS v8 (153) carry IDs + paraphrased titles only. HIPAA Security
+  Rule (48) and DPDP Act 2023 (20) carry official section headings with **plain-language summaries, not verbatim
+  legal text** (deviation from Q1: I won't reproduce statute text from memory; import verbatim text via the importer).
+  Built by `scripts/seeds/build_seeds.py`. All seeded content and mappings are flagged indicative.
+- Org adoption + baseline (`OrgFramework`, NIST defaults to Moderate = 287 tracked) and per-requirement N/A with
+  justification (`RequirementScope`) define "tracked". Status/percent derived in `frameworks/compliance.py`.
+- CTID: newest published NIST r5 mapping targets ATT&CK 16.1; the importer warns on mismatch and skips techniques
+  that no longer exist (176 against v20.1); 5,090 links imported. Requirement pages show those techniques with live
+  coverage; technique pages list mitigating NIST controls.
+- Importer rejects non-string refs (YAML would read `3.10` as 3.1). Download code shared in `core/fetch.py`.
+
 ### Phase 6 — Coverage & reporting
 - ATT&CK coverage matrix (tactics as columns in matrix order, sub-techniques expandable), scopes: my risks / all techniques / a threat group / a sector selection *(Q9)*
 - Navigator layer export v4.5 (`versions: {attack, navigator, layer: "4.5"}`, colour by status, comments with control refs); validated against the layer schema in tests

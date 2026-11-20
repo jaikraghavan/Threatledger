@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Import framework{% endblock %}
+{% block content %}
+<nav class="mb-3 text-sm text-slate-500" aria-label="Breadcrumb"><a class="hover:underline" href="{% url 'frameworks:list' %}">Compliance</a></nav>
+<h1 class="mb-4 text-2xl font-semibold">Import framework</h1>
+{% if errors %}<div class="mb-4 rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-800" role="alert"><p class="font-medium">Nothing was imported: {{ errors|length }} problem{{ errors|length|pluralize }}.</p><ul class="mt-2 list-disc pl-5">{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul></div>{% endif %}
+{% if result %}<div class="mb-4 rounded-md border border-green-200 bg-green-50 p-4 text-sm text-green-900" role="status"><p class="font-medium">{% if result.dry_run %}Dry run, no changes saved:{% else %}Imported{% endif %} {{ result.framework }}</p>
+  <p>{{ result.created }} created · {{ result.updated }} updated · {{ result.unchanged }} unchanged · {{ result.missing }} existing requirements not in the file (kept)</p>{% if missing %}<p class="mt-1 text-xs">Not in file: {{ missing|join:", " }}</p>{% endif %}</div>{% endif %}
+<div class="grid gap-6 lg:grid-cols-2">
+<form method="post" enctype="multipart/form-data" class="card space-y-4 p-5">{% csrf_token %}
+  <h2 class="font-semibold">Upload a framework file</h2>
+  <div><label class="label" for="f-file">File (.yaml, .yml, .json or .csv, max 10 MB)</label><input id="f-file" type="file" name="file" accept=".yaml,.yml,.json,.csv" class="field" required></div>
+  <fieldset class="grid gap-3 sm:grid-cols-2"><legend class="label sm:col-span-2">For CSV (or to override the file)</legend>
+    <div><label class="label" for="f-code">Code</label><input id="f-code" name="code" class="field" placeholder="PCI-DSS-4"></div>
+    <div><label class="label" for="f-name">Name</label><input id="f-name" name="name" class="field" placeholder="PCI DSS v4.0.1"></div>
+    <div><label class="label" for="f-version">Version</label><input id="f-version" name="version" class="field"></div>
+    <div><label class="label" for="f-level">Content level</label><select id="f-level" name="content_level" class="field"><option value="">(from file)</option><option value="full">Full text</option><option value="summary">Summaries</option><option value="reference">IDs + titles</option></select></div></fieldset>
+  <label class="inline-flex items-center gap-2 text-sm"><input type="checkbox" name="dry_run" value="1" class="rounded border-slate-300" checked> Dry run (validate only)</label>
+  <button class="btn btn-primary" type="submit">Import</button></form>
+<section class="card space-y-3 p-5 text-sm"><h2 class="font-semibold">File format</h2>
+  <p>YAML/JSON: a <code>framework</code> object (<code>code</code>, <code>name</code>, <code>version</code>, <code>content_level</code>, …) and a <code>requirements</code> list of <code>{ref, title, text, parent, is_domain}</code>. Quote numeric refs such as <code>"3.10"</code> in YAML.</p>
+  <p>CSV: columns <code>ref,title,text,parent,is_domain,baselines</code> (baselines separated by <code>|</code>).</p>
+  <p class="text-slate-600">Re-importing updates titles and text and never deletes requirements: your mappings stay intact.</p>
+  <form method="post" class="border-t border-slate-100 pt-3">{% csrf_token %}<input type="hidden" name="action" value="seed"><p class="mb-2 text-slate-600">Reload the six seeded frameworks and indicative mappings (safe to repeat):</p><button class="btn btn-secondary" type="submit">Load seeded frameworks</button></form></section>
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+# Indicative cross-framework requirement relationships (requirement <-> requirement).
+# A starting point for the cross-framework view; NOT an authoritative crosswalk.
+# Format: [framework code, ref] -> [framework code, ref], relationship (related | equivalent | subset | superset)
+schema: threatledger-crosswalk/1
+mappings:
+  - {from: ["ISO27001-2022", "A.8.5"], to: ["NIST-800-53-R5", "IA-2"], relationship: related}
+  - {from: ["ISO27001-2022", "A.5.17"], to: ["NIST-800-53-R5", "IA-5"], relationship: related}
+  - {from: ["ISO27001-2022", "A.5.15"], to: ["NIST-800-53-R5", "AC-3"], relationship: related}
+  - {from: ["ISO27001-2022", "A.5.18"], to: ["NIST-800-53-R5", "AC-2"], relationship: related}
+  - {from: ["ISO27001-2022", "A.8.2"], to: ["NIST-800-53-R5", "AC-6"], relationship: related}
+  - {from: ["ISO27001-2022", "A.8.7"], to: ["NIST-800-53-R5", "SI-3"], relationship: related}
+  - {from: ["ISO27001-2022", "A.8.8"], to: ["NIST-800-53-R5", "RA-5"], relationship: related}
+  - {from: ["ISO27001-2022", "A.8.8"], to: ["NIST-800-53-R5", "SI-2"], relationship: related}
+  - {from: ["ISO27001-2022", "A.8.9"], to: ["NIST-800-53-R5", "CM-6"], relationship: related}
+  - {from: ["ISO27001-2022", "A.8.13"], to: ["NIST-800-53-R5", "CP-9"], relationship: related}
+  - {from: ["ISO27001-2022", "A.8.15"], to: ["NIST-800-53-R5", "AU-2"], relationship: related}
+  - {from: ["ISO27001-2022", "A.8.16"], to: ["NIST-800-53-R5", "SI-4"], relationship: related}
+  - {from: ["ISO27001-2022", "A.8.22"], to: ["NIST-800-53-R5", "SC-7"], relationship: related}
+  - {from: ["ISO27001-2022", "A.8.24"], to: ["NIST-800-53-R5", "SC-13"], relationship: related}
+  - {from: ["ISO27001-2022", "A.6.3"], to: ["NIST-800-53-R5", "AT-2"], relationship: related}
+  - {from: ["ISO27001-2022", "A.5.24"], to: ["NIST-800-53-R5", "IR-8"], relationship: related}
+  - {from: ["ISO27001-2022", "A.5.26"], to: ["NIST-800-53-R5", "IR-4"], relationship: related}
+  - {from: ["ISO27001-2022", "A.5.19"], to: ["NIST-800-53-R5", "SR-6"], relationship: related}
+  - {from: ["ISO27001-2022", "A.5.34"], to: ["DPDP-2023", "S.8(5)"], relationship: related}
+  - {from: ["CIS-V8", "6.3"], to: ["NIST-800-53-R5", "IA-2(1)"], relationship: related}
+  - {from: ["CIS-V8", "6.5"], to: ["NIST-800-53-R5", "IA-2(1)"], relationship: related}
+  - {from: ["CIS-V8", "7.1"], to: ["ISO27001-2022", "A.8.8"], relationship: related}
+  - {from: ["CIS-V8", "8.2"], to: ["ISO27001-2022", "A.8.15"], relationship: related}
+  - {from: ["CIS-V8", "11.2"], to: ["ISO27001-2022", "A.8.13"], relationship: related}
+  - {from: ["CIS-V8", "14.1"], to: ["ISO27001-2022", "A.6.3"], relationship: related}
+  - {from: ["CIS-V8", "17.4"], to: ["ISO27001-2022", "A.5.26"], relationship: related}
+  - {from: ["SOC2-TSC-2017", "CC6.1"], to: ["ISO27001-2022", "A.5.15"], relationship: related}
+  - {from: ["SOC2-TSC-2017", "CC6.8"], to: ["ISO27001-2022", "A.8.7"], relationship: related}
+  - {from: ["SOC2-TSC-2017", "CC7.1"], to: ["ISO27001-2022", "A.8.8"], relationship: related}
+  - {from: ["SOC2-TSC-2017", "CC7.4"], to: ["ISO27001-2022", "A.5.26"], relationship: related}
+  - {from: ["SOC2-TSC-2017", "CC9.2"], to: ["ISO27001-2022", "A.5.19"], relationship: related}
+  - {from: ["SOC2-TSC-2017", "A1.2"], to: ["ISO27001-2022", "A.8.13"], relationship: related}
+  - {from: ["HIPAA-SR", "164.308(a)(1)(ii)(A)"], to: ["NIST-800-53-R5", "RA-3"], relationship: related}
+  - {from: ["HIPAA-SR", "164.308(a)(7)(ii)(A)"], to: ["NIST-800-53-R5", "CP-9"], relationship: related}
+  - {from: ["HIPAA-SR", "164.312(b)"], to: ["NIST-800-53-R5", "AU-2"], relationship: related}
+  - {from: ["HIPAA-SR", "164.312(d)"], to: ["NIST-800-53-R5", "IA-2"], relationship: related}
+  - {from: ["HIPAA-SR", "164.312(e)(2)(ii)"], to: ["NIST-800-53-R5", "SC-8"], relationship: related}
+  - {from: ["DPDP-2023", "S.8(6)"], to: ["NIST-800-53-R5", "IR-6"], relationship: related}

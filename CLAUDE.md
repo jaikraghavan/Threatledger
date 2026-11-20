@@ -56,6 +56,11 @@ The design lives in [PLAN.md](PLAN.md). Read it before changing models or scorin
   owners are limited to `services.OWNER_FIELDS`. Evidence uploads must go through `uploads.validate_upload()` and
   `services.add_file_evidence()`; never serve evidence from MEDIA_URL. Download only via `controls:evidence_download`.
   Recurring jobs are registered in `threatledger/core/schedules.py` (`JOBS`).
+- **Frameworks** (`threatledger/frameworks`): requirement status is derived (`compliance.py`), never stored; use
+  `services.framework_result(fw, org)` / `requirement_state()`. Seeds live in `data/frameworks/` and are rebuilt by
+  `scripts/build_nist_80053.py` and `scripts/seeds/build_seeds.py` (never hand-edit the NIST JSON). Always quote refs
+  in YAML. Starter-control requirement mappings live in `data/controls/starter.yaml` under `requirements:`.
+  Commands: `seed_frameworks`, `import_framework <file> [--dry-run]`, `import_ctid_mappings [--attack-version|--file]`.
 - Test helpers for risks/controls/techniques: `threatledger/risks/tests/helpers.py`.
 - Test bundles: `threatledger/attack/tests/bundles.py` (`bundle_v1`/`bundle_v2`). Use `test_importer._load()` to load one in a fixture.
 - Django admin is **superuser-only** break-glass. Everyday admin features belong in the app, behind `can()`.

@@ -191,7 +191,21 @@ class ControlDetailView(AccessControlMixin, DetailView):
         ctx["link_form"] = EvidenceLinkForm()
         ctx["test_form"] = ControlTestForm(control=control)
         ctx["max_upload_mb"] = max_upload_bytes() // (1024 * 1024)
+        ctx["requirements_by_framework"] = _requirements_by_framework(control)
         return ctx
+
+
+def _requirements_by_framework(control: Control) -> list[tuple[Any, list[Any]]]:
+    from threatledger.frameworks.models import ControlRequirement
+
+    grouped: dict[Any, list[Any]] = {}
+    for link in (
+        ControlRequirement.objects.filter(control=control)
+        .select_related("requirement__framework")
+        .order_by("requirement__framework__name", "requirement__order")
+    ):
+        grouped.setdefault(link.requirement.framework, []).append(link.requirement)
+    return list(grouped.items())
 
 
 def _mapping_context(user: Any, control: Control) -> dict[str, Any]:

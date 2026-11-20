@@ -1,0 +1,235 @@
+# Seeded by ThreatLedger. INDICATIVE: verify against the official text.
+schema: threatledger-framework/1
+framework:
+  code: SOC2-TSC-2017
+  name: SOC 2 Trust Services Criteria
+  version: 2017 (rev. 2022)
+  publisher: AICPA
+  source_url: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
+  licence_note: 'AICPA copyright: criterion identifiers and paraphrased titles only.'
+  content_level: reference
+  description: Common criteria (security) plus availability, confidentiality, processing integrity and privacy categories.
+    Mark categories outside your report scope N/A.
+requirements:
+- ref: CC1
+  title: Control environment
+  is_domain: true
+- ref: CC1.1
+  title: Commitment to integrity and ethical values
+  parent: CC1
+- ref: CC1.2
+  title: Board independence and oversight of internal control
+  parent: CC1
+- ref: CC1.3
+  title: Structures, reporting lines, authorities and responsibilities
+  parent: CC1
+- ref: CC1.4
+  title: Attracting, developing and retaining competent people
+  parent: CC1
+- ref: CC1.5
+  title: Accountability for internal control responsibilities
+  parent: CC1
+- ref: CC2
+  title: Communication and information
+  is_domain: true
+- ref: CC2.1
+  title: Relevant, quality information supports internal control
+  parent: CC2
+- ref: CC2.2
+  title: Internal communication of objectives and responsibilities
+  parent: CC2
+- ref: CC2.3
+  title: Communication with external parties
+  parent: CC2
+- ref: CC3
+  title: Risk assessment
+  is_domain: true
+- ref: CC3.1
+  title: Objectives specified clearly enough to identify risks
+  parent: CC3
+- ref: CC3.2
+  title: Identification and analysis of risks
+  parent: CC3
+- ref: CC3.3
+  title: Consideration of fraud risk
+  parent: CC3
+- ref: CC3.4
+  title: Identification of significant changes
+  parent: CC3
+- ref: CC4
+  title: Monitoring activities
+  is_domain: true
+- ref: CC4.1
+  title: Ongoing and/or separate evaluations of controls
+  parent: CC4
+- ref: CC4.2
+  title: Timely communication of control deficiencies
+  parent: CC4
+- ref: CC5
+  title: Control activities
+  is_domain: true
+- ref: CC5.1
+  title: Control activities selected to mitigate risks
+  parent: CC5
+- ref: CC5.2
+  title: General controls over technology
+  parent: CC5
+- ref: CC5.3
+  title: Control activities deployed through policies and procedures
+  parent: CC5
+- ref: CC6
+  title: Logical and physical access controls
+  is_domain: true
+- ref: CC6.1
+  title: Logical access security over protected information assets
+  parent: CC6
+- ref: CC6.2
+  title: Registration and authorisation before access is granted
+  parent: CC6
+- ref: CC6.3
+  title: Role-based access, least privilege and segregation of duties
+  parent: CC6
+- ref: CC6.4
+  title: Physical access restrictions
+  parent: CC6
+- ref: CC6.5
+  title: Protection and disposal of assets no longer needed
+  parent: CC6
+- ref: CC6.6
+  title: Protection against threats from outside system boundaries
+  parent: CC6
+- ref: CC6.7
+  title: Protection of information in transmission and movement
+  parent: CC6
+- ref: CC6.8
+  title: Prevention and detection of unauthorised or malicious software
+  parent: CC6
+- ref: CC7
+  title: System operations
+  is_domain: true
+- ref: CC7.1
+  title: Detection of configuration changes and vulnerabilities
+  parent: CC7
+- ref: CC7.2
+  title: Monitoring of system components for anomalies
+  parent: CC7
+- ref: CC7.3
+  title: Evaluation of security events to identify incidents
+  parent: CC7
+- ref: CC7.4
+  title: Incident response
+  parent: CC7
+- ref: CC7.5
+  title: Recovery from security incidents
+  parent: CC7
+- ref: CC8
+  title: Change management
+  is_domain: true
+- ref: CC8.1
+  title: Authorised, tested and approved changes
+  parent: CC8
+- ref: CC9
+  title: Risk mitigation
+  is_domain: true
+- ref: CC9.1
+  title: Mitigation of business disruption risk
+  parent: CC9
+- ref: CC9.2
+  title: Vendor and business partner risk management
+  parent: CC9
+- ref: A1
+  title: Availability
+  is_domain: true
+- ref: A1.1
+  title: Capacity management
+  parent: A1
+- ref: A1.2
+  title: Environmental protection, backup and recovery infrastructure
+  parent: A1
+- ref: A1.3
+  title: Recovery plan testing
+  parent: A1
+- ref: C1
+  title: Confidentiality
+  is_domain: true
+- ref: C1.1
+  title: Identification and protection of confidential information
+  parent: C1
+- ref: C1.2
+  title: Disposal of confidential information
+  parent: C1
+- ref: PI1
+  title: Processing integrity
+  is_domain: true
+- ref: PI1.1
+  title: Definitions of data and processing specifications
+  parent: PI1
+- ref: PI1.2
+  title: Complete and accurate inputs
+  parent: PI1
+- ref: PI1.3
+  title: Processing meets specifications
+  parent: PI1
+- ref: PI1.4
+  title: Complete, accurate and timely outputs
+  parent: PI1
+- ref: PI1.5
+  title: Storage of inputs, in-process items and outputs
+  parent: PI1
+- ref: P
+  title: Privacy
+  is_domain: true
+- ref: P1.1
+  title: Privacy notice
+  parent: P
+- ref: P2.1
+  title: Choice and consent
+  parent: P
+- ref: P3.1
+  title: Collection limited to identified purposes
+  parent: P
+- ref: P3.2
+  title: Explicit consent for collection where required
+  parent: P
+- ref: P4.1
+  title: Use limited to identified purposes
+  parent: P
+- ref: P4.2
+  title: Retention of personal information
+  parent: P
+- ref: P4.3
+  title: Secure disposal of personal information
+  parent: P
+- ref: P5.1
+  title: Data subject access
+  parent: P
+- ref: P5.2
+  title: Correction of personal information
+  parent: P
+- ref: P6.1
+  title: Disclosure to third parties with consent
+  parent: P
+- ref: P6.2
+  title: Record of authorised disclosures
+  parent: P
+- ref: P6.3
+  title: Record of unauthorised disclosures
+  parent: P
+- ref: P6.4
+  title: Third-party privacy commitments
+  parent: P
+- ref: P6.5
+  title: Third-party notification of unauthorised disclosures
+  parent: P
+- ref: P6.6
+  title: Breach notification to data subjects and others
+  parent: P
+- ref: P6.7
+  title: Accounting of disclosures
+  parent: P
+- ref: P7.1
+  title: Quality of personal information
+  parent: P
+- ref: P8.1
+  title: Inquiries, complaints and disputes
+  parent: P

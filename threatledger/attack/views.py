@@ -204,6 +204,11 @@ def _org_context(user: Any, technique: Technique) -> dict[str, Any]:
         if can(user, Cap.VIEW_CONTROLS)
         else [],
         "org_risks": visible_risks(user).live().filter(techniques=technique).order_by("ref"),
+        "framework_requirements": technique.requirement_links.select_related(
+            "requirement__framework"
+        ).order_by("requirement__order")
+        if can(user, Cap.VIEW_FRAMEWORKS)
+        else [],
     }
 
 

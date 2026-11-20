@@ -1,0 +1,1 @@
+<svg class="h-2 w-full overflow-hidden rounded-full" viewBox="0 0 100 2" preserveAspectRatio="none" role="img" aria-label="{{ s.met }} met, {{ s.partial }} partial, {{ s.gap }} gap, {{ s.no_control }} with no control"><rect width="100" height="2" class="fill-slate-200"/>{% for x, w, css in s.bar %}<rect x="{{ x }}" width="{{ w }}" height="2" class="{{ css }}"/>{% endfor %}</svg>

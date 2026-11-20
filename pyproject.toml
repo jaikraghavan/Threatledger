@@ -54,6 +54,7 @@ ignore = [
 "**/tests/**" = ["S101", "S105", "S106", "E501", "PT018"]
 "tests/**" = ["S101", "S105", "S106", "E501", "PT018"]
 "conftest.py" = ["S105"]
+"scripts/seeds/*.py" = ["E501", "S101"]  # data scripts: long literals, sanity asserts
 
 [tool.ruff.lint.isort]
 known-first-party = ["threatledger", "config"]
@@ -65,7 +66,7 @@ plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
 check_untyped_defs = true
 warn_unused_ignores = true
 ignore_missing_imports = true
-exclude = ["/migrations/"]
+exclude = ["/migrations/", "^scripts/seeds/"]
 
 [tool.django-stubs]
 django_settings_module = "config.settings.test"

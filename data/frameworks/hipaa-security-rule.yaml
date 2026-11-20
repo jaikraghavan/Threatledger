@@ -1,0 +1,274 @@
+# Seeded by ThreatLedger. INDICATIVE: verify against the official text.
+# Plain-language summaries, not the regulatory text: see 45 CFR Part 164 Subpart C.
+schema: threatledger-framework/1
+framework:
+  code: HIPAA-SR
+  name: HIPAA Security Rule
+  version: 45 CFR 164 Subpart C
+  publisher: US Department of Health and Human Services
+  source_url: https://www.ecfr.gov/current/title-45/subtitle-A/subchapter-C/part-164/subpart-C
+  licence_note: US federal regulation (public domain). Section headings are official; descriptions are plain-language
+    summaries. Check eCFR for the current text and amendments.
+  content_level: summary
+  description: Administrative, physical and technical safeguards for electronic protected health information (ePHI).
+    (R) = required, (A) = addressable implementation specification.
+requirements:
+- ref: '164.308'
+  title: §164.308 Administrative safeguards
+  is_domain: true
+- ref: 164.308(a)(1)
+  title: Security management process
+  parent: '164.308'
+  is_domain: true
+- ref: 164.308(a)(1)(ii)(A)
+  title: Risk analysis (Required)
+  text: Conduct an accurate and thorough assessment of risks and vulnerabilities to ePHI.
+  parent: 164.308(a)(1)
+- ref: 164.308(a)(1)(ii)(B)
+  title: Risk management (Required)
+  text: Implement measures that reduce risks and vulnerabilities to a reasonable and appropriate level.
+  parent: 164.308(a)(1)
+- ref: 164.308(a)(1)(ii)(C)
+  title: Sanction policy (Required)
+  text: Apply sanctions to workforce members who fail to comply with security policies.
+  parent: 164.308(a)(1)
+- ref: 164.308(a)(1)(ii)(D)
+  title: Information system activity review (Required)
+  text: Regularly review records of system activity such as audit logs, access and incident reports.
+  parent: 164.308(a)(1)
+- ref: 164.308(a)(2)
+  title: Assigned security responsibility (Required)
+  text: Identify the security official responsible for security policies and procedures.
+  parent: '164.308'
+- ref: 164.308(a)(3)
+  title: Workforce security
+  parent: '164.308'
+  is_domain: true
+- ref: 164.308(a)(3)(ii)(A)
+  title: Authorization and/or supervision (Addressable)
+  text: Authorise or supervise workforce members who work with ePHI.
+  parent: 164.308(a)(3)
+- ref: 164.308(a)(3)(ii)(B)
+  title: Workforce clearance procedure (Addressable)
+  text: Determine that a workforce member's access to ePHI is appropriate.
+  parent: 164.308(a)(3)
+- ref: 164.308(a)(3)(ii)(C)
+  title: Termination procedures (Addressable)
+  text: End access to ePHI when employment or engagement ends.
+  parent: 164.308(a)(3)
+- ref: 164.308(a)(4)
+  title: Information access management
+  parent: '164.308'
+  is_domain: true
+- ref: 164.308(a)(4)(ii)(A)
+  title: Isolating health care clearinghouse functions (Required)
+  text: Protect ePHI of a clearinghouse from the larger organisation.
+  parent: 164.308(a)(4)
+- ref: 164.308(a)(4)(ii)(B)
+  title: Access authorization (Addressable)
+  text: Policies for granting access to ePHI.
+  parent: 164.308(a)(4)
+- ref: 164.308(a)(4)(ii)(C)
+  title: Access establishment and modification (Addressable)
+  text: Establish, document, review and modify access rights.
+  parent: 164.308(a)(4)
+- ref: 164.308(a)(5)
+  title: Security awareness and training
+  parent: '164.308'
+  is_domain: true
+- ref: 164.308(a)(5)(ii)(A)
+  title: Security reminders (Addressable)
+  text: Periodic security updates to the workforce.
+  parent: 164.308(a)(5)
+- ref: 164.308(a)(5)(ii)(B)
+  title: Protection from malicious software (Addressable)
+  text: Procedures to guard against, detect and report malicious software.
+  parent: 164.308(a)(5)
+- ref: 164.308(a)(5)(ii)(C)
+  title: Log-in monitoring (Addressable)
+  text: Monitor log-in attempts and report discrepancies.
+  parent: 164.308(a)(5)
+- ref: 164.308(a)(5)(ii)(D)
+  title: Password management (Addressable)
+  text: Procedures for creating, changing and safeguarding passwords.
+  parent: 164.308(a)(5)
+- ref: 164.308(a)(6)
+  title: Security incident procedures
+  parent: '164.308'
+  is_domain: true
+- ref: 164.308(a)(6)(ii)
+  title: Response and reporting (Required)
+  text: Identify, respond to, mitigate and document security incidents.
+  parent: 164.308(a)(6)
+- ref: 164.308(a)(7)
+  title: Contingency plan
+  parent: '164.308'
+  is_domain: true
+- ref: 164.308(a)(7)(ii)(A)
+  title: Data backup plan (Required)
+  text: Create and maintain retrievable exact copies of ePHI.
+  parent: 164.308(a)(7)
+- ref: 164.308(a)(7)(ii)(B)
+  title: Disaster recovery plan (Required)
+  text: Procedures to restore any loss of data.
+  parent: 164.308(a)(7)
+- ref: 164.308(a)(7)(ii)(C)
+  title: Emergency mode operation plan (Required)
+  text: Continue critical processes protecting ePHI during an emergency.
+  parent: 164.308(a)(7)
+- ref: 164.308(a)(7)(ii)(D)
+  title: Testing and revision procedures (Addressable)
+  text: Periodically test and revise contingency plans.
+  parent: 164.308(a)(7)
+- ref: 164.308(a)(7)(ii)(E)
+  title: Applications and data criticality analysis (Addressable)
+  text: Assess the relative criticality of applications and data.
+  parent: 164.308(a)(7)
+- ref: 164.308(a)(8)
+  title: Evaluation (Required)
+  text: Periodic technical and non-technical evaluation of security against the rule.
+  parent: '164.308'
+- ref: 164.308(b)(1)
+  title: Business associate contracts and other arrangements
+  parent: '164.308'
+  is_domain: true
+- ref: 164.308(b)(3)
+  title: Written contract or other arrangement (Required)
+  text: Document business associate assurances in a written contract or arrangement.
+  parent: 164.308(b)(1)
+- ref: '164.310'
+  title: §164.310 Physical safeguards
+  is_domain: true
+- ref: 164.310(a)(1)
+  title: Facility access controls
+  parent: '164.310'
+  is_domain: true
+- ref: 164.310(a)(2)(i)
+  title: Contingency operations (Addressable)
+  text: Allow facility access to restore data during emergencies.
+  parent: 164.310(a)(1)
+- ref: 164.310(a)(2)(ii)
+  title: Facility security plan (Addressable)
+  text: Safeguard facilities and equipment from unauthorised access, tampering and theft.
+  parent: 164.310(a)(1)
+- ref: 164.310(a)(2)(iii)
+  title: Access control and validation procedures (Addressable)
+  text: Control and validate a person's access to facilities based on role.
+  parent: 164.310(a)(1)
+- ref: 164.310(a)(2)(iv)
+  title: Maintenance records (Addressable)
+  text: Document repairs and modifications to physical security components.
+  parent: 164.310(a)(1)
+- ref: 164.310(b)
+  title: Workstation use (Required)
+  text: Specify proper functions and physical surroundings of workstations accessing ePHI.
+  parent: '164.310'
+- ref: 164.310(c)
+  title: Workstation security (Required)
+  text: Physical safeguards restricting workstation access to authorised users.
+  parent: '164.310'
+- ref: 164.310(d)(1)
+  title: Device and media controls
+  parent: '164.310'
+  is_domain: true
+- ref: 164.310(d)(2)(i)
+  title: Disposal (Required)
+  text: Final disposition of ePHI and the hardware or media storing it.
+  parent: 164.310(d)(1)
+- ref: 164.310(d)(2)(ii)
+  title: Media re-use (Required)
+  text: Remove ePHI from media before re-use.
+  parent: 164.310(d)(1)
+- ref: 164.310(d)(2)(iii)
+  title: Accountability (Addressable)
+  text: Record movements of hardware and media and the person responsible.
+  parent: 164.310(d)(1)
+- ref: 164.310(d)(2)(iv)
+  title: Data backup and storage (Addressable)
+  text: Create a retrievable copy of ePHI before moving equipment.
+  parent: 164.310(d)(1)
+- ref: '164.312'
+  title: §164.312 Technical safeguards
+  is_domain: true
+- ref: 164.312(a)(1)
+  title: Access control
+  parent: '164.312'
+  is_domain: true
+- ref: 164.312(a)(2)(i)
+  title: Unique user identification (Required)
+  text: Assign a unique name and/or number to identify and track users.
+  parent: 164.312(a)(1)
+- ref: 164.312(a)(2)(ii)
+  title: Emergency access procedure (Required)
+  text: Obtain necessary ePHI during an emergency.
+  parent: 164.312(a)(1)
+- ref: 164.312(a)(2)(iii)
+  title: Automatic logoff (Addressable)
+  text: Terminate electronic sessions after a period of inactivity.
+  parent: 164.312(a)(1)
+- ref: 164.312(a)(2)(iv)
+  title: Encryption and decryption (Addressable)
+  text: Encrypt and decrypt ePHI at rest.
+  parent: 164.312(a)(1)
+- ref: 164.312(b)
+  title: Audit controls (Required)
+  text: Record and examine activity in systems containing ePHI.
+  parent: '164.312'
+- ref: 164.312(c)(1)
+  title: Integrity
+  parent: '164.312'
+  is_domain: true
+- ref: 164.312(c)(2)
+  title: Mechanism to authenticate electronic PHI (Addressable)
+  text: Corroborate that ePHI has not been altered or destroyed improperly.
+  parent: 164.312(c)(1)
+- ref: 164.312(d)
+  title: Person or entity authentication (Required)
+  text: Verify that a person or entity seeking access is who they claim to be.
+  parent: '164.312'
+- ref: 164.312(e)(1)
+  title: Transmission security
+  parent: '164.312'
+  is_domain: true
+- ref: 164.312(e)(2)(i)
+  title: Integrity controls (Addressable)
+  text: Ensure transmitted ePHI is not improperly modified without detection.
+  parent: 164.312(e)(1)
+- ref: 164.312(e)(2)(ii)
+  title: Encryption (Addressable)
+  text: Encrypt ePHI in transit whenever deemed appropriate.
+  parent: 164.312(e)(1)
+- ref: '164.314'
+  title: §164.314 Organizational requirements
+  is_domain: true
+- ref: 164.314(a)(1)
+  title: Business associate contracts or other arrangements (Required)
+  text: Contracts must require business associates to safeguard ePHI and report incidents.
+  parent: '164.314'
+- ref: 164.314(b)(1)
+  title: Requirements for group health plans (Required)
+  text: Plan documents must require the sponsor to safeguard ePHI.
+  parent: '164.314'
+- ref: '164.316'
+  title: §164.316 Policies, procedures and documentation
+  is_domain: true
+- ref: 164.316(a)
+  title: Policies and procedures (Required)
+  text: Implement reasonable and appropriate policies and procedures to comply with the rule.
+  parent: '164.316'
+- ref: 164.316(b)(1)
+  title: Documentation
+  parent: '164.316'
+  is_domain: true
+- ref: 164.316(b)(2)(i)
+  title: Time limit (Required)
+  text: Retain documentation for 6 years from creation or last effective date.
+  parent: 164.316(b)(1)
+- ref: 164.316(b)(2)(ii)
+  title: Availability (Required)
+  text: Make documentation available to those responsible for implementing procedures.
+  parent: 164.316(b)(1)
+- ref: 164.316(b)(2)(iii)
+  title: Updates (Required)
+  text: Review documentation periodically and update in response to changes.
+  parent: 164.316(b)(1)

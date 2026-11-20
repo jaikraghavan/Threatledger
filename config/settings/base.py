@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     "threatledger.controls",
     "threatledger.coverage",
     "threatledger.risks",
+    "threatledger.frameworks",
 ]
 
 MIDDLEWARE = [

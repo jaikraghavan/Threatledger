@@ -49,18 +49,22 @@ class FakeResponse(io.BytesIO):
 
 def test_download_returns_data_and_hash():
     body = b'{"type": "bundle"}'
-    with mock.patch.object(source.urllib.request, "urlopen", return_value=FakeResponse(body)) as op:
+    with mock.patch(
+        "threatledger.core.fetch.urllib.request.urlopen", return_value=FakeResponse(body)
+    ) as op:
         fetched = download("enterprise-attack")
     assert fetched.data == body
     assert fetched.sha256 == hashlib.sha256(body).hexdigest()
     request = op.call_args.args[0]
     assert request.full_url == BASE + "enterprise-attack.json"
-    assert request.get_header("User-agent") == "ThreatLedger-ATTACK-importer"
+    assert request.get_header("User-agent") == "ThreatLedger-data-importer"
 
 
 def test_download_verifies_expected_hash():
     with (
-        mock.patch.object(source.urllib.request, "urlopen", return_value=FakeResponse(b"{}")),
+        mock.patch(
+            "threatledger.core.fetch.urllib.request.urlopen", return_value=FakeResponse(b"{}")
+        ),
         pytest.raises(SourceError, match="SHA-256 mismatch"),
     ):
         download("enterprise-attack", expected_sha256="0" * 64)
@@ -69,7 +73,7 @@ def test_download_verifies_expected_hash():
 def test_download_refuses_redirect_to_other_host():
     resp = FakeResponse(b"{}", url="https://evil.example/enterprise-attack.json")
     with (
-        mock.patch.object(source.urllib.request, "urlopen", return_value=resp),
+        mock.patch("threatledger.core.fetch.urllib.request.urlopen", return_value=resp),
         pytest.raises(SourceError, match="refusing to fetch"),
     ):
         download("enterprise-attack")
@@ -89,7 +93,9 @@ def test_download_refuses_declared_oversize():
 @override_settings(ATTACK_MAX_BUNDLE_BYTES=10)
 def test_download_refuses_streamed_oversize():
     with (
-        mock.patch.object(source.urllib.request, "urlopen", return_value=FakeResponse(b"x" * 50)),
+        mock.patch(
+            "threatledger.core.fetch.urllib.request.urlopen", return_value=FakeResponse(b"x" * 50)
+        ),
         pytest.raises(SourceError, match="exceeds size limit"),
     ):
         download("enterprise-attack")
@@ -97,7 +103,9 @@ def test_download_refuses_streamed_oversize():
 
 def test_download_wraps_network_errors():
     with (
-        mock.patch.object(source.urllib.request, "urlopen", side_effect=OSError("no route")),
+        mock.patch(
+            "threatledger.core.fetch.urllib.request.urlopen", side_effect=OSError("no route")
+        ),
         pytest.raises(SourceError, match="download failed: OSError"),
     ):
         download("enterprise-attack", "20.1")

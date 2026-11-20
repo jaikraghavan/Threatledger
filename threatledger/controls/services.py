@@ -354,6 +354,7 @@ class SeedResult:
     created: list[str]
     skipped: list[str]
     missing_attack_ids: list[str]
+    requirement_mappings: int = 0
 
 
 @transaction.atomic
@@ -401,6 +402,10 @@ def seed_starter_controls(
             changes={"ref": [None, ref], "source": [None, "starter set"]},
         )
         result.created.append(ref)
+    # Framework requirement mappings, if frameworks are loaded (seeding order doesn't matter).
+    from threatledger.frameworks.services import apply_starter_requirement_mappings
+
+    result.requirement_mappings = apply_starter_requirement_mappings(org)
     return result
 
 

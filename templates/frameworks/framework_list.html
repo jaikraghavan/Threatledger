@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Compliance{% endblock %}
+{% block content %}
+<div class="mb-2 flex flex-wrap items-center justify-between gap-3"><h1 class="text-2xl font-semibold">Compliance</h1>
+  <div class="flex gap-2"><a class="btn btn-secondary" href="{% url 'frameworks:cross' %}">Cross-framework view</a>{% if can_import %}<a class="btn btn-secondary" href="{% url 'frameworks:import' %}">Import framework</a>{% endif %}</div></div>
+<p class="mb-4 text-sm text-slate-600">Requirement status is derived from the controls mapped to it: change a control's status and every framework updates. Score = (met + ½ partial) ÷ tracked requirements.</p>
+{% include "frameworks/_indicative.html" %}
+{% if not adopted and not not_adopted %}<div class="card p-6"><h2 class="font-semibold">No frameworks loaded</h2><p class="mt-1 text-sm text-slate-600">Load NIST SP 800-53 r5, ISO 27001:2022, SOC 2, HIPAA, CIS v8 and India's DPDP Act.</p>
+  {% if can_import %}<form method="post" action="{% url 'frameworks:import' %}" class="mt-3">{% csrf_token %}<input type="hidden" name="action" value="seed"><button class="btn btn-primary" type="submit">Load seeded frameworks</button></form>{% else %}<p class="mt-2 text-xs text-slate-500">Ask an administrator, or run <code>manage.py seed_frameworks</code>.</p>{% endif %}</div>{% endif %}
+<div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+{% for r in adopted %}{% with s=r.summary %}
+  <a href="{% url 'frameworks:detail' r.framework.code %}" class="card block p-5 hover:border-brand-500">
+    <div class="flex items-start justify-between gap-3"><div><h2 class="font-semibold">{{ r.framework.name }}</h2><p class="text-xs text-slate-500">{{ r.framework.version }}{% if r.settings.baseline %} · {{ r.settings.baseline|capfirst }} baseline{% endif %} · {{ r.framework.get_content_level_display }}</p></div>
+      <div class="text-right"><div class="text-2xl font-semibold">{{ s.percent }}%</div></div></div>
+    <div class="mt-3">{% include "frameworks/_bar.html" %}</div>
+    <div class="mt-2 flex flex-wrap gap-2 text-xs"><span class="badge req-met">{{ s.met }} met</span><span class="badge req-partial">{{ s.partial }} partial</span><span class="badge req-gap">{{ s.gap }} gap</span><span class="badge req-no_control">{{ s.no_control }} no control</span><span class="text-slate-500">of {{ s.tracked }}</span></div>
+  </a>
+{% endwith %}{% endfor %}
+</div>
+{% if not_adopted %}<h2 class="mt-8 mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500">Not adopted</h2>
+<ul class="space-y-2">{% for r in not_adopted %}<li class="card flex items-center justify-between p-3 text-sm"><span>{{ r.framework.name }} <span class="text-xs text-slate-500">{{ r.framework.version }}</span></span>
+  {% if can_edit %}<form method="post" action="{% url 'frameworks:settings' r.framework.code %}">{% csrf_token %}<input type="hidden" name="adopted" value="1"><input type="hidden" name="next" value="list"><button class="btn btn-secondary px-2 py-1 text-xs" type="submit">Adopt</button></form>{% endif %}</li>{% endfor %}</ul>{% endif %}
+{% endblock %}

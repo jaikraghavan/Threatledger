@@ -14,6 +14,7 @@ NAV_ITEMS: list[tuple[str, str, Cap, str]] = [
     ("Dashboard", "core:home", Cap.VIEW_DASHBOARD, "home"),
     ("Risk register", "risks:list", Cap.VIEW_RISKS, "list"),
     ("Controls", "controls:list", Cap.VIEW_CONTROLS, "shield"),
+    ("Compliance", "frameworks:list", Cap.VIEW_FRAMEWORKS, "check"),
     ("Techniques", "attack:technique_list", Cap.VIEW_ATTACK, "grid"),
     ("Threat groups", "attack:group_list", Cap.VIEW_ATTACK, "users"),
     ("Audit log", "audit:list", Cap.VIEW_AUDIT_LOG, "log"),

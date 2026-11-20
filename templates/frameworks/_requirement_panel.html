@@ -1,0 +1,12 @@
+<section id="req-panel" class="card p-5" aria-labelledby="req-ctl-h">
+  {% if panel_error %}<div class="mb-3 rounded-md border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-800" role="alert">{{ panel_error }}</div>{% endif %}
+  <div class="mb-3 flex items-center justify-between gap-2"><h2 id="req-ctl-h" class="font-semibold">Controls ({{ controls|length }})</h2>
+    {% if status %}<span class="badge req-{{ status.value }}">{{ status.label }}</span>{% elif not req.is_domain %}<span class="badge bg-slate-100 text-slate-500">Not tracked</span>{% endif %}</div>
+  <ul class="divide-y divide-slate-100 text-sm">{% for c, link in controls %}<li class="flex items-center justify-between gap-2 py-2">
+    <span><a class="font-mono text-xs text-brand-700 hover:underline" href="{% url 'controls:detail' c.ref %}">{{ c.ref }}</a> {{ c.name }} <span class="badge status-{{ c.status }} ml-1">{{ c.get_status_display }}</span>{% if link.indicative %} <span class="badge bg-slate-100 text-slate-600">indicative</span>{% endif %}</span>
+    {% if can_map and link %}<button class="text-xs text-slate-500 hover:text-red-700" hx-post="{% url 'frameworks:requirement_map' req.framework.code req.pk %}" hx-vals='{"remove": "{{ link.pk }}"}' hx-target="#req-panel" hx-swap="outerHTML" aria-label="Unmap {{ c.ref }}">Unmap</button>{% endif %}</li>
+  {% empty %}<li class="py-2 text-slate-500">No control mapped: this requirement counts as a gap.</li>{% endfor %}</ul>
+  <p class="mt-2 text-xs text-slate-500">Met when every mapped control is implemented; partial when at least one is implemented or partial.</p>
+  {% if can_map %}<div class="mt-3"><label class="label" for="map-q">Map a control</label><input id="map-q" name="q" type="search" class="field" placeholder="CTL-…" autocomplete="off"
+    hx-get="{% url 'frameworks:requirement_control_search' req.framework.code req.pk %}" hx-trigger="input changed delay:250ms" hx-target="#map-results"><div id="map-results" class="mt-2"></div></div>{% endif %}
+</section>

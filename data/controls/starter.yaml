@@ -3,7 +3,7 @@
 # Loaded by `manage.py seed_controls` (or "Load starter controls" in the app). Idempotent:
 # existing controls (matched by ref) are never overwritten.
 #
-# ATT&CK mappings are INDICATIVE — a sensible starting point, not an assessment. Review and
+# ATT&CK and framework requirement mappings are INDICATIVE — a sensible starting point, not an assessment. Review and
 # tailor them to how each control is actually deployed in your environment.
 # Mitigation IDs verified against MITRE ATT&CK Enterprise v20.1.
 
@@ -16,6 +16,13 @@ controls:
       accounts, using phishing-resistant factors (FIDO2/passkeys) where possible.
     mitigations: [M1032]
     techniques: [T1078, T1110, T1133]
+    requirements:  # indicative
+      NIST-800-53-R5: ["IA-2", "IA-2(1)", "IA-2(2)"]
+      ISO27001-2022: ["A.8.5", "A.5.17"]
+      SOC2-TSC-2017: ["CC6.1"]
+      HIPAA-SR: ["164.312(d)"]
+      CIS-V8: ["6.3", "6.4", "6.5"]
+      DPDP-2023: ["S.8(5)"]
 
   - ref: CTL-EDR
     name: Endpoint detection & response
@@ -25,6 +32,13 @@ controls:
       alerts triaged 24×7 and tamper protection on.
     mitigations: [M1040, M1049, M1038]
     techniques: [T1059, T1003, T1486]
+    requirements:  # indicative
+      NIST-800-53-R5: ["SI-3", "SI-4"]
+      ISO27001-2022: ["A.8.7", "A.8.16"]
+      SOC2-TSC-2017: ["CC6.8", "CC7.2"]
+      HIPAA-SR: ["164.308(a)(5)(ii)(B)"]
+      CIS-V8: ["10.1", "10.7", "13.2"]
+      DPDP-2023: ["S.8(5)"]
 
   - ref: CTL-PATCH
     name: Vulnerability & patch management
@@ -34,6 +48,12 @@ controls:
       vulnerabilities remediated within 14 days, others within 30 days.
     mitigations: [M1051, M1016]
     techniques: [T1190]
+    requirements:  # indicative
+      NIST-800-53-R5: ["RA-5", "SI-2"]
+      ISO27001-2022: ["A.8.8"]
+      SOC2-TSC-2017: ["CC7.1"]
+      HIPAA-SR: ["164.308(a)(1)(ii)(B)"]
+      CIS-V8: ["7.1", "7.3", "7.4", "7.5", "7.7"]
 
   - ref: CTL-PAM
     name: Privileged access management
@@ -43,6 +63,12 @@ controls:
       elevation, session recording, and quarterly access reviews.
     mitigations: [M1026, M1018]
     techniques: []
+    requirements:  # indicative
+      NIST-800-53-R5: ["AC-2", "AC-6", "AC-6(5)"]
+      ISO27001-2022: ["A.8.2", "A.5.18"]
+      SOC2-TSC-2017: ["CC6.3"]
+      HIPAA-SR: ["164.308(a)(4)(ii)(B)", "164.308(a)(4)(ii)(C)"]
+      CIS-V8: ["5.4", "6.8", "12.8"]
 
   - ref: CTL-BACKUP
     name: Immutable backups & restore testing
@@ -52,6 +78,12 @@ controls:
       against documented RTO/RPO.
     mitigations: [M1053]
     techniques: [T1486]
+    requirements:  # indicative
+      NIST-800-53-R5: ["CP-9", "CP-10"]
+      ISO27001-2022: ["A.8.13"]
+      SOC2-TSC-2017: ["A1.2", "A1.3"]
+      HIPAA-SR: ["164.308(a)(7)(ii)(A)", "164.308(a)(7)(ii)(B)", "164.310(d)(2)(iv)"]
+      CIS-V8: ["11.1", "11.2", "11.3", "11.4", "11.5"]
 
   - ref: CTL-SIEM
     name: Centralised logging & SIEM monitoring
@@ -61,6 +93,12 @@ controls:
       12-month retention, use-case driven detections and an on-call alert process.
     mitigations: [M1047]
     techniques: []
+    requirements:  # indicative
+      NIST-800-53-R5: ["AU-2", "AU-6", "AU-12", "SI-4"]
+      ISO27001-2022: ["A.8.15", "A.8.16"]
+      SOC2-TSC-2017: ["CC7.2"]
+      HIPAA-SR: ["164.312(b)", "164.308(a)(1)(ii)(D)"]
+      CIS-V8: ["8.2", "8.9", "8.11", "13.1"]
 
   - ref: CTL-SEGMENT
     name: Network segmentation
@@ -70,6 +108,11 @@ controls:
       between zones; egress filtering at the perimeter.
     mitigations: [M1030, M1037, M1035]
     techniques: []
+    requirements:  # indicative
+      NIST-800-53-R5: ["SC-7", "AC-4"]
+      ISO27001-2022: ["A.8.22", "A.8.20"]
+      SOC2-TSC-2017: ["CC6.6"]
+      CIS-V8: ["12.2", "13.4"]
 
   - ref: CTL-EMAIL
     name: Email security gateway
@@ -79,6 +122,11 @@ controls:
       enforcement and external-sender banners.
     mitigations: [M1049, M1031, M1054, M1021]
     techniques: [T1566]
+    requirements:  # indicative
+      NIST-800-53-R5: ["SI-8", "SI-3"]
+      ISO27001-2022: ["A.8.7", "A.8.23"]
+      SOC2-TSC-2017: ["CC6.8"]
+      CIS-V8: ["9.2", "9.5", "9.6", "9.7"]
 
   - ref: CTL-AWARE
     name: Security awareness training
@@ -88,6 +136,12 @@ controls:
       for repeat clickers and high-risk roles.
     mitigations: [M1017]
     techniques: [T1566]
+    requirements:  # indicative
+      NIST-800-53-R5: ["AT-2", "AT-2(2)"]
+      ISO27001-2022: ["A.6.3"]
+      SOC2-TSC-2017: ["CC1.4", "CC2.2"]
+      HIPAA-SR: ["164.308(a)(5)(ii)(A)"]
+      CIS-V8: ["14.1", "14.2", "14.6"]
 
   - ref: CTL-IR
     name: Incident response plan & exercises
@@ -97,6 +151,13 @@ controls:
       data breach) and regulatory notification steps; tabletop exercise at least annually.
     mitigations: []
     techniques: []
+    requirements:  # indicative
+      NIST-800-53-R5: ["IR-4", "IR-8", "IR-3"]
+      ISO27001-2022: ["A.5.24", "A.5.26"]
+      SOC2-TSC-2017: ["CC7.3", "CC7.4", "CC7.5"]
+      HIPAA-SR: ["164.308(a)(6)(ii)"]
+      CIS-V8: ["17.4", "17.7"]
+      DPDP-2023: ["S.8(6)"]
 
   - ref: CTL-VENDOR
     name: Third-party / vendor risk management
@@ -106,6 +167,13 @@ controls:
       notification clauses, tiered reassessment, and least-privilege third-party access.
     mitigations: []
     techniques: [T1195, T1199]
+    requirements:  # indicative
+      NIST-800-53-R5: ["SR-6", "SA-9"]
+      ISO27001-2022: ["A.5.19", "A.5.20", "A.5.21", "A.5.22"]
+      SOC2-TSC-2017: ["CC9.2"]
+      HIPAA-SR: ["164.308(b)(3)"]
+      CIS-V8: ["15.1", "15.4", "15.5"]
+      DPDP-2023: ["S.8(2)"]
 
   - ref: CTL-HARDEN
     name: Secure configuration & hardening
@@ -115,6 +183,12 @@ controls:
       allow-listing, macros blocked from the internet, unused features removed.
     mitigations: [M1042, M1028, M1038, M1050]
     techniques: []
+    requirements:  # indicative
+      NIST-800-53-R5: ["CM-2", "CM-6", "CM-7"]
+      ISO27001-2022: ["A.8.9"]
+      SOC2-TSC-2017: ["CC5.2"]
+      HIPAA-SR: ["164.310(c)"]
+      CIS-V8: ["4.1", "4.8", "2.5"]
 
   - ref: CTL-DLP
     name: Data loss prevention
@@ -124,6 +198,13 @@ controls:
       encryption of sensitive data at rest and in transit.
     mitigations: [M1057, M1041]
     techniques: [T1048, T1567]
+    requirements:  # indicative
+      NIST-800-53-R5: ["SC-8", "SC-28", "AC-4"]
+      ISO27001-2022: ["A.8.12", "A.8.24"]
+      SOC2-TSC-2017: ["C1.1", "CC6.7"]
+      HIPAA-SR: ["164.312(e)(2)(ii)", "164.312(a)(2)(iv)"]
+      CIS-V8: ["3.10", "3.11", "3.13"]
+      DPDP-2023: ["S.8(5)"]
 
   - ref: CTL-PASSWORD
     name: Password policy & credential hygiene
@@ -133,3 +214,9 @@ controls:
       no forced periodic rotation (NIST SP 800-63B), unique local admin passwords (LAPS).
     mitigations: [M1027, M1036]
     techniques: [T1110]
+    requirements:  # indicative
+      NIST-800-53-R5: ["IA-5", "IA-5(1)"]
+      ISO27001-2022: ["A.5.17"]
+      SOC2-TSC-2017: ["CC6.1"]
+      HIPAA-SR: ["164.308(a)(5)(ii)(D)"]
+      CIS-V8: ["5.2"]
