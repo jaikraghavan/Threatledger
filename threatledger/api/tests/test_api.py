@@ -289,3 +289,13 @@ def test_throttling_is_configured(settings):
     rf: dict[str, Any] = dict(base.REST_FRAMEWORK)
     assert "rest_framework.throttling.UserRateThrottle" in rf["DEFAULT_THROTTLE_CLASSES"]
     assert rf["DEFAULT_THROTTLE_RATES"]["anon"] == "30/hour"
+
+
+def test_openapi_schema_validates_without_warnings(tmp_path):
+    """drf-spectacular warnings also fail `check --deploy` in CI; catch them here first."""
+    from django.core.management import call_command
+
+    out = tmp_path / "schema.yaml"
+    call_command("spectacular", "--file", str(out), "--validate", "--fail-on-warn")
+    text = out.read_text()
+    assert "ApiToken" in text and "bearerFormat" in text
