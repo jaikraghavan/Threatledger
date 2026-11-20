@@ -44,11 +44,14 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     STATIC_ROOT=/app/staticfiles \
     MEDIA_ROOT=/srv/media
 
+# /srv/secrets is 0711: postgres/redis (other uids) may open their known password files but
+# cannot list the directory; the Django key file itself is 0600 (see deploy/init_secrets.py).
 RUN groupadd --gid 10001 app \
  && useradd --uid 10001 --gid app --no-create-home --home-dir /app --shell /usr/sbin/nologin app \
  && mkdir -p /srv/media /srv/secrets \
  && chown app:app /srv/media /srv/secrets \
- && chmod 0750 /srv/media /srv/secrets
+ && chmod 0750 /srv/media \
+ && chmod 0711 /srv/secrets
 
 COPY --from=builder /opt/venv /opt/venv
 WORKDIR /app

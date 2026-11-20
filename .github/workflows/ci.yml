@@ -135,7 +135,15 @@ jobs:
           docker compose exec -T web python manage.py audit_verify
       - name: Logs on failure
         if: failure()
-        run: docker compose logs --no-color
+        run: |
+          docker compose ps -a
+          docker compose logs --no-color
+          # Also surface a short per-service tail as annotations (visible on the run summary).
+          for svc in init db redis web worker caddy; do
+            tail_text=$(docker compose ps -a --format '{{.Service}} {{.State}} {{.Status}}' "$svc" 2>&1; docker compose logs --no-color --no-log-prefix --tail 12 "$svc" 2>&1)
+            tail_text="${tail_text//'%'/'%25'}"; tail_text="${tail_text//$'\n'/'%0A'}"
+            echo "::error title=compose ${svc}::${tail_text}"
+          done
       - name: Tear down
         if: always()
         run: docker compose down -v
