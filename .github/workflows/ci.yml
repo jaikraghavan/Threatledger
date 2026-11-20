@@ -74,6 +74,15 @@ jobs:
           DJANGO_SETTINGS_MODULE: config.settings.prod
           DJANGO_ALLOWED_HOSTS: threatledger.example
           DJANGO_SECRET_KEY: ${{ github.run_id }}-${{ github.run_attempt }}-ci-only-deploy-check-key-not-used-anywhere
+      - name: Production collectstatic (manifest storage resolves every reference)
+        run: |
+          mkdir -p static/css && touch static/css/app.css
+          uv run python manage.py collectstatic --noinput -v0
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.prod
+          DJANGO_ALLOWED_HOSTS: threatledger.example
+          DJANGO_SECRET_KEY: ${{ github.run_id }}-${{ github.run_attempt }}-ci-only-deploy-check-key-not-used-anywhere
+          STATIC_ROOT: /tmp/staticfiles
 
   security:
     runs-on: ubuntu-24.04

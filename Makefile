@@ -33,10 +33,10 @@ $(TAILWIND):        ## download the Tailwind standalone CLI and verify its check
 	chmod +x $@
 
 css: $(TAILWIND)    ## build static/css/app.css
-	$(TAILWIND) -i static/src/app.css -o static/css/app.css --minify
+	$(TAILWIND) -i assets/tailwind/app.css -o static/css/app.css --minify
 
 css-watch: $(TAILWIND)
-	$(TAILWIND) -i static/src/app.css -o static/css/app.css --watch
+	$(TAILWIND) -i assets/tailwind/app.css -o static/css/app.css --watch
 
 migrate:
 	$(UV) run python manage.py migrate

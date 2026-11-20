@@ -14,7 +14,7 @@ The design lives in [PLAN.md](PLAN.md). Read it before changing models or scorin
 |---|---|
 | Install deps | `make install` (`uv sync`) |
 | Create `.env` with random key | `make env` |
-| Build CSS (Tailwind standalone CLI, checksum-verified) | `make css` |
+| Build CSS (Tailwind standalone CLI, checksum-verified) | `make css`: source `assets/tailwind/app.css` → `static/css/app.css`. Keep the source out of `static/`, or prod `collectstatic` fails on `@import` |
 | Dev server | `make run` → http://127.0.0.1:8000 |
 | Seed org + one user per role | `make seed` (`SEED_PASSWORD=...` to set a shared password) |
 | Background worker | `make worker` |

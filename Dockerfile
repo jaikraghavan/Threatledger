@@ -19,10 +19,10 @@ RUN set -eu; \
     echo "${sum}  /usr/local/bin/tailwindcss" | sha256sum -c -; \
     chmod 0755 /usr/local/bin/tailwindcss
 WORKDIR /src
-COPY static/src static/src
+COPY assets assets
 COPY templates templates
 COPY threatledger threatledger
-RUN tailwindcss -i static/src/app.css -o static/css/app.css --minify
+RUN tailwindcss -i assets/tailwind/app.css -o static/css/app.css --minify
 
 # ---------------------------------------------------------------- Python dependencies
 FROM ${PYTHON_IMAGE} AS builder
