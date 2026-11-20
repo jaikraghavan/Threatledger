@@ -27,8 +27,8 @@ DPDP Act wherever MFA is mapped.
 
 ## Screenshots
 
-> Screenshots live in `docs/screenshots/`. To regenerate them, load the demo (`seed_demo`) and
-> capture the pages listed in [docs/screenshots/README.md](docs/screenshots/README.md).
+Demo data (`seed_demo`): the fictional Halcyon Freight Group, with ATT&CK v20.1. Regenerate the
+images with `make screenshots` (see [docs/screenshots/README.md](docs/screenshots/README.md)).
 
 | Dashboard | ATT&CK coverage | Risk detail |
 |---|---|---|

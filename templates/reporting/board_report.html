@@ -24,7 +24,7 @@
       <div class="rounded-md border border-slate-200 p-3"><div class="text-xs text-slate-500">Open risks</div><div class="text-2xl font-semibold">{{ k.open_risks }}</div><div class="text-xs text-slate-500">{{ k.critical_high }} high/critical</div></div>
       <div class="rounded-md border border-slate-200 p-3"><div class="text-xs text-slate-500">Threat coverage</div><div class="text-2xl font-semibold">{{ k.coverage.percent }}%</div><div class="text-xs text-slate-500">{{ k.coverage.gap }} uncovered techniques</div></div>
       <div class="rounded-md border border-slate-200 p-3"><div class="text-xs text-slate-500">Controls implemented</div><div class="text-2xl font-semibold">{{ k.controls_pct }}%</div><div class="text-xs text-slate-500">{{ k.controls_implemented }} of {{ k.controls_total }}</div></div>
-      <div class="rounded-md border border-slate-200 p-3"><div class="text-xs text-slate-500">Reviews overdue</div><div class="text-2xl font-semibold">{{ k.review_overdue }}</div><div class="text-xs text-slate-500">{{ k.pending_acceptances }} acceptances pending</div></div>
+      <div class="rounded-md border border-slate-200 p-3"><div class="text-xs text-slate-500">Reviews overdue</div><div class="text-2xl font-semibold">{{ k.review_overdue }}</div><div class="text-xs text-slate-500">{{ k.pending_acceptances }} acceptance{{ k.pending_acceptances|pluralize }} pending</div></div>
     </div></section>
 
   <section class="avoid-break"><h2 class="mb-3 text-lg font-semibold">2. Risk profile</h2>
@@ -37,7 +37,7 @@
 
   <section class="avoid-break"><h2 class="mb-3 text-lg font-semibold">3. Top risks</h2>
     <table class="data-table"><thead><tr><th scope="col">Ref</th><th scope="col">Risk</th><th scope="col">Inherent</th><th scope="col">Residual</th><th scope="col">Treatment</th><th scope="col">Owner</th><th scope="col">Target</th></tr></thead>
-      <tbody class="divide-y divide-slate-100">{% for r in k.top_risks %}<tr><td class="font-mono text-xs">{{ r.ref }}</td><td>{{ r.title }}</td><td>{% include "risks/_score.html" with score=r.inherent.value matrix=k.matrix %}</td><td>{% include "risks/_score.html" with score=r.residual.value matrix=k.matrix %}</td><td class="text-xs">{{ r.get_treatment_display }}</td><td class="text-xs">{{ r.owner|default:"—" }}</td><td class="text-xs">{{ r.target_date|date:"Y-m-d"|default:"—" }}</td></tr>
+      <tbody class="divide-y divide-slate-100">{% for r in k.top_risks %}<tr><td class="whitespace-nowrap font-mono text-xs">{{ r.ref }}</td><td>{{ r.title }}</td><td>{% include "risks/_score.html" with score=r.inherent.value matrix=k.matrix %}</td><td>{% include "risks/_score.html" with score=r.residual.value matrix=k.matrix %}</td><td class="text-xs">{{ r.get_treatment_display }}</td><td class="text-xs">{{ r.owner|default:"—" }}</td><td class="text-xs">{{ r.target_date|date:"Y-m-d"|default:"—" }}</td></tr>
       {% empty %}<tr><td colspan="7" class="py-4 text-center text-slate-500">No open risks.</td></tr>{% endfor %}</tbody></table></section>
 
   {% if can_view_frameworks and k.frameworks %}<section class="page-break avoid-break"><h2 class="mb-3 text-lg font-semibold">4. Compliance</h2>

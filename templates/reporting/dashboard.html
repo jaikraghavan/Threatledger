@@ -18,7 +18,7 @@
   <section class="card p-5"><h2 class="mb-3 font-semibold">Residual risk heatmap</h2>{% include "risks/_heatmap_grid.html" with kind="residual" title="Residual risk" grid=residual_grid matrix=k.matrix %}</section>
   <section class="card p-5"><h2 class="mb-3 font-semibold">Top risks</h2>
     <table class="data-table"><thead><tr><th scope="col">Ref</th><th scope="col">Risk</th><th scope="col">Residual</th><th scope="col">Owner</th></tr></thead>
-    <tbody class="divide-y divide-slate-100">{% for r in k.top_risks %}<tr><td class="font-mono text-xs"><a class="text-brand-700 hover:underline" href="{% url 'risks:detail' r.ref %}">{{ r.ref }}</a></td><td>{{ r.title }}</td><td>{% include "risks/_score.html" with score=r.residual.value matrix=k.matrix %}</td><td class="text-xs">{{ r.owner|default:"—" }}</td></tr>
+    <tbody class="divide-y divide-slate-100">{% for r in k.top_risks %}<tr><td class="whitespace-nowrap font-mono text-xs"><a class="text-brand-700 hover:underline" href="{% url 'risks:detail' r.ref %}">{{ r.ref }}</a></td><td>{{ r.title }}</td><td>{% include "risks/_score.html" with score=r.residual.value matrix=k.matrix %}</td><td class="text-xs">{{ r.owner|default:"—" }}</td></tr>
     {% empty %}<tr><td colspan="4" class="py-6 text-center text-slate-500">No open risks.</td></tr>{% endfor %}</tbody></table></section>
 </div>
 

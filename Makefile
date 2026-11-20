@@ -17,7 +17,9 @@ else
 endif
 TAILWIND := .bin/tailwindcss-$(TAILWIND_VERSION)
 
-.PHONY: install env css css-watch run worker migrate seed test cov lint fmt typecheck security check docker-up docker-down
+.PHONY: install env css css-watch run worker migrate seed test cov lint fmt typecheck security check docker-up docker-down screenshots
+
+BASE_URL ?= http://127.0.0.1:8000
 
 install:            ## install Python 3.12 + all dependencies into .venv
 	$(UV) sync
@@ -80,3 +82,7 @@ docker-up:
 
 docker-down:
 	docker compose down
+
+screenshots:        ## README screenshots from a running demo; needs SCREENSHOT_PASSWORD (riskmanager)
+	$(UV) run playwright install chromium
+	$(UV) run python scripts/screenshots.py --base-url $(BASE_URL)

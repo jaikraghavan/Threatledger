@@ -26,6 +26,9 @@ uv run python manage.py seed_demo   # optional demo data (import ATT&CK first fo
 make check          # ruff (lint + format), mypy, pytest with ≥80 % coverage, bandit, pip-audit
 ```
 
+If you change the UI, regenerate the README screenshots with `SCREENSHOT_PASSWORD=… make screenshots`
+against a demo instance. The script also fails on browser console errors and CSP violations.
+
 CI also runs the whole suite on PostgreSQL 16, builds the Docker image, scans it with Trivy and
 smoke-tests `docker compose up` end to end.
 

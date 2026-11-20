@@ -17,6 +17,7 @@
           {% if row.replacement %}<button class="btn btn-secondary px-2 py-1 text-xs" hx-post="{% url 'risks:technique_remap' risk.ref row.link.pk %}" hx-target="#risk-panels" hx-swap="outerHTML">Use {{ row.replacement.attack_id }}</button>{% endif %}
           <button class="text-xs text-slate-500 hover:text-red-700" hx-post="{% url 'risks:technique_remove' risk.ref row.link.pk %}" hx-target="#risk-panels" hx-swap="outerHTML" aria-label="Remove {{ t.attack_id }}">Remove</button></td>{% endif %}
       </tr>{% endwith %}{% endfor %}</tbody></table></div>
+    <p class="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-500">Control status: <span class="badge status-implemented">implemented</span><span class="badge status-partial">partial</span><span class="badge status-planned">planned</span><span class="badge status-not_implemented">not implemented</span> A technique is covered when at least one mapped control is implemented.</p>
   {% else %}<p class="text-sm text-slate-500">No techniques linked. Link the ATT&amp;CK techniques an adversary would use to realise this scenario.</p>{% endif %}
   {% if can_edit %}<div class="mt-4"><label class="label" for="tech-q">Add technique</label>
     <input id="tech-q" name="q" type="search" class="field" placeholder="Search T1566, phishing, PowerShell…" autocomplete="off"
