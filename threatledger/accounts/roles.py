@@ -62,6 +62,9 @@ class Cap(StrEnum):
     COMMENT = "comment"
     REVIEW_EVIDENCE = "review_evidence"  # four-eyes: never your own upload
     APPROVE_CONTROL_CHANGES = "approve_control_changes"
+    # third-party risk (Phase 10)
+    VIEW_VENDORS = "view_vendors"
+    MANAGE_VENDORS = "manage_vendors"  # vendors, contracts, external assessment links
 
 
 _READ_ALL = {
@@ -79,6 +82,7 @@ _READ_SENSITIVE = {
     Cap.VIEW_AUDITS,
     Cap.VIEW_FINDINGS,
     Cap.VIEW_TASKS,
+    Cap.VIEW_VENDORS,
 }
 # Auditors judge and report; they never change the controls, risks or policies they audit.
 _AUDIT_WORK = {Cap.PERFORM_AUDITS, Cap.RAISE_FINDINGS, Cap.REVIEW_EVIDENCE, Cap.COMMENT}
@@ -105,6 +109,7 @@ ROLE_CAPABILITIES: dict[Role, frozenset[Cap]] = {
             Cap.APPROVE_POLICIES,
             Cap.MANAGE_TASKS,
             Cap.APPROVE_CONTROL_CHANGES,
+            Cap.MANAGE_VENDORS,
         }
         | _AUDIT_WORK
     ),

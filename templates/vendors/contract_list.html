@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Contracts{% endblock %}
+{% block content %}
+<div class="mb-4"><h1 class="text-2xl font-semibold">Third parties</h1><p class="text-sm text-slate-500">Contracts with notice deadlines. "Notice window" means the last day to give notice is within 60 days or has passed.</p></div>
+{% include "vendors/_tabs.html" with tab="contracts" %}
+<div class="mb-3 flex flex-wrap gap-2 text-sm"><a class="rounded px-2 py-1 {% if not state %}bg-slate-100 font-medium{% else %}text-slate-600{% endif %}" href="?">All</a><a class="rounded px-2 py-1 {% if state == 'notice_due' %}bg-slate-100 font-medium{% else %}text-slate-600{% endif %}" href="?state=notice_due">Notice window</a><a class="rounded px-2 py-1 {% if state == 'active' %}bg-slate-100 font-medium{% else %}text-slate-600{% endif %}" href="?state=active">Active</a><a class="rounded px-2 py-1 {% if state == 'expired' %}bg-slate-100 font-medium{% else %}text-slate-600{% endif %}" href="?state=expired">Expired</a></div>
+<div class="card overflow-x-auto"><table class="data-table">
+  <thead><tr><th scope="col">Contract</th><th scope="col">Vendor</th><th scope="col">State</th><th scope="col">Ends</th><th scope="col">Give notice by</th><th scope="col">Renewal</th><th scope="col">Clauses</th></tr></thead>
+  <tbody class="divide-y divide-slate-100">{% for c in contracts %}<tr>
+    <td>{% if can_manage %}<a class="font-mono text-xs text-brand-700 hover:underline" href="{% url 'vendors:contract_edit' c.entity.ref c.ref %}">{{ c.ref }}</a>{% else %}<span class="font-mono text-xs">{{ c.ref }}</span>{% endif %} {{ c.title }}</td>
+    <td><a class="text-brand-700 hover:underline" href="{% url 'vendors:detail' c.entity.ref %}">{{ c.entity.name }}</a></td>
+    <td><span class="badge {% if c.state == 'notice_due' %}bg-amber-100 text-amber-800{% elif c.state == 'active' %}bg-green-100 text-green-800{% else %}bg-slate-100 text-slate-700{% endif %}">{{ c.state_label }}</span></td>
+    <td class="whitespace-nowrap">{{ c.end_date|date:"Y-m-d"|default:"open-ended" }}</td><td class="whitespace-nowrap">{{ c.notice_deadline|date:"Y-m-d"|default:"—" }}</td>
+    <td class="text-xs">{% if c.auto_renew %}Auto-renews{% else %}Fixed term{% endif %}</td>
+    <td class="text-xs">{% if c.security_clauses %}security · {% endif %}{% if c.audit_rights %}audit · {% endif %}{% if c.data_processing_agreement %}DPA · {% endif %}{% if c.exit_assistance %}exit{% endif %}{% if c.breach_notification_hours %} · breach notice {{ c.breach_notification_hours }}h{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="7" class="text-slate-500">No contracts.</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

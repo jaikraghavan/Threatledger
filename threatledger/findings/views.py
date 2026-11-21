@@ -107,6 +107,14 @@ def _prefill(request: HttpRequest) -> dict[str, Any]:
         if control:
             initial["control"] = control
             initial.setdefault("owner", control.owner)
+    if g.get("entity"):
+        from threatledger.vendors.services import visible_entities
+
+        entity = visible_entities(request.user).filter(ref__iexact=g["entity"]).first()
+        if entity:
+            initial["entity"] = entity
+            initial.setdefault("owner", entity.owner)
+            initial.setdefault("business_unit", entity.business_unit)
     if g.get("risk"):
         risk = visible_risks(request.user).filter(ref__iexact=g["risk"]).first()
         if risk:

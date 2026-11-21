@@ -50,6 +50,7 @@ an operator with database access; a compromised upstream data source (ATT&CK/CTI
 |---|---|
 | **Spoofing:** credential stuffing, phishing | Argon2 hashing, 12-char minimum + common-password checks, lockout after 5 failures per username+IP (django-axes), optional/enforceable TOTP MFA with single-use recovery codes, idle (30 min) and absolute (8 h) session timeouts, session key rotation on login |
 | **Spoofing:** stolen API token | Tokens are random 256-bit secrets, stored only as SHA-256, prefix lookup with constant-time compare, expiry (≤ 1 year), revocation, per-user rate limits, act only with the owner's role |
+| **Spoofing:** guessed or leaked vendor questionnaire link (the only public pages besides sign-in) | 256-bit random tokens stored only as SHA-256; one link per assignment, expiring (≤ 90 days), revocable, replaced on reissue; the token is exchanged for a session on first use and the browser is redirected to a token-free URL; `Referrer-Policy: no-referrer`, `noindex`, `no-store`; per-IP rate limits (20 link attempts, 300 requests per 10 min); the token sits in the query string, which the access log omits and the log scrubber redacts; a link reaches exactly one questionnaire and nothing else |
 | **Tampering:** audit log edits | Append-only model/queryset guards, PostgreSQL trigger blocking UPDATE/DELETE/TRUNCATE, SHA-256 hash chain verified by `audit_verify` |
 | **Tampering:** CSRF | Django CSRF on every form and HTMX request (token in `hx-headers`), SameSite cookies |
 | **Tampering:** malicious data import | ATT&CK/CTID downloads only from allowlisted HTTPS URLs (re-checked after redirects), size caps, SHA-256 recorded; framework files validated before any write; YAML parsed with `safe_load` |
@@ -60,7 +61,7 @@ an operator with database access; a compromised upstream data source (ATT&CK/CTI
 | **Information disclosure:** spreadsheet formula injection | Every exported text cell is neutralised; Excel cells are written as explicit strings |
 | **Information disclosure:** logs | JSON logs with request IDs; a scrubber redacts passwords, tokens, cookies and URL credentials |
 | **Denial of service** | Rate limits on the API, upload size caps (Caddy 30 MB, app 25 MB), bounded query counts per page (tested), import size caps |
-| **Elevation of privilege** | Django admin is superuser-only; control owners can change only operational fields of their own controls; segregation of duties on risk acceptance; non-root, read-only containers with all capabilities dropped |
+| **Elevation of privilege** | Django admin is superuser-only; control owners can change only operational fields of their own controls; segregation of duties on risk acceptance, exceptions, policy approval, finding closure, questionnaire review, evidence review and control-status approval (optional four-eyes); non-root, read-only containers with all capabilities dropped |
 | **Supply chain** | Pinned, hashed lockfile; GitHub Actions pinned by commit SHA; vendored JS pinned with checksums; pip-audit, bandit and Trivy in CI; PostgreSQL client installed from PGDG with a pinned key fingerprint |
 
 **Out of scope / residual risks:** a malicious superuser or database administrator can destroy data

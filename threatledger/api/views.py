@@ -41,6 +41,7 @@ from threatledger.policies import services as policy_services
 from threatledger.policies.models import Policy
 from threatledger.risks import services as risk_services
 from threatledger.risks.models import Risk, RiskMatrix
+from threatledger.vendors import services as vendor_services
 from threatledger.work import services as work_services
 from threatledger.work.models import Task
 
@@ -56,6 +57,7 @@ from .serializers import (
     RiskSerializer,
     TaskSerializer,
     TechniqueSerializer,
+    VendorSerializer,
 )
 
 
@@ -614,3 +616,26 @@ class TaskViewSet(
             )
         except work_services.WorkError as exc:
             raise exceptions.PermissionDenied(str(exc)) from exc
+
+
+# ----------------------------------------------------------------------------- Phase 10
+@extend_schema(parameters=[OpenApiParameter("ref", OpenApiTypes.STR, OpenApiParameter.PATH)])
+class VendorViewSet(viewsets.ViewSet):
+    """Third parties with derived posture (assessment score, reassessment, contracts, flags)."""
+
+    tl_access = Cap.VIEW_VENDORS
+    serializer_class = VendorSerializer
+    lookup_field = "ref"
+
+    @extend_schema(responses={200: VendorSerializer(many=True)})
+    def list(self, request: Request) -> Response:
+        entities = list(vendor_services.visible_entities(request.user).order_by("ref"))
+        tier = request.query_params.get("tier")
+        if tier:
+            entities = [e for e in entities if e.tier == tier]
+        return Response(VendorSerializer(vendor_services.postures(entities), many=True).data)
+
+    @extend_schema(responses={200: VendorSerializer})
+    def retrieve(self, request: Request, ref: str | None = None) -> Response:
+        entity = get_object_or_404(vendor_services.visible_entities(request.user), ref__iexact=ref)
+        return Response(VendorSerializer(vendor_services.postures([entity])[0]).data)

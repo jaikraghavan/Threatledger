@@ -45,6 +45,7 @@ FINDING_FIELDS = (
     "requirement",
     "control",
     "risk",
+    "entity",
     "remediation",
 )
 # What the owner of a finding may change (remediation progress, not the finding itself).
@@ -105,9 +106,10 @@ def _validate_links(user: Any, data: dict[str, Any]) -> None:
             raise ValidationError({"requirement": "Requirement is not part of the audit."})
     if control is not None and control.organisation_id != org.pk:
         raise FindingError("Unknown control.")
-    risk = data.get("risk")
-    if risk is not None and risk.organisation_id != org.pk:
-        raise FindingError("Unknown risk.")
+    for key in ("risk", "entity"):
+        obj = data.get(key)
+        if obj is not None and obj.organisation_id != org.pk:
+            raise FindingError(f"Unknown {key}.")
     bu = data.get("business_unit")
     _check_scope(user, bu.pk if bu else None)
 

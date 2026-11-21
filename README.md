@@ -28,6 +28,10 @@ DPDP Act wherever MFA is mapped.
   is done), a task board, questionnaires anyone can be asked to answer with required evidence,
   comments with @mentions, in-app notifications and a daily email digest, plus optional four-eyes
   review of evidence and approval of control-owner status changes.
+- **Third-party risk:** vendors by tier with services, contracts and notice deadlines, exit
+  readiness, linked risks and findings; security questionnaires that vendors answer through a
+  private, expiring link (no account needed); derived posture and reassessment dates; and an
+  indicative DORA register-of-information workbook.
 - **Reporting:** executive dashboard, printable board report and trend charts.
 - **Secure by default:** strict CSP, MFA, account lockout, hashed API tokens, an immutable
   hash-chained audit log, non-root read-only containers. See [SECURITY.md](SECURITY.md).
@@ -46,6 +50,8 @@ images with `make screenshots` (see [docs/screenshots/README.md](docs/screenshot
 | ![Audit](docs/screenshots/audit.png) | ![Findings](docs/screenshots/findings.png) | ![Policy](docs/screenshots/policy.png) |
 | **Task board** | **Approvals** | **My work** |
 | ![Task board](docs/screenshots/task-board.png) | ![Approvals](docs/screenshots/approvals.png) | ![My work](docs/screenshots/my-work.png) |
+| **Third parties** | **Vendor** | |
+| ![Third parties](docs/screenshots/third-parties.png) | ![Vendor](docs/screenshots/vendor.png) | |
 
 ## Quick start (Docker)
 
@@ -137,7 +143,7 @@ passwords here.
 |---|---|---|
 | `DOMAIN` | `localhost` | Public hostname; Caddy gets a Let's Encrypt certificate for it |
 | `HTTP_PORT` / `HTTPS_PORT` | `80` / `443` | Published ports |
-| `SITE_URL` | `https://$DOMAIN` | Absolute links in emails |
+| `SITE_URL` | `https://$DOMAIN` | Absolute links in emails and vendor questionnaire links |
 | `MFA_REQUIRED_ROLES` | *(empty)* | Comma-separated roles that must use TOTP, e.g. `admin,risk_manager` |
 | `SESSION_IDLE_TIMEOUT` | `1800` | Seconds of inactivity before sign-out (`0` disables) |
 | `SESSION_COOKIE_AGE` | `28800` | Absolute session lifetime in seconds |
@@ -208,7 +214,12 @@ read** and never stored. Daily snapshots exist only to draw trend charts.
    Send questionnaires to control owners each quarter. Admins can switch on four-eyes evidence review
    and approval of control-owner status changes under **Workflow settings**, so coverage and
    compliance only move once a second person agrees. Everyone works from **My work**.
-10. **Keep it current.** Re-import ATT&CK after each MITRE release; review revoked-technique banners.
+10. **Know your third parties.** Record each vendor's tier, data access and services, link the
+   assets and risks they touch, and keep contracts with notice periods. Send the vendor security
+   questionnaire through a private link (they need no account); review the answers like any
+   other questionnaire. Watch the "needs attention" flags (never assessed, reassessment overdue,
+   no exit plan, notice window) and, if DORA applies, export the register of information.
+11. **Keep it current.** Re-import ATT&CK after each MITRE release; review revoked-technique banners.
    Owners get review reminders and evidence-expiry emails. Automate status updates through the API,
    for example `PATCH /api/v1/controls/CTL-EDR/` from your EDR deployment pipeline.
 
@@ -222,7 +233,8 @@ curl -H "Authorization: Bearer tl_xxxxxxxx_…" https://grc.example.com/api/v1/r
 
 The API covers risks, controls, techniques with coverage, framework compliance, coverage and
 Navigator layers, audits (with per-requirement results), findings (create and update), exceptions,
-policies, tasks (including completing them, for example from a backup job), and the audit log. The OpenAPI schema is at `/api/v1/schema/` and readable docs at
+policies, tasks (including completing them, for example from a backup job), vendors with their
+derived posture, and the audit log. The OpenAPI schema is at `/api/v1/schema/` and readable docs at
 `/api/v1/docs/`. Tokens act with their owner's role, and every write is audited.
 
 ## Local development

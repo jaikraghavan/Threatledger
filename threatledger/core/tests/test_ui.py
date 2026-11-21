@@ -22,6 +22,7 @@ def test_home_renders_role_navigation(client_for):
         "Findings",
         "Policies",
         "Tasks",
+        "Third parties",
         "ATT&CK coverage",
         "Techniques",
         "Threat groups",

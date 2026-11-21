@@ -1,0 +1,4 @@
+<nav class="mb-4 flex gap-4 border-b border-slate-200 text-sm" aria-label="Third parties">
+  <a class="-mb-px border-b-2 px-1 pb-2 {% if tab == 'vendors' %}border-brand-600 font-medium text-slate-900{% else %}border-transparent text-slate-500 hover:text-slate-800{% endif %}" href="{% url 'vendors:list' %}"{% if tab == 'vendors' %} aria-current="page"{% endif %}>Vendors by tier</a>
+  <a class="-mb-px border-b-2 px-1 pb-2 {% if tab == 'contracts' %}border-brand-600 font-medium text-slate-900{% else %}border-transparent text-slate-500 hover:text-slate-800{% endif %}" href="{% url 'vendors:contracts' %}"{% if tab == 'contracts' %} aria-current="page"{% endif %}>Contracts</a>
+</nav>

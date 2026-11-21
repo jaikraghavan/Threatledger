@@ -84,6 +84,11 @@ The design lives in [PLAN.md](PLAN.md). Read it before changing models or scorin
   Org switches live in `Organisation.settings` (`org.workflow(key)`, `org.services.set_workflow`).
   `ControlChangeRequest` and evidence `review_status` live in `controls`; the control's status only
   changes on approval. Daily digest job: `work.tasks.daily`.
+- **Vendors (Phase 10)**: `threatledger/vendors` (Entity, Solution, Contract; `postures()` derives
+  score/reassessment/flags; `dora.py` builds the RoI workbook). External respondents are
+  `work.Assignment` rows with `entity` + `external_email` and no `respondent`; access goes through
+  `work.AccessLink` (hash only) and the PUBLIC views in `work/respond.py` (`/respond/`). Never put
+  the raw token anywhere but the one-time link page/email; tokens travel as `?token=`.
 - **Ops commands**: `backup`, `verify_backup`, `restore --force`, `seed_demo`, `perf_check --risks 1000`.
   Backups must run outside a DB transaction (tests use `django_db(transaction=True)`).
 - Test helpers for risks/controls/techniques: `threatledger/risks/tests/helpers.py`.

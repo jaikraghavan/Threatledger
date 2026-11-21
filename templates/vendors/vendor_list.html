@@ -1,0 +1,28 @@
+{% extends "base.html" %}{% load tl %}
+{% block title %}Third parties{% endblock %}
+{% block content %}
+<div class="mb-4 flex flex-wrap items-end justify-between gap-3">
+  <div><h1 class="text-2xl font-semibold">Third parties</h1><p class="text-sm text-slate-500">Vendor posture by tier: assessments, contracts, findings and exit readiness, derived live.</p></div>
+  <div class="flex gap-2">{% if can_export %}<a class="btn btn-secondary" href="{% url 'vendors:dora' %}">DORA register (.xlsx)</a>{% endif %}{% if can_manage %}<a class="btn btn-primary" href="{% url 'vendors:create' %}">New vendor</a>{% endif %}</div>
+</div>
+{% include "vendors/_tabs.html" with tab="vendors" %}
+<form method="get" class="mb-4 flex flex-wrap items-center gap-2 text-sm">
+  <label class="sr-only" for="f-tier">Tier</label><select id="f-tier" name="tier" class="field w-auto"><option value="">All tiers</option>{% for v, l in tier_choices %}<option value="{{ v }}"{% if v == tier %} selected{% endif %}>{{ l }}</option>{% endfor %}</select>
+  <label class="sr-only" for="f-status">Status</label><select id="f-status" name="status" class="field w-auto"><option value="current"{% if status == "current" %} selected{% endif %}>Active and offboarding</option><option value="all"{% if status == "all" %} selected{% endif %}>Any status</option>{% for v, l in status_choices %}<option value="{{ v }}"{% if v == status %} selected{% endif %}>{{ l }}</option>{% endfor %}</select>
+  <label class="inline-flex items-center gap-1"><input type="checkbox" name="attention" value="1" class="rounded border-slate-300"{% if attention %} checked{% endif %}> Needs attention</label>
+  <button class="btn btn-secondary" type="submit">Filter</button></form>
+{% for value, label, rows in tiers %}{% if rows %}
+<section class="mb-6" aria-labelledby="tier-{{ value }}"><h2 id="tier-{{ value }}" class="mb-2 font-semibold">{{ label }} <span class="text-sm font-normal text-slate-500">({{ rows|length }})</span></h2>
+<div class="card overflow-x-auto"><table class="data-table">
+  <thead><tr><th scope="col">Vendor</th><th scope="col">Data access</th><th scope="col">Last assessment</th><th scope="col">Score</th><th scope="col">Reassess by</th><th scope="col">Contracts</th><th scope="col">Attention</th></tr></thead>
+  <tbody class="divide-y divide-slate-100">{% for p in rows %}<tr>
+    <td><a class="font-mono text-xs text-brand-700 hover:underline" href="{% url 'vendors:detail' p.entity.ref %}">{{ p.entity.ref }}</a> <span class="font-medium">{{ p.entity.name }}</span>{% if p.entity.ict_provider %} <span class="badge bg-slate-100 text-slate-700" title="ICT third-party service provider (DORA)">ICT</span>{% endif %}<div class="text-xs text-slate-500">{{ p.entity.get_status_display }}{% if p.entity.owner %} · {{ p.entity.owner }}{% endif %}</div></td>
+    <td class="text-xs">{{ p.entity.get_data_access_display }}</td>
+    <td class="whitespace-nowrap text-xs">{% if p.last_assessment %}{{ p.last_assessment.submitted_at|date:"Y-m-d" }}{% else %}—{% endif %}{% if p.pending %}<div class="text-amber-700">{{ p.pending }} out for answers</div>{% endif %}</td>
+    <td>{% if p.score is not None %}<span class="badge {% if p.score >= 80 %}bg-green-100 text-green-800{% elif p.score >= 50 %}bg-amber-100 text-amber-800{% else %}bg-red-100 text-red-800{% endif %}">{{ p.score }}%</span>{% else %}—{% endif %}</td>
+    <td class="whitespace-nowrap text-xs {% if p.reassess_overdue %}font-medium text-red-700{% endif %}">{{ p.reassess_due|date:"Y-m-d"|default:"—" }}</td>
+    <td class="text-xs">{% for c in p.contracts %}<div class="whitespace-nowrap">{{ c.ref }} <span class="{% if c.state == 'notice_due' %}text-amber-700{% elif c.state == 'expired' %}text-red-700{% else %}text-slate-500{% endif %}">{{ c.state_label|lower }}{% if c.end_date %} · ends {{ c.end_date|date:"Y-m-d" }}{% endif %}</span></div>{% empty %}—{% endfor %}</td>
+    <td class="text-xs">{% for f in p.flags %}<span class="badge mb-1 bg-amber-100 text-amber-800">{{ f }}</span> {% empty %}<span class="text-slate-400">—</span>{% endfor %}</td></tr>{% endfor %}</tbody></table></div></section>
+{% endif %}{% endfor %}
+{% if not total %}<p class="card p-5 text-sm text-slate-500">No vendors match.{% if can_manage %} Add your first third party.{% endif %}</p>{% endif %}
+{% endblock %}

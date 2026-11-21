@@ -141,3 +141,15 @@ def test_tasks_api(users, tokens):
         f"/api/v1/tasks/{other.ref}/", {"status": "done"}, content_type=JSON
     )
     assert bad.status_code == 403
+
+
+def test_vendors_api(users, tokens):
+    from threatledger.vendors import services as vendor_services
+
+    rm = users[Role.RISK_MANAGER]
+    v = vendor_services.create_entity(user=rm, data={"name": "CloudCo", "tier": "critical"})
+    data = api(tokens[Role.AUDITOR]).get("/api/v1/vendors/").json()
+    assert data[0]["ref"] == v.ref and "never assessed" in data[0]["flags"]
+    one = api(tokens[Role.AUDITOR]).get(f"/api/v1/vendors/{v.ref}/").json()
+    assert one["tier"] == "critical" and one["assessment_score"] is None
+    assert api(tokens[Role.VIEWER]).get("/api/v1/vendors/").status_code == 403

@@ -34,6 +34,8 @@ PAGES = [
     ("task-board", "/work/board/"),
     ("approvals", "/work/approvals/"),
     ("my-work", "/work/"),
+    ("third-parties", "/vendors/"),
+    ("vendor", "/vendors/V-0001/"),
 ]
 # Visited for the console/CSP check only (no screenshot).
 CHECK_ONLY = [
@@ -53,6 +55,9 @@ CHECK_ONLY = [
     "/work/answers/QA-0001/",
     "/work/notifications/?all=1",
     "/work/preferences/",
+    "/vendors/contracts/",
+    "/vendors/V-0002/",
+    "/vendors/new/",
 ]
 
 

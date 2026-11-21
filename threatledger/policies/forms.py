@@ -42,6 +42,13 @@ class PolicyForm(forms.ModelForm):
 
 
 class VersionForm(forms.ModelForm):
+    document_url = forms.URLField(
+        max_length=1000,
+        required=False,
+        assume_scheme="https",
+        help_text="Optional link to the formatted document.",
+    )
+
     class Meta:
         model = PolicyVersion
         fields = ["body", "document_url", "change_summary"]

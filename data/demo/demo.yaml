@@ -691,3 +691,63 @@ comments:
 pending:
   evidence: [CTL-PATCH, Patch compliance export (December), https://grafana.halcyon.example/d/patch-dec]
   change: [CTL-HARDEN, implemented, "CIS benchmarks now enforced by MDM on all laptops and servers."]
+
+# Phase 10 third parties. All names are fictional; LEIs are syntactically valid placeholders.
+vendors:
+  - name: Nimbus Cloud Services
+    legal_name: Nimbus Cloud Services Ireland Ltd
+    tier: critical
+    ict: true
+    data: confidential
+    substitutability: hard
+    exit_plan: true
+    lei: 9845000ABCDEF1234X01
+    country: IE
+    risks: [R-0001]
+    services:
+      - [Production hosting (IaaS), Cloud IaaS, Order fulfilment, true, "IE, DE", [AWS production account]]
+    contracts:
+      - [Cloud services MSA, 2024-01-01, 400, 180, true, 480000, IE]
+    assessment: {status: accepted, answers: ["Yes", "Yes", "Yes", "No"]}
+  - name: Ledgerline Payments
+    legal_name: Ledgerline Payments B.V.
+    tier: critical
+    ict: true
+    data: sensitive
+    substitutability: not
+    exit_plan: false
+    lei: 7245000XYZQWE5678R02
+    country: NL
+    services:
+      - [Card acquiring and payouts, Payment processing, Payments, true, NL, [Payments gateway integration]]
+    contracts:
+      - [Payment processing agreement, 2023-06-01, 95, 90, false, 120000, NL]
+    assessment: {status: sent}
+  - name: Kestrel Logistics Software
+    tier: high
+    ict: true
+    data: internal
+    substitutability: medium
+    exit_plan: false
+    country: GB
+    services:
+      - [Warehouse management SaaS, SaaS, Warehousing, true, GB, [Warehouse management system]]
+    contracts:
+      - [WMS subscription, 2025-04-01, 500, 90, true, 85000, GB]
+  - name: Brightdesk Support
+    tier: medium
+    ict: true
+    data: personal
+    substitutability: easy
+    country: IN
+    services:
+      - [Customer support ticketing, SaaS, Customer service, false, IN, [Customer support ticketing]]
+    contracts: []
+  - name: Cleanline Facilities
+    tier: low
+    ict: false
+    data: none
+    substitutability: easy
+    country: GB
+    contracts:
+      - [Office cleaning, 2025-01-01, 200, 30, true, 24000, GB]

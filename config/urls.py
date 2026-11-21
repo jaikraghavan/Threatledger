@@ -20,6 +20,8 @@ urlpatterns = [
     path("policies/", include("threatledger.policies.urls")),
     path("org/", include("threatledger.org.urls")),
     path("work/", include("threatledger.work.urls")),
+    path("vendors/", include("threatledger.vendors.urls")),
+    path("respond/", include("threatledger.work.respond_urls")),
     path("api/v1/", include("threatledger.api.urls")),
     path("admin/", admin.site.urls),
 ]

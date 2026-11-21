@@ -33,6 +33,16 @@ All notable changes to this project are documented here. The format follows
   uploader, and approval of control owners' status changes before coverage and compliance change.
   One approvals queue for control changes, evidence, exceptions, policy versions and questionnaires.
 - Tasks API (`/api/v1/tasks/`, PATCH `status` to complete).
+- **Third-party risk:** vendors (tier, status, data access, ICT provider, substitutability, exit
+  plan, LEI, external rating), services with supported functions, data locations and assets,
+  contracts with notice deadlines and key clauses, links to risks and findings; posture by tier
+  with derived assessment score, reassessment date (12/12/24/36 months by tier) and attention
+  flags; contract-notice and reassessment items in the daily digest; vendors API.
+- **External questionnaires:** vendors answer through a private, expiring, revocable link (token
+  stored only as a hash, exchanged for a session, rate-limited); answers, uploads and review use
+  the same rules as internal questionnaires.
+- **DORA register of information** export (indicative Excel workbook: B_01.01, B_02.01, B_02.02,
+  B_05.01, B_06.01).
 - Dashboard governance KPIs; findings, exceptions and policies on control and requirement pages;
   API endpoints for audits, findings, exceptions and policies; demo data for all of the above.
 

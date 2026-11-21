@@ -16,7 +16,15 @@ from threatledger.accounts.roles import Cap
 
 EXEMPT_NAMESPACES = {"admin"}
 # Public endpoints are reviewed explicitly: adding one should be a conscious decision.
-ALLOWED_PUBLIC = {"accounts:login", "accounts:logout", "core:healthz", "core:readyz"}
+ALLOWED_PUBLIC = {
+    "accounts:login",
+    "accounts:logout",
+    "core:healthz",
+    "core:readyz",
+    # Phase 10: external questionnaire respondents (secret, expiring, hashed link tokens).
+    "respond:start",
+    "respond:form",
+}
 
 
 def _walk(patterns: list[Any], namespace: str = "") -> Iterator[tuple[str, Any]]:

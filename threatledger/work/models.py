@@ -273,8 +273,22 @@ class Assignment(TimeStampedModel):
         Questionnaire, on_delete=models.PROTECT, related_name="assignments"
     )
     respondent = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="questionnaire_assignments"
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="questionnaire_assignments",
     )
+    # External respondents (Phase 10): a vendor contact answering through an access link.
+    entity = models.ForeignKey(
+        "vendors.Entity",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="assessments",
+    )
+    external_name = models.CharField(max_length=200, blank=True)
+    external_email = models.EmailField(blank=True)
     control = models.ForeignKey(
         Control, null=True, blank=True, on_delete=models.PROTECT, related_name="questionnaires"
     )
@@ -297,10 +311,25 @@ class Assignment(TimeStampedModel):
         ordering = ["-created_at", "-id"]
         constraints = [
             models.UniqueConstraint(fields=["organisation", "ref"], name="uniq_assignment_ref"),
+            models.CheckConstraint(
+                condition=models.Q(respondent__isnull=False)
+                | (models.Q(entity__isnull=False) & ~models.Q(external_email="")),
+                name="assignment_has_respondent",
+            ),
         ]
 
     def __str__(self) -> str:
-        return f"{self.ref} {self.questionnaire.title} → {self.respondent}"
+        return f"{self.ref} {self.questionnaire.title} → {self.respondent_label}"
+
+    @property
+    def is_external(self) -> bool:
+        return self.respondent_id is None
+
+    @property
+    def respondent_label(self) -> str:
+        if self.respondent_id is not None:
+            return str(self.respondent)
+        return f"{self.external_name or self.external_email} (external)"
 
     @property
     def editable_by_respondent(self) -> bool:
@@ -358,3 +387,34 @@ class Answer(models.Model):
     @property
     def has_evidence(self) -> bool:
         return bool(self.file) or bool(self.evidence_url)
+
+
+class AccessLink(models.Model):
+    """A secret, expiring link that lets an external respondent answer one assignment.
+
+    Only a SHA-256 hash of the token is stored; the token is shown once when the link is made.
+    """
+
+    assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE, related_name="links")
+    token_hash = models.CharField(max_length=64, unique=True)
+    prefix = models.CharField(max_length=8, help_text="First characters, to recognise the link.")
+    expires_at = models.DateTimeField()
+    revoked_at = models.DateTimeField(null=True, blank=True)
+    last_used_at = models.DateTimeField(null=True, blank=True)
+    use_count = models.PositiveIntegerField(default=0)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+"
+    )
+    created_at = models.DateTimeField(default=timezone.now)
+
+    AUDIT_EXCLUDE = ("token_hash",)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return f"Link {self.prefix}… for {self.assignment.ref}"
+
+    @property
+    def is_usable(self) -> bool:
+        return self.revoked_at is None and self.expires_at > timezone.now()

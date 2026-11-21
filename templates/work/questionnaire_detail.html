@@ -24,7 +24,7 @@
       <form method="post" class="space-y-3" novalidate>{% csrf_token %}<input type="hidden" name="action" value="assign">{% include "partials/_form_errors.html" with form=assign_form %}
         {% include "partials/_field.html" with field=assign_form.respondents %}{% include "partials/_field.html" with field=assign_form.due_on %}{% include "partials/_field.html" with field=assign_form.control %}{% include "partials/_field.html" with field=assign_form.business_unit %}{% include "partials/_field.html" with field=assign_form.message %}
         <button class="btn btn-primary" type="submit">Send questionnaire</button></form></section>{% endif %}
-    <section class="card p-5"><h2 class="mb-3 font-semibold">Sent to</h2><ul class="space-y-2 text-sm">{% for a in assignments %}<li><a class="text-brand-700 hover:underline" href="{% url 'work:assignment' a.ref %}">{{ a.respondent }}</a> <span class="badge bg-slate-100 text-slate-700">{{ a.get_status_display }}</span></li>{% empty %}<li class="text-slate-500">Not sent yet.</li>{% endfor %}</ul></section>
+    <section class="card p-5"><h2 class="mb-3 font-semibold">Sent to</h2><ul class="space-y-2 text-sm">{% for a in assignments %}<li><a class="text-brand-700 hover:underline" href="{% url 'work:assignment' a.ref %}">{{ a.respondent_label }}</a> <span class="badge bg-slate-100 text-slate-700">{{ a.get_status_display }}</span></li>{% empty %}<li class="text-slate-500">Not sent yet.</li>{% endfor %}</ul></section>
   </aside>
 </div>
 {% endblock %}

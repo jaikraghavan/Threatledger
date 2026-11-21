@@ -20,6 +20,7 @@ NAV_ITEMS: list[tuple[str, str, Cap, str]] = [
     ("Findings", "findings:list", Cap.VIEW_FINDINGS, "flag"),
     ("Policies", "policies:list", Cap.VIEW_POLICIES, "book"),
     ("Tasks", "work:board", Cap.VIEW_TASKS, "kanban"),
+    ("Third parties", "vendors:list", Cap.VIEW_VENDORS, "building"),
     ("ATT&CK coverage", "coverage:matrix", Cap.VIEW_ATTACK, "grid"),
     ("Techniques", "attack:technique_list", Cap.VIEW_ATTACK, "grid"),
     ("Threat groups", "attack:group_list", Cap.VIEW_ATTACK, "users"),

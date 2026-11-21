@@ -21,7 +21,7 @@
 {% if a.policies %}<section class="card p-5"><h2 class="mb-3 font-semibold">Policy versions ({{ a.policies|length }})</h2>
   <ul class="space-y-2 text-sm">{% for v in a.policies %}<li><a class="text-brand-700 hover:underline" href="{% url 'policies:detail' v.policy.ref %}?v={{ v.number }}">{{ v.policy.ref }} {{ v.label }}</a> {{ v.policy.title }} <span class="text-xs text-slate-500">by {{ v.author }}</span></li>{% endfor %}</ul></section>{% endif %}
 {% if a.questionnaires %}<section class="card p-5"><h2 class="mb-3 font-semibold">Questionnaires to review ({{ a.questionnaires|length }})</h2>
-  <ul class="space-y-2 text-sm">{% for x in a.questionnaires %}<li><a class="text-brand-700 hover:underline" href="{% url 'work:assignment' x.ref %}">{{ x.questionnaire.title }}</a> <span class="text-xs text-slate-500">from {{ x.respondent }} · {{ x.submitted_at|date:"Y-m-d" }}</span></li>{% endfor %}</ul></section>{% endif %}
+  <ul class="space-y-2 text-sm">{% for x in a.questionnaires %}<li><a class="text-brand-700 hover:underline" href="{% url 'work:assignment' x.ref %}">{{ x.questionnaire.title }}</a> <span class="text-xs text-slate-500">from {{ x.respondent_label }} · {{ x.submitted_at|date:"Y-m-d" }}</span></li>{% endfor %}</ul></section>{% endif %}
 {% if own_changes %}<section class="card p-5"><h2 class="mb-3 font-semibold">My pending requests</h2>
   <ul class="space-y-2 text-sm">{% for cr in own_changes %}<li class="flex flex-wrap items-center gap-2">{{ cr.control.ref }} → {{ cr.get_to_status_display }} <form method="post" action="{% url 'work:change_withdraw' cr.pk %}">{% csrf_token %}<button class="text-xs text-slate-500 hover:text-red-700" type="submit">Withdraw</button></form></li>{% endfor %}</ul></section>{% endif %}
 </div>

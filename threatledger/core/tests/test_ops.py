@@ -170,16 +170,26 @@ def test_seed_demo_is_complete_and_idempotent(org):
 
     assert Task.objects.filter(previous__isnull=True).count() == 5
     assert Task.objects.filter(previous__isnull=False).count() == 1  # the done monthly check
-    assert Assignment.objects.get().status == "sent"
+    assert Assignment.objects.get(entity__isnull=True).status == "sent"
     assert Comment.objects.count() == 2
     assert Evidence.objects.filter(review_status="pending").count() == 1
     assert ControlChangeRequest.objects.filter(status="pending").count() == 1
+    # Phase 10 vendors demo
+    from threatledger.vendors.models import Contract, Entity
+    from threatledger.vendors.services import postures
+
+    assert Entity.objects.count() == 5 and Contract.objects.count() == 4
+    nimbus = postures([Entity.objects.get(name="Nimbus Cloud Services")])[0]
+    assert nimbus.score == 75.0 and nimbus.last_assessment.status == "accepted"
+    ledger = postures([Entity.objects.get(name="Ledgerline Payments")])[0]
+    assert ledger.pending == 1 and "contract notice window" in ledger.flags
 
     call_command("seed_demo", stdout=StringIO())
     assert Risk.objects.count() == 30
     assert Finding.objects.count() == 5 and Policy.objects.count() == 4
     assert Task.objects.count() == 6 and Comment.objects.count() == 2
     assert ControlChangeRequest.objects.count() == 1
+    assert Entity.objects.count() == 5
 
 
 @override_settings(DEBUG=False)

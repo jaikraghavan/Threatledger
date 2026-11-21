@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}{% if entity %}Edit {{ entity.name }}{% else %}New vendor{% endif %}{% endblock %}
+{% block content %}
+<nav class="mb-3 text-sm text-slate-500" aria-label="Breadcrumb"><a class="hover:underline" href="{% url 'vendors:list' %}">Third parties</a>{% if entity %} / <a class="hover:underline" href="{% url 'vendors:detail' entity.ref %}">{{ entity.ref }}</a>{% endif %}</nav>
+<h1 class="mb-4 text-2xl font-semibold">{% if entity %}Edit {{ entity.name }}{% else %}New vendor{% endif %}</h1>
+<form method="post" class="card grid max-w-4xl gap-4 p-5 sm:grid-cols-2" novalidate>{% csrf_token %}
+  <div class="sm:col-span-2">{% include "partials/_form_errors.html" %}</div>
+  {% for field in form %}{% if field.name == "description" or field.name == "risks" %}{% include "partials/_field.html" with field=field class="sm:col-span-2" %}{% else %}{% include "partials/_field.html" with field=field %}{% endif %}{% endfor %}
+  <div class="flex gap-2 sm:col-span-2"><button class="btn btn-primary" type="submit">Save</button><a class="btn btn-secondary" href="{% if entity %}{% url 'vendors:detail' entity.ref %}{% else %}{% url 'vendors:list' %}{% endif %}">Cancel</a></div>
+</form>
+{% endblock %}

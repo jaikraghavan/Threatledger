@@ -72,6 +72,14 @@ class Finding(TimeStampedModel):
     risk = models.ForeignKey(
         Risk, null=True, blank=True, on_delete=models.PROTECT, related_name="findings"
     )
+    entity = models.ForeignKey(
+        "vendors.Entity",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="findings",
+        help_text="Third party the finding is about.",
+    )
     remediation = models.TextField("remediation plan / progress", blank=True)
     resolved_at = models.DateTimeField(null=True, blank=True)
     closed_at = models.DateTimeField(null=True, blank=True)

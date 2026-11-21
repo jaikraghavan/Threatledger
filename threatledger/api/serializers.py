@@ -344,3 +344,30 @@ class TaskSerializer(serializers.Serializer):
 
     def get_assignees(self, obj: Any) -> list[str]:
         return [u.get_username() for u in obj.assignees.all()]
+
+
+# ----------------------------------------------------------------------------- Phase 10
+class VendorSerializer(serializers.Serializer):
+    ref = serializers.CharField(source="entity.ref")
+    name = serializers.CharField(source="entity.name")
+    lei = serializers.CharField(source="entity.lei")
+    tier = serializers.CharField(source="entity.tier")
+    status = serializers.CharField(source="entity.status")
+    ict_provider = serializers.BooleanField(source="entity.ict_provider")
+    data_access = serializers.CharField(source="entity.data_access")
+    assessment_score = serializers.FloatField(source="score", allow_null=True)
+    reassess_due = serializers.DateField(allow_null=True)
+    open_findings = serializers.IntegerField()
+    flags = serializers.ListField(child=serializers.CharField())
+    contracts = serializers.SerializerMethodField()
+
+    def get_contracts(self, obj: Any) -> list[dict[str, Any]]:
+        return [
+            {
+                "ref": c.ref,
+                "state": c.state,
+                "end_date": c.end_date.isoformat() if c.end_date else None,
+                "notice_deadline": c.notice_deadline.isoformat() if c.notice_deadline else None,
+            }
+            for c in obj.contracts
+        ]

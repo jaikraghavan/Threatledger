@@ -15,6 +15,7 @@ router.register("findings", views.FindingViewSet, basename="finding")
 router.register("exceptions", views.ExceptionViewSet, basename="exception")
 router.register("policies", views.PolicyViewSet, basename="policy")
 router.register("tasks", views.TaskViewSet, basename="task")
+router.register("vendors", views.VendorViewSet, basename="vendor")
 
 urlpatterns = [
     path("me/", views.MeView.as_view(), name="me"),

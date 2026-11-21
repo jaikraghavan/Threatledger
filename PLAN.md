@@ -563,7 +563,7 @@ Each phase is one release with the same rules as Phases 1–7: tests and linters
 - Comments, a notification centre and email reminders.
 - Kanban board, plus approval flows for controls and evidence (four-eyes evidence review).
 
-**Phase 10: Third-party risk (TPRM)**
+**Phase 10: Third-party risk (TPRM)** ✅ done
 - Entities (vendors), solutions/services, contracts, criticality and tiering.
 - Vendor assessments through a time-limited external respondent link.
 - Vendor posture view.

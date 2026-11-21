@@ -37,6 +37,7 @@ class DemoReport:
     policies: int = 0
     tasks: int = 0
     questionnaires: int = 0
+    vendors: int = 0
 
 
 def _days(n: int | None) -> Any:
@@ -153,6 +154,7 @@ def seed_demo(org: Organisation, path: Path = DEMO_FILE) -> DemoReport:
             report.acceptances += int(isinstance(acc, RiskAcceptance))
     seed_governance(org, data, users, bus, controls, report)
     seed_work(org, data, users, controls, report)
+    seed_vendors(org, data, users, assets, report)
     take_snapshots(org)
     return report
 
@@ -382,3 +384,124 @@ def seed_work(
             control_services.request_status_change(
                 c, user=c.owner, to_status=to_status, reason=reason
             )
+
+
+VENDOR_QUESTIONS: list[dict[str, Any]] = [
+    {
+        "text": "Do you hold a current SOC 2 Type II or ISO 27001 certificate?",
+        "kind": "yes_no",
+        "evidence_required": True,
+    },
+    {"text": "Is MFA enforced for all administrative access?", "kind": "yes_no"},
+    {"text": "Do you notify customers of security incidents within 24 hours?", "kind": "yes_no"},
+    {
+        "text": "Have you completed an independent penetration test in the last 12 months?",
+        "kind": "yes_no",
+    },
+]
+
+
+def seed_vendors(
+    org: Organisation,
+    data: dict[str, Any],
+    users: dict[str, User],
+    assets: dict[str, Any],
+    report: DemoReport,
+) -> None:
+    """Phase 10: vendors with services, contracts and external assessments."""
+    from datetime import date
+
+    from threatledger.risks.models import Risk
+    from threatledger.vendors import services as vendor_services
+    from threatledger.vendors.models import Entity
+    from threatledger.work import services as work_services
+    from threatledger.work.models import Questionnaire
+
+    rm = users["riskmanager"]
+    q = Questionnaire.objects.filter(organisation=org, title="Vendor security baseline").first()
+    if q is None:
+        q = work_services.create_questionnaire(
+            user=rm, title="Vendor security baseline", questions=VENDOR_QUESTIONS
+        )
+    for item in data.get("vendors", []):
+        if Entity.objects.filter(organisation=org, name=item["name"]).exists():
+            continue
+        entity = vendor_services.create_entity(
+            user=rm,
+            data={
+                "name": item["name"],
+                "legal_name": item.get("legal_name", ""),
+                "tier": item["tier"],
+                "ict_provider": item.get("ict", False),
+                "data_access": item.get("data", "none"),
+                "substitutability": item.get("substitutability", "medium"),
+                "exit_plan": item.get("exit_plan", False),
+                "lei": item.get("lei", ""),
+                "country": item.get("country", ""),
+                "owner": rm,
+                "security_contact": f"security@{item['name'].split()[0].lower()}.example",
+            },
+            risks=Risk.objects.filter(organisation=org, ref__in=item.get("risks", [])),
+        )
+        solutions = []
+        for name, kind, function, critical, where, asset_names in item.get("services", []):
+            solutions.append(
+                vendor_services.add_solution(
+                    entity,
+                    user=rm,
+                    data={
+                        "name": name,
+                        "ict_service_type": kind,
+                        "supported_function": function,
+                        "function_is_critical": critical,
+                        "data_locations": where,
+                    },
+                    assets=[assets[a] for a in asset_names if a in assets],
+                )
+            )
+        for title, start, days_left, notice, renew, value, law in item.get("contracts", []):
+            vendor_services.create_contract(
+                entity,
+                user=rm,
+                data={
+                    "title": title,
+                    "start_date": date.fromisoformat(str(start)),
+                    "end_date": _days(days_left),
+                    "notice_days": notice,
+                    "auto_renew": renew,
+                    "annual_value": value,
+                    "currency": "EUR" if law in ("IE", "NL", "DE") else "GBP",
+                    "governing_law": law,
+                    "security_clauses": True,
+                    "audit_rights": item["tier"] == "critical",
+                    "data_processing_agreement": item.get("data") in ("personal", "sensitive"),
+                },
+                solutions=solutions,
+            )
+        spec = item.get("assessment")
+        if spec:
+            _assignment, token = work_services.send_external_assessment(
+                entity,
+                user=rm,
+                questionnaire=q,
+                name="Vendor security team",
+                email=entity.security_contact,
+                due_on=_days(14),
+            )
+            if spec["status"] in ("submitted", "accepted"):
+                link = work_services.resolve_link(token)
+                if link is None:  # pragma: no cover - a fresh link always resolves
+                    continue
+                for question, value in zip(q.questions.all(), spec["answers"], strict=False):
+                    work_services.save_external_answer(
+                        link,
+                        question,
+                        value=value,
+                        evidence_url="https://trust.example/soc2"
+                        if question.evidence_required
+                        else "",
+                    )
+                submitted = work_services.submit_external(link)
+                if spec["status"] == "accepted":
+                    work_services.review_assignment(submitted, user=users["admin"], accept=True)
+        report.vendors += 1

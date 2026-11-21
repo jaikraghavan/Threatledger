@@ -27,6 +27,7 @@ class FindingForm(forms.ModelForm):
             "requirement",
             "control",
             "risk",
+            "entity",
             "description",
             "remediation",
         ]
@@ -49,6 +50,10 @@ class FindingForm(forms.ModelForm):
         f["audit"].queryset = visible_audits(user).exclude(status="closed")  # type: ignore[attr-defined]
         f["control"].queryset = Control.objects.filter(organisation=org).live()  # type: ignore[attr-defined]
         f["risk"].queryset = visible_risks(user)  # type: ignore[attr-defined]
+        from threatledger.vendors.services import visible_entities
+
+        f["entity"].queryset = visible_entities(user)  # type: ignore[attr-defined]
+        f["entity"].label = "Vendor"
         audit = self.initial.get("audit") or getattr(self.instance, "audit", None)
         reqs = Requirement.objects.filter(is_domain=False)
         if audit is not None:

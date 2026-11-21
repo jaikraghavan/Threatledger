@@ -1,0 +1,64 @@
+{% extends "base.html" %}{% load tl work %}
+{% block title %}{{ entity.name }}{% endblock %}
+{% block content %}
+<nav class="mb-3 text-sm text-slate-500" aria-label="Breadcrumb"><a class="hover:underline" href="{% url 'vendors:list' %}">Third parties</a></nav>
+<div class="flex flex-wrap items-start justify-between gap-4">
+  <div><div class="font-mono text-sm text-slate-500">{{ entity.ref }}{% if entity.lei %} · LEI {{ entity.lei }}{% endif %}{% if entity.country %} · {{ entity.country }}{% endif %}</div>
+    <h1 class="text-2xl font-semibold">{{ entity.name }}</h1>
+    <div class="mt-1 flex flex-wrap items-center gap-2 text-sm"><span class="badge {% if entity.tier == 'critical' %}bg-red-100 text-red-800{% elif entity.tier == 'high' %}bg-amber-100 text-amber-800{% else %}bg-slate-100 text-slate-700{% endif %}">{{ entity.get_tier_display }}</span>
+      <span class="text-slate-600">{{ entity.get_status_display }}</span>{% if entity.ict_provider %}<span class="badge bg-slate-100 text-slate-700">ICT provider (DORA)</span>{% endif %}
+      {% for f in p.flags %}<span class="badge bg-amber-100 text-amber-800">{{ f }}</span>{% endfor %}</div></div>
+  {% if can_manage %}<div class="flex gap-2"><a class="btn btn-secondary" href="{% url 'vendors:edit' entity.ref %}">Edit</a><a class="btn btn-secondary" href="{% url 'vendors:contract_create' entity.ref %}">Add contract</a></div>{% endif %}
+</div>
+<div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+  <div class="card p-4"><div class="text-xs uppercase tracking-wide text-slate-500">Assessment score</div><div class="mt-1 text-2xl font-semibold">{% if p.score is not None %}{{ p.score }}%{% else %}—{% endif %}</div><div class="text-xs text-slate-500">{% if p.last_assessment %}{{ p.last_assessment.questionnaire.title }} · {{ p.last_assessment.submitted_at|date:"Y-m-d" }}{% else %}never assessed{% endif %}</div></div>
+  <div class="card p-4"><div class="text-xs uppercase tracking-wide text-slate-500">Reassess by</div><div class="mt-1 text-2xl font-semibold {% if p.reassess_overdue %}text-red-700{% endif %}">{{ p.reassess_due|date:"Y-m-d"|default:"—" }}</div><div class="text-xs text-slate-500">by tier</div></div>
+  <div class="card p-4"><div class="text-xs uppercase tracking-wide text-slate-500">Data access</div><div class="mt-1 font-medium">{{ entity.get_data_access_display }}</div><div class="text-xs text-slate-500">{{ entity.get_substitutability_display }} · {% if entity.exit_plan %}exit plan in place{% else %}no exit plan{% endif %}</div></div>
+  <div class="card p-4"><div class="text-xs uppercase tracking-wide text-slate-500">External rating</div><div class="mt-1 font-medium">{{ entity.external_rating|default:"—" }}</div><div class="text-xs text-slate-500">{{ entity.external_rating_source }}{% if entity.external_rating_date %} · {{ entity.external_rating_date|date:"Y-m-d" }}{% endif %}</div></div>
+</div>
+<div class="mt-6 grid gap-6 lg:grid-cols-3">
+  <div class="space-y-6 lg:col-span-2">
+    <section class="card p-5"><h2 class="mb-3 font-semibold">Services provided ({{ solutions|length }})</h2>
+      <ul class="divide-y divide-slate-100 text-sm">{% for s in solutions %}<li class="flex flex-wrap items-start justify-between gap-2 py-2"><div><span class="font-medium">{{ s.name }}</span>{% if s.ict_service_type %} <span class="text-xs text-slate-500">{{ s.ict_service_type }}</span>{% endif %}
+        <div class="text-xs text-slate-500">{% if s.supported_function %}supports {{ s.supported_function }}{% if s.function_is_critical %} (critical or important){% endif %}{% endif %}{% if s.data_locations %} · data in {{ s.data_locations }}{% endif %}{% with assets=s.assets.all %}{% if assets %} · assets: {% for x in assets %}{{ x.name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}{% endwith %}</div></div>
+        {% if can_manage %}<form method="post" action="{% url 'vendors:solution_remove' entity.ref s.pk %}">{% csrf_token %}<button class="text-xs text-slate-500 hover:text-red-700" type="submit">Remove</button></form>{% endif %}</li>
+      {% empty %}<li class="py-2 text-slate-500">No services recorded.</li>{% endfor %}</ul>
+      {% if solution_form %}<details class="mt-3"><summary class="cursor-pointer text-sm font-medium text-brand-700">Add a service…</summary>
+        <form method="post" action="{% url 'vendors:solution_add' entity.ref %}" class="mt-3 grid gap-3 sm:grid-cols-2">{% csrf_token %}
+          {% for field in solution_form %}{% include "partials/_field.html" with field=field %}{% endfor %}<div class="sm:col-span-2"><button class="btn btn-secondary" type="submit">Add service</button></div></form></details>{% endif %}
+    </section>
+    <section class="card p-5"><h2 class="mb-3 font-semibold">Contracts ({{ p.contracts|length }})</h2>
+      <ul class="divide-y divide-slate-100 text-sm">{% for c in p.contracts %}<li class="flex flex-wrap items-center justify-between gap-2 py-2"><span>{% if can_manage %}<a class="font-mono text-xs text-brand-700 hover:underline" href="{% url 'vendors:contract_edit' entity.ref c.ref %}">{{ c.ref }}</a>{% else %}<span class="font-mono text-xs">{{ c.ref }}</span>{% endif %} {{ c.title }}</span>
+        <span class="text-xs {% if c.state == 'notice_due' %}text-amber-700{% elif c.state == 'expired' %}text-red-700{% else %}text-slate-500{% endif %}">{{ c.state_label }}{% if c.end_date %} · ends {{ c.end_date|date:"Y-m-d" }} · notice by {{ c.notice_deadline|date:"Y-m-d" }}{% endif %}</span></li>
+      {% empty %}<li class="py-2 text-slate-500">No contracts recorded.</li>{% endfor %}</ul></section>
+    <section class="card p-5"><h2 class="mb-3 font-semibold">Assessments ({{ assessments|length }})</h2>
+      <ul class="divide-y divide-slate-100 text-sm">{% for a, score in assessments %}<li class="py-3"><div class="flex flex-wrap items-center justify-between gap-2"><span><a class="text-brand-700 hover:underline" href="{% url 'work:assignment' a.ref %}">{{ a.questionnaire.title }}</a> <span class="text-xs text-slate-500">{{ a.ref }} · {{ a.respondent_label }}</span></span>
+          <span class="flex items-center gap-2">{% if score is not None %}<span class="badge {% if score >= 80 %}bg-green-100 text-green-800{% elif score >= 50 %}bg-amber-100 text-amber-800{% else %}bg-red-100 text-red-800{% endif %}">{{ score }}%</span>{% endif %}<span class="badge bg-slate-100 text-slate-700">{{ a.get_status_display }}</span></span></div>
+        {% if can_manage and a.is_external and a.editable_by_respondent %}{% with link=a.links.all.0 %}<div class="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+          {% if link and link.revoked_at is None and link.expires_at > now %}Link {{ link.prefix }}… valid to {{ link.expires_at|date:"Y-m-d" }}{% if link.last_used_at %} · last opened {{ link.last_used_at|date:"Y-m-d" }}{% endif %}{% else %}No live link{% endif %}
+          <form method="post" action="{% url 'vendors:assessment_link' entity.ref a.ref %}" class="inline-flex items-center gap-1">{% csrf_token %}<input type="hidden" name="days" value="30"><label class="inline-flex items-center gap-1"><input type="checkbox" name="send_email" class="rounded border-slate-300"> email it</label><button class="text-brand-700 hover:underline" type="submit">New link</button></form>
+          <form method="post" action="{% url 'vendors:assessment_link' entity.ref a.ref %}">{% csrf_token %}<input type="hidden" name="action" value="revoke"><button class="hover:text-red-700" type="submit">Revoke</button></form></div>{% endwith %}{% endif %}</li>
+      {% empty %}<li class="py-2 text-slate-500">No assessments yet.</li>{% endfor %}</ul>
+      {% if send_form %}<details class="mt-3"><summary class="cursor-pointer text-sm font-medium text-brand-700">Send a questionnaire to the vendor…</summary>
+        <form method="post" action="{% url 'vendors:assessment_send' entity.ref %}" class="mt-3 grid gap-3 sm:grid-cols-2">{% csrf_token %}
+          {% include "partials/_field.html" with field=send_form.questionnaire class="sm:col-span-2" %}{% include "partials/_field.html" with field=send_form.contact_name %}{% include "partials/_field.html" with field=send_form.contact_email %}
+          {% include "partials/_field.html" with field=send_form.due_on %}{% include "partials/_field.html" with field=send_form.days %}{% include "partials/_field.html" with field=send_form.message class="sm:col-span-2" %}{% include "partials/_field.html" with field=send_form.send_email class="sm:col-span-2" %}
+          <p class="text-xs text-slate-500 sm:col-span-2">The vendor answers through a private link without an account. You will see the link once, to copy it if you prefer to send it yourself.</p>
+          <div class="sm:col-span-2"><button class="btn btn-primary" type="submit">Create link</button></div></form></details>{% endif %}
+    </section>
+    {% comments entity %}
+  </div>
+  <aside class="space-y-6">
+    <section class="card p-5"><h2 class="mb-3 font-semibold">Details</h2><dl class="space-y-2 text-sm">
+      <div><dt class="text-xs text-slate-500">Relationship owner</dt><dd>{{ entity.owner|default:"—" }}</dd></div>
+      {% if entity.legal_name %}<div><dt class="text-xs text-slate-500">Legal name</dt><dd>{{ entity.legal_name }}</dd></div>{% endif %}
+      {% if entity.business_unit %}<div><dt class="text-xs text-slate-500">Business unit</dt><dd>{{ entity.business_unit }}</dd></div>{% endif %}
+      {% if entity.website %}<div><dt class="text-xs text-slate-500">Website</dt><dd><a class="text-brand-700 hover:underline" href="{{ entity.website }}" target="_blank" rel="noopener noreferrer nofollow">{{ entity.website }} ↗</a></dd></div>{% endif %}
+      {% if entity.security_contact %}<div><dt class="text-xs text-slate-500">Security contact</dt><dd>{{ entity.security_contact }}</dd></div>{% endif %}
+      {% if entity.description %}<div><dt class="text-xs text-slate-500">Notes</dt><dd class="whitespace-pre-line">{{ entity.description }}</dd></div>{% endif %}</dl></section>
+    <section class="card p-5"><h2 class="mb-3 font-semibold">Linked risks ({{ risks|length }})</h2><ul class="space-y-1 text-sm">{% for r in risks %}<li><a class="font-mono text-xs text-brand-700 hover:underline" href="{% url 'risks:detail' r.ref %}">{{ r.ref }}</a> {{ r.title }}</li>{% empty %}<li class="text-slate-500">None.</li>{% endfor %}</ul></section>
+    {% if user|can:"view_findings" %}<section class="card p-5"><h2 class="mb-3 font-semibold">Findings</h2><ul class="space-y-1 text-sm">{% for f in findings %}<li><a class="font-mono text-xs text-brand-700 hover:underline" href="{% url 'findings:detail' f.ref %}">{{ f.ref }}</a> {{ f.title }} <span class="badge {{ f.status|tone }}">{{ f.get_status_display }}</span></li>{% empty %}<li class="text-slate-500">None.</li>{% endfor %}</ul>
+      {% if user|can:"raise_findings" %}<a class="mt-2 inline-block text-sm text-brand-700 hover:underline" href="{% url 'findings:create' %}?entity={{ entity.ref }}">Raise a finding…</a>{% endif %}</section>{% endif %}
+  </aside>
+</div>
+{% endblock %}

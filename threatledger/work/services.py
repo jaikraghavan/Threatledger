@@ -26,6 +26,7 @@ from threatledger.core.refs import next_ref
 from .models import (
     OPEN_TASK_STATUSES,
     RECURRENCE_STEP,
+    AccessLink,
     Answer,
     Assignment,
     AssignmentStatus,
@@ -250,8 +251,10 @@ def _registry() -> dict[str, Callable[[Any], QuerySet[Any]]]:
     from threatledger.findings.services import visible_exceptions, visible_findings
     from threatledger.policies.services import visible_policies
     from threatledger.risks.services import visible_risks
+    from threatledger.vendors.services import visible_entities
 
     return {
+        "vendors.entity": visible_entities,
         "risks.risk": visible_risks,
         "controls.control": visible_controls,
         "findings.finding": visible_findings,
@@ -301,6 +304,7 @@ def detail_url(obj: Any) -> str:
         "audits.audit": "audits:detail",
         "policies.policy": "policies:detail",
         "work.task": "work:task",
+        "vendors.entity": "vendors:detail",
     }
     return _url(names[label], obj.ref) if label in names else ""
 
@@ -508,8 +512,19 @@ def save_answer(
     evidence_url: str = "",
     upload: UploadedFile | None = None,
 ) -> Answer:
-    if a.respondent_id != user.pk:
+    if a.respondent_id is None or a.respondent_id != user.pk:
         raise WorkError("Only the respondent can answer.")
+    return _store_answer(a, question, value, comment, evidence_url, upload)
+
+
+def _store_answer(
+    a: Assignment,
+    question: Question,
+    value: str,
+    comment: str,
+    evidence_url: str,
+    upload: UploadedFile | None,
+) -> Answer:
     if not a.editable_by_respondent:
         raise WorkError("This questionnaire has been submitted.")
     if question.questionnaire_id != a.questionnaire_id:
@@ -552,8 +567,14 @@ def missing_answers(a: Assignment) -> list[Question]:
 
 @transaction.atomic
 def submit_assignment(a: Assignment, *, user: Any) -> Assignment:
-    if a.respondent_id != user.pk or not a.editable_by_respondent:
+    if a.respondent_id is None or a.respondent_id != user.pk or not a.editable_by_respondent:
         raise WorkError("You cannot submit this questionnaire.")
+    return _submit(a, actor=user, who=str(user))
+
+
+def _submit(a: Assignment, *, actor: Any, who: str) -> Assignment:
+    if not a.editable_by_respondent:
+        raise WorkError("This questionnaire has already been submitted.")
     missing = missing_answers(a)
     if missing:
         raise WorkError(
@@ -566,14 +587,21 @@ def submit_assignment(a: Assignment, *, user: Any) -> Assignment:
     record(
         Action.UPDATE,
         a,
-        actor=user,
-        changes={"status": [before, a.status], "answers": [None, a.answers.count()]},
+        actor=actor,
+        changes={
+            "status": [before, a.status],
+            "answers": [None, a.answers.count()],
+            "by": [None, who],
+        },
     )
+    recipients = [a.created_by]
+    if a.entity is not None:
+        recipients.append(a.entity.owner)
     notify(
-        [a.created_by],
-        f"{user} submitted {a.questionnaire.title} ({a.ref})",
+        recipients,
+        f"{who} submitted {a.questionnaire.title} ({a.ref})",
         _url("work:assignment", a.ref),
-        actor=user,
+        actor=actor,
     )
     return a
 
@@ -599,3 +627,170 @@ def review_assignment(a: Assignment, *, user: Any, accept: bool, note: str = "")
         actor=user,
     )
     return a
+
+
+# ----------------------------------------------------------------------------- scoring
+def assessment_score(a: Assignment) -> float | None:
+    """Share of "Yes" among Yes/No answers (N/A excluded). Derived, never stored."""
+    yes = no = 0
+    for ans in a.answers.all():
+        if ans.question.kind != QuestionKind.YES_NO:
+            continue
+        if ans.value == "Yes":
+            yes += 1
+        elif ans.value == "No":
+            no += 1
+    return round(100 * yes / (yes + no), 1) if yes + no else None
+
+
+# ----------------------------------------------------------------------------- external links
+LINK_DAYS_MAX = 90
+
+
+def _hash(token: str) -> str:
+    import hashlib
+
+    return hashlib.sha256(token.encode()).hexdigest()
+
+
+@transaction.atomic
+def send_external_assessment(
+    entity: Any,
+    *,
+    user: Any,
+    questionnaire: Questionnaire,
+    name: str,
+    email: str,
+    due_on: date | None = None,
+    days: int = 30,
+    message: str = "",
+) -> tuple[Assignment, str]:
+    """Create an assignment for a vendor contact and return it with a one-time-shown link token."""
+    if not can(user, Cap.MANAGE_VENDORS):
+        raise WorkError("You cannot send vendor assessments.")
+    org = current_organisation(user)
+    if entity.organisation_id != org.pk or questionnaire.organisation_id != org.pk:
+        raise WorkError("Unknown vendor or questionnaire.")
+    if questionnaire.archived_at or not questionnaire.questions.exists():
+        raise WorkError("Choose a questionnaire that has questions.")
+    email = email.strip()
+    from django.core.validators import validate_email
+
+    try:
+        validate_email(email)
+    except ValidationError as exc:
+        raise WorkError("Enter a valid contact email.") from exc
+    a = Assignment(
+        organisation=org,
+        questionnaire=questionnaire,
+        entity=entity,
+        external_name=name.strip()[:200],
+        external_email=email,
+        business_unit=entity.business_unit,
+        due_on=due_on,
+        message=message,
+        created_by=user,
+        updated_by=user,
+    )
+    a.ref = next_ref(Assignment, org, "QA")
+    a.full_clean(exclude=["organisation", "created_by", "updated_by"])
+    a.save()
+    record(
+        Action.CREATE,
+        a,
+        actor=user,
+        changes={"entity": [None, entity.ref], "external_email": [None, email]},
+    )
+    token = issue_link(a, user=user, days=days)
+    return a, token
+
+
+@transaction.atomic
+def issue_link(a: Assignment, *, user: Any, days: int = 30) -> str:
+    """Revoke any live link and create a new one. Returns the raw token (shown once)."""
+    import secrets
+
+    if not can(user, Cap.MANAGE_VENDORS):
+        raise WorkError("You cannot manage vendor links.")
+    if not a.is_external:
+        raise WorkError("Links are only for external respondents.")
+    if not 1 <= days <= LINK_DAYS_MAX:
+        raise WorkError(f"Links last between 1 and {LINK_DAYS_MAX} days.")
+    revoke_links(a, user=user, quiet=True)
+    token = secrets.token_urlsafe(32)
+    link = AccessLink.objects.create(
+        assignment=a,
+        token_hash=_hash(token),
+        prefix=token[:6],
+        expires_at=timezone.now() + timedelta(days=days),
+        created_by=user,
+    )
+    record(
+        Action.CREATE,
+        link,
+        actor=user,
+        changes={"assignment": [None, a.ref], "expires_at": [None, link.expires_at.isoformat()]},
+    )
+    return token
+
+
+@transaction.atomic
+def revoke_links(a: Assignment, *, user: Any, quiet: bool = False) -> int:
+    if not can(user, Cap.MANAGE_VENDORS):
+        raise WorkError("You cannot manage vendor links.")
+    live = a.links.filter(revoked_at__isnull=True, expires_at__gt=timezone.now())
+    n = live.update(revoked_at=timezone.now())
+    if n and not quiet:
+        record(Action.UPDATE, a, actor=user, changes={"links_revoked": [None, n]})
+    return n
+
+
+def resolve_link(token: str) -> AccessLink | None:
+    """The usable link for ``token`` (or None). Counts each successful use."""
+    if not token or len(token) > 200:
+        return None
+    link = (
+        AccessLink.objects.select_related("assignment__questionnaire", "assignment__entity")
+        .filter(token_hash=_hash(token))
+        .first()
+    )
+    if link is None or not link.is_usable:
+        return None
+    AccessLink.objects.filter(pk=link.pk).update(
+        last_used_at=timezone.now(), use_count=models.F("use_count") + 1
+    )
+    return link
+
+
+def usable_link(link_id: int | None) -> AccessLink | None:
+    if link_id is None:
+        return None
+    link = (
+        AccessLink.objects.select_related("assignment__questionnaire", "assignment__entity")
+        .filter(pk=link_id)
+        .first()
+    )
+    return link if link is not None and link.is_usable else None
+
+
+@transaction.atomic
+def save_external_answer(
+    link: AccessLink,
+    question: Question,
+    *,
+    value: str,
+    comment: str = "",
+    evidence_url: str = "",
+    upload: UploadedFile | None = None,
+) -> Answer:
+    if not link.is_usable:
+        raise WorkError("This link has expired or been revoked.")
+    return _store_answer(link.assignment, question, value, comment, evidence_url, upload)
+
+
+@transaction.atomic
+def submit_external(link: AccessLink) -> Assignment:
+    if not link.is_usable:
+        raise WorkError("This link has expired or been revoked.")
+    a = link.assignment
+    return _submit(a, actor=None, who=f"{a.external_name or a.external_email} (external)")

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Vendor link{% endblock %}
+{% block content %}
+<nav class="mb-3 text-sm text-slate-500" aria-label="Breadcrumb"><a class="hover:underline" href="{% url 'vendors:detail' a.entity.ref %}">{{ a.entity.name }}</a></nav>
+<h1 class="text-2xl font-semibold">Link ready for {{ a.respondent_label }}</h1>
+<p class="mt-1 text-sm text-slate-600">{% if emailed %}We emailed this link to {{ a.external_email }}. {% endif %}Copy it now: for security it is shown only once and stored only as a hash. Creating a new link revokes this one.</p>
+<div class="card mt-4 p-5"><label class="label" for="link">Private link to {{ a.questionnaire.title }}</label>
+  <input id="link" class="field font-mono text-xs" value="{{ url }}" readonly>
+  <p class="mt-2 text-xs text-slate-500">Anyone with this link can answer until it expires or is revoked. Send it only to {{ a.external_email }}.</p></div>
+<a class="btn btn-secondary mt-4" href="{% url 'vendors:detail' a.entity.ref %}">Back to {{ a.entity.name }}</a>
+{% endblock %}

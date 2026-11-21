@@ -96,6 +96,27 @@ def build_digest(user: Any) -> Digest:
         )
     if approvals:
         d.add(f"{approvals} approval(s) or review(s) waiting for you", reverse("work:approvals"))
+    from threatledger.vendors.models import Contract
+    from threatledger.vendors.services import postures
+
+    for c in Contract.objects.filter(entity__owner=user, terminated_on__isnull=True).select_related(
+        "entity"
+    ):
+        if c.state == "notice_due":
+            d.add(
+                f"Contract {c.ref} with {c.entity.name}: give notice by "
+                f"{c.notice_deadline:%Y-%m-%d}",
+                reverse("vendors:detail", args=[c.entity.ref]),
+            )
+    from threatledger.vendors.models import Entity
+
+    owned = list(Entity.objects.filter(owner=user, status__in=["active", "offboarding"]))
+    for posture in postures(owned):
+        if posture.reassess_overdue:
+            d.add(
+                f"Vendor {posture.entity.name} is due for reassessment",
+                reverse("vendors:detail", args=[posture.entity.ref]),
+            )
     for p in visible_policies(user).filter(owner=user, retired_at__isnull=True):
         state = policy_state(p)
         if state.status == "review_overdue":
