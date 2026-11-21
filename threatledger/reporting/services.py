@@ -254,3 +254,49 @@ def risk_score_series(risk: Risk) -> dict[str, Any]:
             {"label": "Residual", "data": [h.residual_score for h in rows]},
         ],
     }
+
+
+# ----------------------------------------------------------------------------- governance
+def governance_kpis(user: Any) -> dict[str, Any]:
+    """Findings, audits, exceptions and policy reviews the user may see (Phase 8)."""
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    from threatledger.accounts.permissions import can
+    from threatledger.accounts.roles import Cap
+    from threatledger.audits.services import visible_audits
+    from threatledger.findings.models import ExceptionStatus, FindingStatus
+    from threatledger.findings.services import visible_exceptions, visible_findings
+    from threatledger.policies.services import policy_state, visible_policies
+
+    today = timezone.localdate()
+    out: dict[str, Any] = {}
+    if can(user, Cap.VIEW_FINDINGS):
+        open_findings = visible_findings(user).exclude(status=FindingStatus.CLOSED)
+        out["findings_open"] = open_findings.count()
+        out["findings_severe"] = open_findings.filter(severity__in=["high", "critical"]).count()
+        out["findings_overdue"] = open_findings.filter(
+            status__in=[FindingStatus.OPEN, FindingStatus.IN_PROGRESS], due_on__lt=today
+        ).count()
+        exceptions = visible_exceptions(user)
+        out["exceptions_pending"] = exceptions.filter(status=ExceptionStatus.REQUESTED).count()
+        active = exceptions.filter(status=ExceptionStatus.APPROVED, expires_on__gte=today)
+        out["exceptions_active"] = active.count()
+        out["exceptions_expiring"] = active.filter(
+            expires_on__lte=today + timedelta(days=30)
+        ).count()
+    if can(user, Cap.VIEW_AUDITS):
+        audits = visible_audits(user)
+        out["audits_active"] = audits.exclude(status__in=["planned", "closed"]).count()
+        out["audits_overdue"] = audits.exclude(status="closed").filter(due_on__lt=today).count()
+    if can(user, Cap.VIEW_POLICIES):
+        policies = visible_policies(user).filter(retired_at__isnull=True)
+        states = [
+            policy_state(p, list(p.versions.all())) for p in policies.prefetch_related("versions")
+        ]
+        out["policies_total"] = len(states)
+        out["policies_published"] = sum(s.status in ("published", "review_overdue") for s in states)
+        out["policies_review_overdue"] = sum(s.status == "review_overdue" for s in states)
+        out["policies_in_review"] = sum(s.status == "in_review" for s in states)
+    return out

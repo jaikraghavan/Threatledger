@@ -27,19 +27,30 @@ from threatledger.attack.models import Tactic, Technique
 from threatledger.attack.services import current_release
 from threatledger.audit.models import Action, AuditEvent
 from threatledger.audit.services import record
+from threatledger.audits import services as audit_services
+from threatledger.audits.models import Audit
 from threatledger.controls import services as control_services
 from threatledger.controls.models import Control
 from threatledger.coverage.matrix import build_matrix, navigator_layer, resolve_scope
 from threatledger.coverage.selectors import coverage_for
+from threatledger.findings import services as finding_services
+from threatledger.findings.models import Finding, SecurityException
 from threatledger.frameworks import services as fw_services
 from threatledger.frameworks.models import Framework, Requirement
+from threatledger.policies import services as policy_services
+from threatledger.policies.models import Policy
 from threatledger.risks import services as risk_services
 from threatledger.risks.models import Risk, RiskMatrix
 
 from .serializers import (
     AuditEventSerializer,
+    AuditResultSerializer,
+    AuditSerializer,
     ControlSerializer,
+    ExceptionSerializer,
+    FindingSerializer,
     LinkTechniqueSerializer,
+    PolicySerializer,
     RiskSerializer,
     TechniqueSerializer,
 )
@@ -63,7 +74,13 @@ def _as_drf(exc: Exception) -> exceptions.APIException:
             exc.message_dict if hasattr(exc, "error_dict") else exc.messages
         )
     if isinstance(
-        exc, (risk_services.RiskError, control_services.ControlError, fw_services.FrameworkError)
+        exc,
+        (
+            risk_services.RiskError,
+            control_services.ControlError,
+            fw_services.FrameworkError,
+            finding_services.FindingError,
+        ),
     ):
         return exceptions.PermissionDenied(str(exc))
     raise exc
@@ -394,3 +411,160 @@ class AuditEventViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
                 ) from exc
             qs = qs.filter(at__date__gte=since)
         return qs
+
+
+# ----------------------------------------------------------------------------- Phase 8
+class AuditViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+    """Compliance audits with progress, score and maturity (``?status=``)."""
+
+    tl_access = Cap.VIEW_AUDITS
+    serializer_class = AuditSerializer
+    lookup_field = "ref"
+
+    def get_queryset(self) -> QuerySet[Any]:
+        if getattr(self, "swagger_fake_view", False):
+            return Audit.objects.none()
+        qs = audit_services.visible_audits(self.request.user).select_related(
+            "framework", "business_unit", "campaign", "lead_auditor"
+        )
+        status_ = self.request.query_params.get("status")
+        if status_:
+            qs = qs.filter(status=status_)
+        return qs.order_by("ref")
+
+    def get_serializer_context(self) -> dict[str, Any]:
+        ctx = dict(super().get_serializer_context())
+        if not getattr(self, "swagger_fake_view", False):
+            objs = getattr(self, "_page_objects", None)
+            ctx["scores"] = audit_services.list_scores(objs if objs is not None else [])
+        return ctx
+
+    def list(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        page = self.paginate_queryset(self.get_queryset())
+        self._page_objects = list(page if page is not None else self.get_queryset())
+        data = self.get_serializer(self._page_objects, many=True).data
+        return self.get_paginated_response(data) if page is not None else Response(data)
+
+    def retrieve(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        audit = self.get_object()
+        self._page_objects = [audit]
+        return Response(self.get_serializer(audit).data)
+
+    @extend_schema(responses={200: AuditResultSerializer(many=True)})
+    @action(detail=True, methods=["get"])
+    def results(self, request: Request, ref: str | None = None) -> Response:
+        """Every requirement in scope: judgement, live derived status and divergence."""
+        audit = self.get_object()
+        rows, _ = audit_services.audit_rows(audit)
+        data = [
+            {
+                "requirement": r.requirement,
+                "judgement": r.judgement,
+                "maturity": r.result.maturity if r.result else None,
+                "observation": r.result.observation if r.result else "",
+                "derived_now": str(r.derived) if r.derived else "not_applicable",
+                "derived_at_judgement": r.result.derived_at_judgement if r.result else "",
+                "divergent": r.divergent,
+                "assessed_by": (
+                    r.result.assessed_by.get_username()
+                    if r.result and r.result.assessed_by
+                    else None
+                ),
+                "assessed_at": r.result.assessed_at if r.result else None,
+            }
+            for r in rows
+        ]
+        return Response(AuditResultSerializer(data, many=True).data)
+
+
+class FindingViewSet(
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.CreateModelMixin,
+    mixins.UpdateModelMixin,
+    viewsets.GenericViewSet,
+):
+    """Findings. POST raises one (``raise_findings``); PATCH updates it, including ``status``.
+
+    Who may change what (owners: remediation and progress; verification by someone other
+    than the owner) is enforced by the same services as the UI.
+    """
+
+    tl_access = Cap.VIEW_FINDINGS
+    tl_write_access = Cap.VIEW_FINDINGS  # fine-grained rules live in findings.services
+    serializer_class = FindingSerializer
+    lookup_field = "ref"
+    http_method_names = ["get", "post", "patch", "head", "options"]
+
+    def get_queryset(self) -> QuerySet[Any]:
+        if getattr(self, "swagger_fake_view", False):
+            return Finding.objects.none()
+        qs = finding_services.visible_findings(self.request.user).select_related(
+            "owner", "audit", "requirement__framework", "control", "risk"
+        )
+        for param in ("status", "severity"):
+            value = self.request.query_params.get(param)
+            if value:
+                qs = qs.filter(**{param: value})
+        return qs.order_by("-created_at")
+
+    def perform_create(self, serializer: Any) -> None:
+        data = dict(serializer.validated_data)
+        data.pop("status", None)
+        try:
+            serializer.instance = finding_services.create_finding(user=self.request.user, data=data)
+        except Exception as exc:
+            raise _as_drf(exc) from exc
+
+    def perform_update(self, serializer: Any) -> None:
+        data = dict(serializer.validated_data)
+        new_status = data.pop("status", None)
+        finding = serializer.instance
+        try:
+            if data:
+                finding = finding_services.update_finding(
+                    finding, user=self.request.user, data=data
+                )
+            if new_status and new_status != finding.status:
+                finding = finding_services.set_finding_status(
+                    finding, user=self.request.user, status=new_status
+                )
+        except Exception as exc:
+            raise _as_drf(exc) from exc
+        serializer.instance = finding
+
+
+class ExceptionViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+    """Security exceptions (``status`` reads *expired* once an approval lapses)."""
+
+    tl_access = Cap.VIEW_FINDINGS
+    serializer_class = ExceptionSerializer
+    lookup_field = "ref"
+
+    def get_queryset(self) -> QuerySet[Any]:
+        if getattr(self, "swagger_fake_view", False):
+            return SecurityException.objects.none()
+        return (
+            finding_services.visible_exceptions(self.request.user)
+            .select_related("owner")
+            .prefetch_related("requirements__framework", "controls")
+            .order_by("-created_at")
+        )
+
+
+class PolicyViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+    """Policies with their published version and next review date."""
+
+    tl_access = Cap.VIEW_POLICIES
+    serializer_class = PolicySerializer
+    lookup_field = "ref"
+
+    def get_queryset(self) -> QuerySet[Any]:
+        if getattr(self, "swagger_fake_view", False):
+            return Policy.objects.none()
+        return (
+            policy_services.visible_policies(self.request.user)
+            .select_related("owner")
+            .prefetch_related("versions", "controls")
+            .order_by("ref")
+        )

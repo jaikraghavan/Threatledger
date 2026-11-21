@@ -172,6 +172,11 @@ class RequirementDetailView(AccessControlMixin, TemplateView):
         cov = coverage_for((t.technique_id for t in technique_links), org.pk)
         ctx["techniques"] = [(t.technique, cov[t.technique_id]) for t in technique_links]
         ctx["can_scope"] = can(self.request.user, Cap.EDIT_FRAMEWORKS)
+        from threatledger.controls.views import governance_links
+
+        ctx.update(governance_links(self.request.user, requirement=req))
+        ctx["can_request_exception"] = can(self.request.user, Cap.REQUEST_EXCEPTION)
+        ctx["exception_query"] = f"requirement={req.pk}"
         return ctx
 
 

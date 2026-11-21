@@ -10,6 +10,10 @@ router.register("risks", views.RiskViewSet, basename="risk")
 router.register("controls", views.ControlViewSet, basename="control")
 router.register("techniques", views.TechniqueViewSet, basename="technique")
 router.register("audit-events", views.AuditEventViewSet, basename="audit-event")
+router.register("audits", views.AuditViewSet, basename="audit")
+router.register("findings", views.FindingViewSet, basename="finding")
+router.register("exceptions", views.ExceptionViewSet, basename="exception")
+router.register("policies", views.PolicyViewSet, basename="policy")
 
 urlpatterns = [
     path("me/", views.MeView.as_view(), name="me"),

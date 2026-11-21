@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}{% if unit %}Edit {{ unit.name }}{% else %}New business unit{% endif %}{% endblock %}
+{% block content %}
+<nav class="mb-3 text-sm text-slate-500" aria-label="Breadcrumb"><a class="hover:underline" href="{% url 'org:units' %}">Business units</a></nav>
+<h1 class="mb-4 text-2xl font-semibold">{% if unit %}Edit {{ unit.name }}{% else %}New business unit{% endif %}</h1>
+<form method="post" class="card grid max-w-2xl gap-4 p-5 sm:grid-cols-2" novalidate>{% csrf_token %}
+  <div class="sm:col-span-2">{% include "partials/_form_errors.html" %}</div>
+  {% include "partials/_field.html" with field=form.name class="sm:col-span-2" %}
+  {% include "partials/_field.html" with field=form.code %}
+  {% include "partials/_field.html" with field=form.parent %}
+  <div class="flex gap-2 sm:col-span-2"><button class="btn btn-primary" type="submit">Save</button><a class="btn btn-secondary" href="{% url 'org:units' %}">Cancel</a></div>
+</form>
+{% endblock %}

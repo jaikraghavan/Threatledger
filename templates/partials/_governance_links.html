@@ -1,0 +1,11 @@
+{% load tl %}
+{% if show_governance %}<section class="card p-5" aria-labelledby="gov-links-h"><h2 id="gov-links-h" class="mb-3 font-semibold">Findings &amp; exceptions</h2>
+  <ul class="space-y-2 text-sm">
+    {% for f in open_findings %}<li><a class="font-mono text-xs text-brand-700 hover:underline" href="{% url 'findings:detail' f.ref %}">{{ f.ref }}</a> {{ f.title }} <span class="badge {{ f.severity|tone }}">{{ f.get_severity_display }}</span>{% if f.overdue %} <span class="badge bg-red-100 text-red-800">overdue</span>{% endif %}</li>{% endfor %}
+    {% for e in live_exceptions %}<li><a class="font-mono text-xs text-brand-700 hover:underline" href="{% url 'findings:exception' e.ref %}">{{ e.ref }}</a> {{ e.title }} <span class="badge {{ e.effective_status|tone }}">{{ e.effective_status_label }}</span> <span class="text-xs text-slate-500">to {{ e.expires_on|date:"Y-m-d" }}</span></li>{% endfor %}
+    {% if not open_findings and not live_exceptions %}<li class="text-slate-500">No open findings or exceptions.</li>{% endif %}
+  </ul>
+  {% if live_exceptions %}<p class="mt-2 text-xs text-slate-500">Exceptions are shown alongside the derived status; they never change it.</p>{% endif %}
+  {% if can_request_exception and exception_query %}<a class="mt-3 inline-block text-sm text-brand-700 hover:underline" href="{% url 'findings:exception_create' %}?{{ exception_query }}">Request an exception…</a>{% endif %}
+</section>{% endif %}
+{% if linked_policies %}<section class="card p-5"><h2 class="mb-3 font-semibold">Policies</h2><ul class="space-y-1 text-sm">{% for p in linked_policies %}<li><a class="font-mono text-xs text-brand-700 hover:underline" href="{% url 'policies:detail' p.ref %}">{{ p.ref }}</a> {{ p.title }}</li>{% endfor %}</ul></section>{% endif %}

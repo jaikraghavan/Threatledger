@@ -51,6 +51,7 @@ def dashboard_context(request: Any) -> dict[str, Any]:
         "risk_series": services.risk_series(org),
         "coverage_series": services.coverage_series(org),
         "can_view_frameworks": can(request.user, Cap.VIEW_FRAMEWORKS),
+        "gov": services.governance_kpis(request.user),
         "generated_at": timezone.now(),
     }
 

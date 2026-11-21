@@ -20,3 +20,9 @@ an end-to-end check of the UI under the strict Content Security Policy.
 | `compliance.png` | `/frameworks/` |
 | `cross-framework.png` | `/frameworks/cross/` |
 | `board-report.png` | `/reports/board/` |
+| `audit.png` | `/audits/A-0001/` |
+| `findings.png` | `/findings/` |
+| `policy.png` | `/policies/POL-002/` |
+
+The script also visits the other audit, campaign, finding, exception and policy pages for the
+console/CSP check without saving screenshots.

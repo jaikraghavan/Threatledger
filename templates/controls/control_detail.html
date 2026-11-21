@@ -62,6 +62,7 @@
           {% if test_form.evidence.field.queryset.exists %}<fieldset><legend class="label">Evidence used</legend>{{ test_form.evidence }}</fieldset>{% endif %}
           <button class="btn btn-primary" type="submit">Save test</button></form></details>{% endif %}
     </section>
+    {% include "partials/_governance_links.html" %}
   </aside>
 </div>
 {% endblock %}

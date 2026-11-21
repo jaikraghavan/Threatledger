@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}New campaign{% endblock %}
+{% block content %}
+<nav class="mb-3 text-sm text-slate-500" aria-label="Breadcrumb"><a class="hover:underline" href="{% url 'audits:campaigns' %}">Campaigns</a></nav>
+<h1 class="mb-4 text-2xl font-semibold">New audit campaign</h1>
+<form method="post" class="card grid max-w-3xl gap-4 p-5 sm:grid-cols-2" novalidate>{% csrf_token %}
+  <div class="sm:col-span-2">{% include "partials/_form_errors.html" %}</div>
+  {% include "partials/_field.html" with field=form.name class="sm:col-span-2" %}
+  {% include "partials/_field.html" with field=form.framework %}{% include "partials/_field.html" with field=form.baseline %}
+  {% include "partials/_field.html" with field=form.starts_on %}{% include "partials/_field.html" with field=form.due_on %}
+  {% include "partials/_field.html" with field=form.recurrence %}
+  {% include "partials/_field.html" with field=form.description class="sm:col-span-2" %}
+  <fieldset class="sm:col-span-2"><legend class="label">Perimeters</legend>
+    {% include "partials/_field.html" with field=form.organisation_wide %}
+    <div class="mt-2 grid gap-1 text-sm sm:grid-cols-2">{% for cb in form.perimeters %}<label class="flex items-center gap-2">{{ cb.tag }} {{ cb.choice_label }}</label>{% empty %}<p class="text-slate-500">No business units defined.</p>{% endfor %}</div>
+    <p class="mt-1 text-xs text-slate-500">{{ form.perimeters.help_text }}</p></fieldset>
+  <div class="flex gap-2 sm:col-span-2"><button class="btn btn-primary" type="submit">Launch campaign</button><a class="btn btn-secondary" href="{% url 'audits:campaigns' %}">Cancel</a></div>
+</form>
+{% endblock %}

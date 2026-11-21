@@ -1,0 +1,36 @@
+{% extends "base.html" %}{% load tl %}
+{% block title %}{{ finding.ref }} {{ finding.title }}{% endblock %}
+{% block content %}
+<nav class="mb-3 text-sm text-slate-500" aria-label="Breadcrumb"><a class="hover:underline" href="{% url 'findings:list' %}">Findings</a></nav>
+<div class="flex flex-wrap items-start justify-between gap-4">
+  <div><div class="font-mono text-sm text-slate-500">{{ finding.ref }}</div><h1 class="text-2xl font-semibold">{{ finding.title }}</h1>
+    <div class="mt-1 flex flex-wrap gap-2"><span class="badge {{ finding.severity|tone }}">{{ finding.get_severity_display }}</span><span class="badge {{ finding.status|tone }}">{{ finding.get_status_display }}</span>{% if finding.overdue %}<span class="badge bg-red-100 text-red-800">overdue</span>{% endif %}</div></div>
+  <div class="flex flex-wrap gap-2">{% if can_edit %}<a class="btn btn-secondary" href="{% url 'findings:edit' finding.ref %}">Edit</a>{% endif %}
+    {% if can_request_exception %}<a class="btn btn-secondary" href="{% url 'findings:exception_create' %}?finding={{ finding.ref }}">Request exception</a>{% endif %}</div>
+</div>
+<div class="mt-6 grid gap-6 lg:grid-cols-3">
+  <div class="space-y-6 lg:col-span-2">
+    <section class="card p-5"><h2 class="mb-2 font-semibold">Description</h2><p class="whitespace-pre-line text-sm text-slate-700">{{ finding.description|default:"—" }}</p></section>
+    <section class="card p-5"><h2 class="mb-2 font-semibold">Remediation</h2><p class="whitespace-pre-line text-sm text-slate-700">{{ finding.remediation|default:"No plan recorded yet." }}</p></section>
+    {% if transitions %}<section class="card p-5"><h2 class="mb-3 font-semibold">Update status</h2>
+      <form method="post" action="{% url 'findings:status' finding.ref %}" class="space-y-3">{% csrf_token %}
+        <label class="label" for="note">Note (optional)</label><input id="note" name="note" class="field" maxlength="500">
+        <div class="flex flex-wrap gap-2">{% for value, label in transitions %}<button class="btn {% if forloop.first %}btn-primary{% else %}btn-secondary{% endif %}" type="submit" name="status" value="{{ value }}">{% if value == "closed" %}Verify and close{% elif value == "open" and finding.status == "closed" %}Reopen{% else %}{{ label }}{% endif %}</button>{% endfor %}</div></form>
+      {% if finding.status == "resolved" and finding.owner_id == user.pk %}<p class="mt-2 text-xs text-slate-500">Someone other than the owner must verify and close it.</p>{% endif %}</section>{% endif %}
+  </div>
+  <aside class="space-y-6"><section class="card p-5"><h2 class="mb-3 font-semibold">Details</h2>
+    <dl class="space-y-2 text-sm">
+      <div><dt class="text-xs text-slate-500">Owner</dt><dd>{{ finding.owner|default:"Unassigned" }}</dd></div>
+      <div><dt class="text-xs text-slate-500">Due</dt><dd class="{% if finding.overdue %}text-red-700{% endif %}">{{ finding.due_on|date:"Y-m-d"|default:"—" }}</dd></div>
+      <div><dt class="text-xs text-slate-500">Business unit</dt><dd>{{ finding.business_unit|default:"Organisation-wide" }}</dd></div>
+      {% if finding.audit %}<div><dt class="text-xs text-slate-500">Audit</dt><dd><a class="text-brand-700 hover:underline" href="{% url 'audits:detail' finding.audit.ref %}">{{ finding.audit }}</a></dd></div>{% endif %}
+      {% if finding.requirement %}<div><dt class="text-xs text-slate-500">Requirement</dt><dd><a class="text-brand-700 hover:underline" href="{% url 'frameworks:requirement' finding.requirement.framework.code finding.requirement.pk %}">{{ finding.requirement.framework.name }} {{ finding.requirement.ref }}</a></dd></div>{% endif %}
+      {% if finding.control %}<div><dt class="text-xs text-slate-500">Control</dt><dd><a class="text-brand-700 hover:underline" href="{% url 'controls:detail' finding.control.ref %}">{{ finding.control }}</a></dd></div>{% endif %}
+      {% if finding.risk %}<div><dt class="text-xs text-slate-500">Risk</dt><dd><a class="text-brand-700 hover:underline" href="{% url 'risks:detail' finding.risk.ref %}">{{ finding.risk.ref }} {{ finding.risk.title }}</a></dd></div>{% endif %}
+      <div><dt class="text-xs text-slate-500">Raised</dt><dd>{{ finding.created_by|default:"—" }} · {{ finding.created_at|date:"Y-m-d" }}</dd></div>
+      {% if finding.closed_at %}<div><dt class="text-xs text-slate-500">Closed</dt><dd>{{ finding.closed_by }} · {{ finding.closed_at|date:"Y-m-d" }}</dd></div>{% endif %}
+    </dl></section>
+    {% if exceptions %}<section class="card p-5"><h2 class="mb-3 font-semibold">Exceptions</h2><ul class="space-y-2 text-sm">{% for e in exceptions %}<li><a class="font-mono text-xs text-brand-700 hover:underline" href="{% url 'findings:exception' e.ref %}">{{ e.ref }}</a> <span class="badge {{ e.effective_status|tone }}">{{ e.effective_status_label }}</span></li>{% endfor %}</ul></section>{% endif %}
+  </aside>
+</div>
+{% endblock %}

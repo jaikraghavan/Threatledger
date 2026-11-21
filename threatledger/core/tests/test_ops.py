@@ -147,8 +147,27 @@ def test_seed_demo_is_complete_and_idempotent(org):
     assert "not loaded" in out.getvalue()
     org.refresh_from_db()
     assert org.name == "Acme Ltd"  # an existing, real organisation is never renamed
+    # Phase 8 governance demo
+    from threatledger.audits.models import Audit
+    from threatledger.audits.services import audit_score
+    from threatledger.findings.models import Finding, SecurityException
+    from threatledger.policies.models import Policy
+    from threatledger.policies.services import policy_state
+
+    iso = Audit.objects.get(framework__code="ISO27001-2022")
+    score = audit_score(iso)
+    assert score.not_assessed == 0 and score.non_compliant >= 1
+    assert Audit.objects.filter(campaign__isnull=False).count() == 2
+    assert Finding.objects.count() == 5 and Finding.objects.filter(status="resolved").count() == 1
+    assert SecurityException.objects.filter(status="approved").count() == 1
+    states = {p.title: policy_state(p).status for p in Policy.objects.all()}
+    assert states["Access control standard"] == "review_overdue"
+    assert states["Incident response procedure"] == "in_review"
+    assert "5 findings" in out.getvalue()
+
     call_command("seed_demo", stdout=StringIO())
     assert Risk.objects.count() == 30
+    assert Finding.objects.count() == 5 and Policy.objects.count() == 4
 
 
 @override_settings(DEBUG=False)

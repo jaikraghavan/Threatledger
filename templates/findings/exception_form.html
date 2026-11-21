@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Request an exception{% endblock %}
+{% block content %}
+<nav class="mb-3 text-sm text-slate-500" aria-label="Breadcrumb"><a class="hover:underline" href="{% url 'findings:exceptions' %}">Exceptions</a></nav>
+<h1 class="mb-1 text-2xl font-semibold">Request an exception</h1>
+<p class="mb-4 text-sm text-slate-500">Someone other than you must approve it. Exceptions last at most one year.</p>
+<form method="post" class="card grid max-w-3xl gap-4 p-5 sm:grid-cols-2" novalidate>{% csrf_token %}
+  {% if finding_ref %}<input type="hidden" name="finding" value="{{ finding_ref }}"><p class="text-sm text-slate-600 sm:col-span-2">For finding {{ finding_ref }}.</p>{% endif %}
+  <div class="sm:col-span-2">{% include "partials/_form_errors.html" %}</div>
+  {% include "partials/_field.html" with field=form.title class="sm:col-span-2" %}
+  {% include "partials/_field.html" with field=form.expires_on %}{% include "partials/_field.html" with field=form.owner %}
+  {% include "partials/_field.html" with field=form.business_unit %}{% include "partials/_field.html" with field=form.risk %}
+  {% include "partials/_field.html" with field=form.requirement_refs %}{% include "partials/_field.html" with field=form.controls %}
+  {% include "partials/_field.html" with field=form.justification class="sm:col-span-2" %}
+  {% include "partials/_field.html" with field=form.compensating_measures class="sm:col-span-2" %}
+  <div class="flex gap-2 sm:col-span-2"><button class="btn btn-primary" type="submit">Submit request</button><a class="btn btn-secondary" href="{% url 'findings:exceptions' %}">Cancel</a></div>
+</form>
+{% endblock %}

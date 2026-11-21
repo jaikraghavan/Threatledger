@@ -581,3 +581,87 @@ risks:
     scenario: >-
       A planned contract to move medical supplies for a US hospital network would make Halcyon a
       business associate handling ePHI on shipping manifests.
+
+# Phase 8 governance. Sub-units sit under the business units above.
+sub_units:
+  - [UK warehouses, Operations]
+  - [India hub (Pune), Operations]
+  - [Platform engineering, Engineering]
+
+audits:
+  # An internal ISO audit in progress: the derived status is accepted for most requirements,
+  # then the auditor overrides a few after fieldwork (some disagree with the live status).
+  - name: "ISO/IEC 27001:2022 internal audit (FY26)"
+    framework: ISO27001-2022
+    lead: auditor
+    due: 21
+    scope: "Annex A controls across all sites, ahead of the surveillance audit."
+    accept_suggestions: true
+    judgements:
+      # requirement, judgement, maturity, observation
+      - ["A.8.5", partial, 3, "MFA enforced for staff, but 14 service accounts still use passwords."]
+      - ["A.5.24", non_compliant, 1, "IR plan last exercised 2024; contacts list out of date."]
+      - ["A.8.13", compliant, 4, "Quarterly restore tests evidenced (OPS-4411)."]
+    status: in_progress
+campaigns:
+  - name: NIST 800-53 Moderate review
+    framework: NIST-800-53-R5
+    baseline: moderate
+    starts: -10
+    due: 80
+    recurrence: semiannual
+    perimeters: [Engineering, Finance]
+
+findings:
+  # title, severity, owner, due (days; negative = overdue), status, link (control or ISO ref)
+  - [Service accounts without MFA, high, controlowner, 30, in_progress, "A.8.5"]
+  - [Incident response plan not exercised, high, riskmanager, -7, open, "A.5.24"]
+  - [Privileged access reviews overdue, medium, riskmanager, 45, open, CTL-PAM]
+  - [Unsupported OS on warehouse scanners, critical, controlowner, 14, open, CTL-HARDEN]
+  - [Backup encryption keys stored with backups, medium, controlowner, -30, resolved, CTL-BACKUP]
+
+exceptions:
+  # title, control, justification, compensating, expires (days), approved
+  - [Legacy WMS without SSO, CTL-MFA, "Vendor SSO module ships in the 2027 release.",
+     "Network-restricted to warehouse VLAN; quarterly access review.", 120, true]
+  - [Warehouse scanners on Android 9, CTL-HARDEN, "Hardware refresh budgeted for Q3.",
+     "Kiosk mode, no internet egress, MDM-enforced app allow-list.", 200, false]
+
+policies:
+  # ref title, type, owner, review months, status (published | in_review | draft | overdue), controls
+  - title: Information security policy
+    kind: policy
+    status: published
+    controls: [CTL-AWARE]
+    body: |
+      Purpose. Halcyon Freight Group protects the confidentiality, integrity and availability
+      of customer, employee and operational information.
+
+      Scope. All staff, contractors, systems and third parties handling Halcyon information.
+
+      Principles. Access is granted on least privilege and reviewed. Risks are assessed against
+      the threats we face (MITRE ATT&CK) and treated to within appetite. Incidents are reported
+      immediately to the security team.
+  - title: Access control standard
+    kind: standard
+    status: overdue
+    controls: [CTL-MFA, CTL-PAM, CTL-PASSWORD]
+    body: |
+      1. Multi-factor authentication is required for all remote and privileged access.
+      2. Privileged accounts are separate from day-to-day accounts and reviewed quarterly.
+      3. Passwords follow NCSC guidance: long passphrases, no forced periodic rotation.
+  - title: Incident response procedure
+    kind: procedure
+    status: in_review
+    controls: [CTL-IR]
+    body: |
+      Detect → triage (P1–P4) → contain → eradicate → recover → lessons learned.
+      P1 incidents page the on-call security lead and notify the CISO within 30 minutes.
+      Regulatory clocks (GDPR 72h, CERT-In 6h, NIS2 24h) start at awareness.
+  - title: Backup and restore standard
+    kind: standard
+    status: draft
+    controls: [CTL-BACKUP]
+    body: |
+      Production data is backed up daily to an immutable vault in a separate account; restores
+      are tested quarterly.

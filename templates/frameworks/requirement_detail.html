@@ -28,6 +28,7 @@
       {% if related.crosswalk %}<h3 class="text-xs uppercase tracking-wide text-slate-500">Crosswalk (indicative)</h3><ul class="mb-3 mt-1 space-y-1">{% for r in related.crosswalk %}<li><span class="text-xs text-slate-500">{{ r.framework.code }}</span> <a class="font-mono text-xs text-brand-700 hover:underline" href="{% url 'frameworks:requirement' r.framework.code r.pk %}">{{ r.ref }}</a> {{ r.title }}</li>{% endfor %}</ul>{% endif %}
       {% if related.shared %}<h3 class="text-xs uppercase tracking-wide text-slate-500">Satisfied by the same controls</h3><ul class="mt-1 max-h-80 space-y-1 overflow-y-auto">{% for r in related.shared %}<li><span class="text-xs text-slate-500">{{ r.framework.code }}</span> <a class="font-mono text-xs text-brand-700 hover:underline" href="{% url 'frameworks:requirement' r.framework.code r.pk %}">{{ r.ref }}</a> {{ r.title }}</li>{% endfor %}</ul>{% endif %}
       {% if not related.crosswalk and not related.shared %}<p class="text-slate-500">None yet.</p>{% endif %}</section>
+    {% if not req.is_domain %}{% include "partials/_governance_links.html" %}{% endif %}
   </aside>
 </div>
 {% endblock %}

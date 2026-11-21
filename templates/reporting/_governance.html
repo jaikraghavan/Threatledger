@@ -1,0 +1,11 @@
+{% if gov %}<section class="mt-6" aria-labelledby="gov-h"><h2 id="gov-h" class="mb-3 font-semibold">Governance</h2>
+<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+  {% if "findings_open" in gov %}<a href="{% url 'findings:list' %}" class="card block p-5 hover:border-brand-500"><div class="text-sm text-slate-500">Open findings</div><div class="mt-1 text-3xl font-semibold">{{ gov.findings_open }}</div>
+    <div class="mt-1 text-xs {% if gov.findings_overdue %}font-medium text-red-700{% else %}text-slate-500{% endif %}">{{ gov.findings_severe }} high or critical · {{ gov.findings_overdue }} overdue</div></a>
+  <a href="{% url 'findings:exceptions' %}" class="card block p-5 hover:border-brand-500"><div class="text-sm text-slate-500">Active exceptions</div><div class="mt-1 text-3xl font-semibold">{{ gov.exceptions_active }}</div>
+    <div class="mt-1 text-xs {% if gov.exceptions_expiring or gov.exceptions_pending %}text-amber-700{% else %}text-slate-500{% endif %}">{{ gov.exceptions_expiring }} expiring ≤ 30 days · {{ gov.exceptions_pending }} awaiting approval</div></a>{% endif %}
+  {% if "audits_active" in gov %}<a href="{% url 'audits:list' %}" class="card block p-5 hover:border-brand-500"><div class="text-sm text-slate-500">Audits under way</div><div class="mt-1 text-3xl font-semibold">{{ gov.audits_active }}</div>
+    <div class="mt-1 text-xs {% if gov.audits_overdue %}font-medium text-red-700{% else %}text-slate-500{% endif %}">{{ gov.audits_overdue }} past due date</div></a>{% endif %}
+  {% if "policies_total" in gov %}<a href="{% url 'policies:list' %}" class="card block p-5 hover:border-brand-500"><div class="text-sm text-slate-500">Policies published</div><div class="mt-1 text-3xl font-semibold">{{ gov.policies_published }}<span class="text-base font-normal text-slate-500">/{{ gov.policies_total }}</span></div>
+    <div class="mt-1 text-xs {% if gov.policies_review_overdue %}font-medium text-red-700{% else %}text-slate-500{% endif %}">{{ gov.policies_review_overdue }} review overdue · {{ gov.policies_in_review }} awaiting approval</div></a>{% endif %}
+</div></section>{% endif %}

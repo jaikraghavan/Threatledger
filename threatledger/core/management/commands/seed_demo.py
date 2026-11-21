@@ -32,7 +32,9 @@ class Command(BaseCommand):
         r = seed_demo(org)
         self.stdout.write(
             f"Demo: +{r.assets} assets, +{r.risks} risks ({r.technique_links} technique links), "
-            f"{r.acceptances} acceptances, {r.evidence} evidence items, {r.tests} control tests."
+            f"{r.acceptances} acceptances, {r.evidence} evidence items, {r.tests} control tests, "
+            f"{r.audits} audits, {r.findings} findings, {r.exceptions} exceptions, "
+            f"{r.policies} policies."
         )
         if r.missing_techniques:
             self.stdout.write(

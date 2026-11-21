@@ -1,0 +1,4 @@
+<nav class="mb-4 flex gap-4 border-b border-slate-200 text-sm" aria-label="Audits">
+  <a class="-mb-px border-b-2 px-1 pb-2 {% if tab == 'audits' %}border-brand-600 font-medium text-slate-900{% else %}border-transparent text-slate-500 hover:text-slate-800{% endif %}" href="{% url 'audits:list' %}"{% if tab == 'audits' %} aria-current="page"{% endif %}>Audits</a>
+  <a class="-mb-px border-b-2 px-1 pb-2 {% if tab == 'campaigns' %}border-brand-600 font-medium text-slate-900{% else %}border-transparent text-slate-500 hover:text-slate-800{% endif %}" href="{% url 'audits:campaigns' %}"{% if tab == 'campaigns' %} aria-current="page"{% endif %}>Campaigns</a>
+</nav>

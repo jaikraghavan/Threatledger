@@ -1,0 +1,21 @@
+{% extends "base.html" %}{% load tl %}
+{% block title %}Policies{% endblock %}
+{% block content %}
+<div class="mb-4 flex flex-wrap items-end justify-between gap-3">
+  <div><h1 class="text-2xl font-semibold">Policies &amp; documents</h1><p class="text-sm text-slate-500">Versioned, approved by someone other than the author, and reviewed on a schedule.</p></div>
+  {% if can_create %}<a class="btn btn-primary" href="{% url 'policies:create' %}">New policy</a>{% endif %}
+</div>
+<form method="get" class="mb-3 flex flex-wrap items-center gap-2 text-sm">
+  <label class="sr-only" for="f-kind">Type</label><select id="f-kind" name="kind" class="field w-auto"><option value="">All types</option>{% for v, l in kinds %}<option value="{{ v }}"{% if v == kind %} selected{% endif %}>{{ l }}</option>{% endfor %}</select>
+  <label class="sr-only" for="f-status">Status</label><select id="f-status" name="status" class="field w-auto"><option value="">Any status</option><option value="draft"{% if status == "draft" %} selected{% endif %}>Draft</option><option value="in_review"{% if status == "in_review" %} selected{% endif %}>In review</option><option value="published"{% if status == "published" %} selected{% endif %}>Published</option><option value="review_overdue"{% if status == "review_overdue" %} selected{% endif %}>Review overdue</option></select>
+  <label class="inline-flex items-center gap-1"><input type="checkbox" name="retired" value="1" class="rounded border-slate-300"{% if show_retired %} checked{% endif %}> Include retired</label>
+  <button class="btn btn-secondary" type="submit">Filter</button></form>
+<div class="card overflow-x-auto"><table class="data-table">
+  <thead><tr><th scope="col">Policy</th><th scope="col">Type</th><th scope="col">Status</th><th scope="col">Version</th><th scope="col">Owner</th><th scope="col">Next review</th></tr></thead>
+  <tbody class="divide-y divide-slate-100">{% for p, s in rows %}
+    <tr><td><a class="font-mono text-xs text-brand-700 hover:underline" href="{% url 'policies:detail' p.ref %}">{{ p.ref }}</a> <span class="font-medium">{{ p.title }}</span></td><td>{{ p.get_kind_display }}</td>
+      <td><span class="badge {{ s.status|tone }}">{{ s.label }}</span>{% if s.open_version and s.published %} <span class="text-xs text-slate-500">{{ s.open_version.label }} {{ s.open_version.get_status_display|lower }}</span>{% endif %}</td>
+      <td>{% if s.published %}{{ s.published.label }}{% else %}—{% endif %}</td><td>{{ p.owner|default:"—" }}</td>
+      <td class="whitespace-nowrap {% if s.status == 'review_overdue' %}font-medium text-red-700{% endif %}">{{ s.next_review_on|date:"Y-m-d"|default:"—" }}</td></tr>
+  {% empty %}<tr><td colspan="6" class="text-slate-500">No policies yet.</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

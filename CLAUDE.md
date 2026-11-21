@@ -70,6 +70,13 @@ The design lives in [PLAN.md](PLAN.md). Read it before changing models or scorin
 - **Security middleware**: CSP is strict. Never add `'unsafe-inline'`; `accounts/tests/test_security.py` scans all
   templates for inline script/style/handlers. MFA enforcement and idle timeout live in `accounts/middleware.py` (after
   MessageMiddleware). Lockout: django-axes (AUTHENTICATION_BACKENDS must keep Axes first).
+- **Governance (Phase 8)**: `threatledger/audits` (Audit, Campaign, AuditResult; `scoring.py` is pure),
+  `threatledger/findings` (Finding, SecurityException), `threatledger/policies` (Policy, PolicyVersion).
+  Audit judgements are point-in-time records; the live status stays derived (`audit_rows()` compares
+  them). Exceptions never alter derived status. Policy status/next review are derived (`policy_state()`).
+  Segregation of duties: finding owners can't close their own finding; exception requesters and
+  policy authors can't approve their own. Refs come from `core.refs.next_ref()` (A-, C-, F-, EX-, POL-).
+  BU scope includes sub-units (`org.models.descendant_ids`).
 - **Ops commands**: `backup`, `verify_backup`, `restore --force`, `seed_demo`, `perf_check --risks 1000`.
   Backups must run outside a DB transaction (tests use `django_db(transaction=True)`).
 - Test helpers for risks/controls/techniques: `threatledger/risks/tests/helpers.py`.

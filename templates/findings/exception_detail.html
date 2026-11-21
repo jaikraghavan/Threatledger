@@ -1,0 +1,34 @@
+{% extends "base.html" %}{% load tl %}
+{% block title %}{{ exc.ref }} {{ exc.title }}{% endblock %}
+{% block content %}
+<nav class="mb-3 text-sm text-slate-500" aria-label="Breadcrumb"><a class="hover:underline" href="{% url 'findings:exceptions' %}">Exceptions</a></nav>
+<div class="font-mono text-sm text-slate-500">{{ exc.ref }}</div><h1 class="text-2xl font-semibold">{{ exc.title }}</h1>
+<div class="mt-1 flex flex-wrap items-center gap-2 text-sm"><span class="badge {{ exc.effective_status|tone }}">{{ exc.effective_status_label }}</span><span class="{% if exc.expires_soon %}font-medium text-amber-700{% else %}text-slate-600{% endif %}">expires {{ exc.expires_on|date:"Y-m-d" }}</span></div>
+<div class="mt-6 grid gap-6 lg:grid-cols-3">
+  <div class="space-y-6 lg:col-span-2">
+    <section class="card p-5"><h2 class="mb-2 font-semibold">Justification</h2><p class="whitespace-pre-line text-sm text-slate-700">{{ exc.justification }}</p></section>
+    <section class="card p-5"><h2 class="mb-2 font-semibold">Compensating measures</h2><p class="whitespace-pre-line text-sm text-slate-700">{{ exc.compensating_measures|default:"None stated." }}</p></section>
+    <section class="card p-5"><h2 class="mb-2 font-semibold">Applies to</h2>
+      <ul class="space-y-1 text-sm">{% for r in requirements %}<li><a class="text-brand-700 hover:underline" href="{% url 'frameworks:requirement' r.framework.code r.pk %}">{{ r.framework.name }} {{ r.ref }}</a> {{ r.title }}</li>{% endfor %}
+        {% for c in controls %}<li><a class="text-brand-700 hover:underline" href="{% url 'controls:detail' c.ref %}">{{ c.ref }}</a> {{ c.name }}</li>{% endfor %}</ul></section>
+    {% if can_decide %}<section class="card p-5"><h2 class="mb-3 font-semibold">Decision</h2>
+      <form method="post" action="{% url 'findings:exception_decide' exc.ref %}" class="space-y-3">{% csrf_token %}
+        <label class="label" for="note">Note</label><input id="note" name="note" class="field" maxlength="500">
+        <div class="flex gap-2"><button class="btn btn-primary" type="submit" name="decision" value="approve">Approve</button><button class="btn btn-secondary" type="submit" name="decision" value="reject">Reject</button></div></form></section>
+    {% elif exc.status == "requested" and own_request %}<p class="text-sm text-slate-500">Waiting for someone else to approve your request.</p>{% endif %}
+    {% if can_revoke %}<section class="card p-5"><h2 class="mb-3 font-semibold">Revoke</h2>
+      <form method="post" action="{% url 'findings:exception_decide' exc.ref %}" class="space-y-3">{% csrf_token %}<input type="hidden" name="decision" value="revoke">
+        <label class="label" for="rnote">Reason <span class="text-red-600" aria-hidden="true">*</span></label><input id="rnote" name="note" class="field" maxlength="500" required>
+        <button class="btn btn-secondary" type="submit">Revoke exception</button></form></section>{% endif %}
+  </div>
+  <aside><section class="card p-5"><h2 class="mb-3 font-semibold">Details</h2><dl class="space-y-2 text-sm">
+    <div><dt class="text-xs text-slate-500">Requested by</dt><dd>{{ exc.created_by|default:"—" }} · {{ exc.created_at|date:"Y-m-d" }}</dd></div>
+    <div><dt class="text-xs text-slate-500">Owner</dt><dd>{{ exc.owner|default:"—" }}</dd></div>
+    <div><dt class="text-xs text-slate-500">Business unit</dt><dd>{{ exc.business_unit|default:"Organisation-wide" }}</dd></div>
+    {% if exc.risk %}<div><dt class="text-xs text-slate-500">Risk</dt><dd><a class="text-brand-700 hover:underline" href="{% url 'risks:detail' exc.risk.ref %}">{{ exc.risk.ref }}</a></dd></div>{% endif %}
+    {% if exc.finding %}<div><dt class="text-xs text-slate-500">Finding</dt><dd><a class="text-brand-700 hover:underline" href="{% url 'findings:detail' exc.finding.ref %}">{{ exc.finding.ref }}</a></dd></div>{% endif %}
+    {% if exc.decided_by %}<div><dt class="text-xs text-slate-500">Decided</dt><dd>{{ exc.decided_by }} · {{ exc.decided_at|date:"Y-m-d" }}</dd></div>{% endif %}
+    {% if exc.decision_note %}<div><dt class="text-xs text-slate-500">Note</dt><dd>{{ exc.decision_note }}</dd></div>{% endif %}
+  </dl></section></aside>
+</div>
+{% endblock %}

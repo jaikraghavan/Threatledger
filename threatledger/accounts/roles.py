@@ -15,7 +15,7 @@ class Role(models.TextChoices):
     ADMIN = "admin", "Admin"
     RISK_MANAGER = "risk_manager", "Risk Manager"
     CONTROL_OWNER = "control_owner", "Control Owner"
-    AUDITOR = "auditor", "Auditor (read-only)"
+    AUDITOR = "auditor", "Auditor"
     VIEWER = "viewer", "Viewer"
 
 
@@ -43,6 +43,19 @@ class Cap(StrEnum):
     UPLOAD_EVIDENCE = "upload_evidence"
     EDIT_FRAMEWORKS = "edit_frameworks"
     EDIT_MAPPINGS = "edit_mappings"
+    # governance (Phase 8)
+    VIEW_POLICIES = "view_policies"
+    VIEW_AUDITS = "view_audits"
+    VIEW_FINDINGS = "view_findings"  # findings and exceptions
+    MANAGE_AUDITS = "manage_audits"  # plan audits and campaigns, close audits
+    PERFORM_AUDITS = "perform_audits"  # record auditor judgements in an audit
+    RAISE_FINDINGS = "raise_findings"
+    EDIT_FINDINGS = "edit_findings"
+    UPDATE_OWN_FINDING = "update_own_finding"  # remediation updates by the finding owner
+    REQUEST_EXCEPTION = "request_exception"
+    APPROVE_EXCEPTION = "approve_exception"
+    EDIT_POLICIES = "edit_policies"
+    APPROVE_POLICIES = "approve_policies"
 
 
 _READ_ALL = {
@@ -51,8 +64,17 @@ _READ_ALL = {
     Cap.VIEW_CONTROLS,
     Cap.VIEW_FRAMEWORKS,
     Cap.VIEW_ATTACK,
+    Cap.VIEW_POLICIES,
 }
-_READ_SENSITIVE = {Cap.VIEW_EVIDENCE, Cap.VIEW_AUDIT_LOG, Cap.EXPORT_DATA}
+_READ_SENSITIVE = {
+    Cap.VIEW_EVIDENCE,
+    Cap.VIEW_AUDIT_LOG,
+    Cap.EXPORT_DATA,
+    Cap.VIEW_AUDITS,
+    Cap.VIEW_FINDINGS,
+}
+# Auditors judge and report; they never change the controls, risks or policies they audit.
+_AUDIT_WORK = {Cap.PERFORM_AUDITS, Cap.RAISE_FINDINGS}
 
 ROLE_CAPABILITIES: dict[Role, frozenset[Cap]] = {
     Role.ADMIN: frozenset(Cap),
@@ -67,14 +89,31 @@ ROLE_CAPABILITIES: dict[Role, frozenset[Cap]] = {
             Cap.UPLOAD_EVIDENCE,
             Cap.EDIT_FRAMEWORKS,
             Cap.EDIT_MAPPINGS,
+            Cap.MANAGE_AUDITS,
+            Cap.EDIT_FINDINGS,
+            Cap.UPDATE_OWN_FINDING,
+            Cap.REQUEST_EXCEPTION,
+            Cap.APPROVE_EXCEPTION,
+            Cap.EDIT_POLICIES,
+            Cap.APPROVE_POLICIES,
         }
+        | _AUDIT_WORK
     ),
     Role.CONTROL_OWNER: frozenset(
-        _READ_ALL | _READ_SENSITIVE | {Cap.EDIT_OWN_CONTROL, Cap.UPLOAD_EVIDENCE}
+        _READ_ALL
+        | _READ_SENSITIVE
+        | {
+            Cap.EDIT_OWN_CONTROL,
+            Cap.UPLOAD_EVIDENCE,
+            Cap.UPDATE_OWN_FINDING,
+            Cap.REQUEST_EXCEPTION,
+        }
     ),
-    Role.AUDITOR: frozenset(_READ_ALL | _READ_SENSITIVE),
+    Role.AUDITOR: frozenset(_READ_ALL | _READ_SENSITIVE | _AUDIT_WORK),
     Role.VIEWER: frozenset(_READ_ALL),
 }
 
 # Capabilities that only apply to objects the user owns (checked against ``obj.owner_id``).
-OWNERSHIP_SCOPED: frozenset[Cap] = frozenset({Cap.EDIT_OWN_CONTROL, Cap.UPLOAD_EVIDENCE})
+OWNERSHIP_SCOPED: frozenset[Cap] = frozenset(
+    {Cap.EDIT_OWN_CONTROL, Cap.UPLOAD_EVIDENCE, Cap.UPDATE_OWN_FINDING}
+)

@@ -547,7 +547,7 @@ footer links to `SOURCE_CODE_URL` to satisfy AGPL §13.
 ### 12.3 Gaps, grouped into phases
 Each phase is one release with the same rules as Phases 1–7: tests and linters pass, commit, summary.
 
-**Phase 8: Compliance audits & governance objects**
+**Phase 8: Compliance audits & governance objects** ✅ done (v0.2.0 candidate)
 - *Compliance assessments (audits):* an audit snapshot of a framework for a perimeter. Each
   requirement gets an auditor result (compliant / partial / non-compliant / N/A), a maturity score
   and evidence. The derived status is shown alongside as a suggestion (see Q14).

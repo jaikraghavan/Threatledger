@@ -15,11 +15,15 @@ NAV_ITEMS: list[tuple[str, str, Cap, str]] = [
     ("Risk register", "risks:list", Cap.VIEW_RISKS, "list"),
     ("Controls", "controls:list", Cap.VIEW_CONTROLS, "shield"),
     ("Compliance", "frameworks:list", Cap.VIEW_FRAMEWORKS, "check"),
+    ("Audits", "audits:list", Cap.VIEW_AUDITS, "clipboard"),
+    ("Findings", "findings:list", Cap.VIEW_FINDINGS, "flag"),
+    ("Policies", "policies:list", Cap.VIEW_POLICIES, "book"),
     ("ATT&CK coverage", "coverage:matrix", Cap.VIEW_ATTACK, "grid"),
     ("Techniques", "attack:technique_list", Cap.VIEW_ATTACK, "grid"),
     ("Threat groups", "attack:group_list", Cap.VIEW_ATTACK, "users"),
     ("Audit log", "audit:list", Cap.VIEW_AUDIT_LOG, "log"),
     ("Risk matrix", "risks:matrix", Cap.MANAGE_SETTINGS, "settings"),
+    ("Business units", "org:units", Cap.MANAGE_SETTINGS, "settings"),
     ("ATT&CK data", "attack:data", Cap.RUN_IMPORTS, "database"),
 ]
 

@@ -7,6 +7,7 @@
   <a class="btn btn-secondary" href="{% url 'reporting:board' %}">Board report</a>
 </div>
 {% include "reporting/_kpis.html" %}
+{% include "reporting/_governance.html" %}
 
 {% if k.frameworks and can_view_frameworks %}<section class="mt-6"><h2 class="mb-3 font-semibold">Compliance</h2>
   <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">{% for r in k.frameworks %}{% with s=r.summary %}

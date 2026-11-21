@@ -1,0 +1,16 @@
+{% extends "base.html" %}{% load tl %}
+{% block title %}Audit campaigns{% endblock %}
+{% block content %}
+<div class="mb-4 flex flex-wrap items-end justify-between gap-3">
+  <div><h1 class="text-2xl font-semibold">Compliance audits</h1><p class="text-sm text-slate-500">A campaign audits one framework across several perimeters, optionally every quarter, half-year or year.</p></div>
+  {% if can_manage %}<a class="btn btn-primary" href="{% url 'audits:campaign_create' %}">New campaign</a>{% endif %}
+</div>
+{% include "audits/_tabs.html" with tab="campaigns" %}
+<div class="card overflow-x-auto"><table class="data-table">
+  <thead><tr><th scope="col">Campaign</th><th scope="col">Framework</th><th scope="col">Period</th><th scope="col">Recurrence</th><th scope="col">Audits closed</th><th scope="col">Status</th></tr></thead>
+  <tbody class="divide-y divide-slate-100">{% for c, status in rows %}
+    <tr><td><a class="font-mono text-xs text-brand-700 hover:underline" href="{% url 'audits:campaign' c.ref %}">{{ c.ref }}</a> <span class="font-medium">{{ c.name }}</span></td><td>{{ c.framework.name }}</td>
+      <td class="whitespace-nowrap">{{ c.starts_on|date:"Y-m-d" }} → {{ c.due_on|date:"Y-m-d" }}</td><td>{{ c.get_recurrence_display }}</td><td>{{ c.n_closed }}/{{ c.n_audits }}</td>
+      <td><span class="badge {{ status|tone }}">{% if status == "planned" %}Planned{% elif status == "closed" %}Closed{% else %}In progress{% endif %}</span></td></tr>
+  {% empty %}<tr><td colspan="6" class="text-slate-500">No campaigns yet.</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

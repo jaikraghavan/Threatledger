@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}{% if finding %}Edit {{ finding.ref }}{% else %}Raise a finding{% endif %}{% endblock %}
+{% block content %}
+<nav class="mb-3 text-sm text-slate-500" aria-label="Breadcrumb"><a class="hover:underline" href="{% url 'findings:list' %}">Findings</a>{% if finding %} / <a class="hover:underline" href="{% url 'findings:detail' finding.ref %}">{{ finding.ref }}</a>{% endif %}</nav>
+<h1 class="mb-4 text-2xl font-semibold">{% if finding %}Edit {{ finding.ref }}{% else %}Raise a finding{% endif %}</h1>
+<form method="post" class="card grid max-w-3xl gap-4 p-5 sm:grid-cols-2" novalidate>{% csrf_token %}
+  <div class="sm:col-span-2">{% include "partials/_form_errors.html" %}</div>
+  {% for field in form.hidden_fields %}{{ field }}{% endfor %}
+  {% if form.requirement.value %}<p class="text-sm text-slate-600 sm:col-span-2">Linked to requirement #{{ form.requirement.value }} of the selected audit.</p>{% endif %}
+  {% for field in form.visible_fields %}{% if field.name == "title" or field.name == "description" or field.name == "remediation" %}{% include "partials/_field.html" with field=field class="sm:col-span-2" %}{% else %}{% include "partials/_field.html" with field=field %}{% endif %}{% endfor %}
+  <div class="flex gap-2 sm:col-span-2"><button class="btn btn-primary" type="submit">Save</button>
+    <a class="btn btn-secondary" href="{% if finding %}{% url 'findings:detail' finding.ref %}{% else %}{% url 'findings:list' %}{% endif %}">Cancel</a></div>
+</form>
+{% endblock %}

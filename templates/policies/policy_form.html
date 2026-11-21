@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}{% if policy %}Edit {{ policy.ref }}{% else %}New policy{% endif %}{% endblock %}
+{% block content %}
+<nav class="mb-3 text-sm text-slate-500" aria-label="Breadcrumb"><a class="hover:underline" href="{% url 'policies:list' %}">Policies</a>{% if policy %} / <a class="hover:underline" href="{% url 'policies:detail' policy.ref %}">{{ policy.ref }}</a>{% endif %}</nav>
+<h1 class="mb-4 text-2xl font-semibold">{% if policy %}Edit {{ policy.ref }}{% else %}New policy{% endif %}</h1>
+<form method="post" class="card grid max-w-3xl gap-4 p-5 sm:grid-cols-2" novalidate>{% csrf_token %}
+  <div class="sm:col-span-2">{% include "partials/_form_errors.html" %}</div>
+  {% for field in form %}{% if field.name == "title" or field.name == "summary" or field.name == "body" %}{% include "partials/_field.html" with field=field class="sm:col-span-2" %}{% else %}{% include "partials/_field.html" with field=field %}{% endif %}{% endfor %}
+  <div class="flex gap-2 sm:col-span-2"><button class="btn btn-primary" type="submit">Save</button>
+    <a class="btn btn-secondary" href="{% if policy %}{% url 'policies:detail' policy.ref %}{% else %}{% url 'policies:list' %}{% endif %}">Cancel</a></div>
+</form>
+{% endblock %}

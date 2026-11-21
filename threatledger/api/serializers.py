@@ -8,6 +8,7 @@ from threatledger.accounts.models import User
 from threatledger.attack.models import Technique
 from threatledger.audit.models import AuditEvent
 from threatledger.controls.models import Control
+from threatledger.findings.models import Finding
 from threatledger.org.models import BusinessUnit
 from threatledger.risks.models import SCORE_FIELDS, Category, Risk, RiskStatus, Treatment
 
@@ -177,3 +178,148 @@ class AuditEventSerializer(serializers.ModelSerializer):
             "hash",
             "prev_hash",
         ]
+
+
+# ----------------------------------------------------------------------------- Phase 8
+class AuditSerializer(serializers.Serializer):
+    ref = serializers.CharField()
+    name = serializers.CharField()
+    framework = serializers.CharField(source="framework.code")
+    business_unit = serializers.CharField(source="business_unit.name", allow_null=True)
+    campaign = serializers.CharField(source="campaign.ref", allow_null=True)
+    baseline = serializers.CharField()
+    status = serializers.CharField()
+    lead_auditor = serializers.CharField(source="lead_auditor.username", allow_null=True)
+    due_on = serializers.DateField(allow_null=True)
+    closed_at = serializers.DateTimeField(allow_null=True)
+    conclusion = serializers.CharField()
+    score = serializers.SerializerMethodField()
+
+    def get_score(self, obj: Any) -> dict[str, Any]:
+        s = self.context["scores"][obj.pk]
+        return {
+            "requirements": s.total,
+            "assessed": s.assessed,
+            "progress": s.progress,
+            "score": s.score,
+            "maturity": s.maturity,
+            "compliant": s.compliant,
+            "partial": s.partial,
+            "non_compliant": s.non_compliant,
+            "not_applicable": s.not_applicable,
+        }
+
+
+class AuditResultSerializer(serializers.Serializer):
+    requirement = serializers.CharField(source="requirement.ref")
+    judgement = serializers.CharField()
+    maturity = serializers.IntegerField(allow_null=True)
+    observation = serializers.CharField()
+    derived_now = serializers.CharField()
+    derived_at_judgement = serializers.CharField()
+    divergent = serializers.BooleanField()
+    assessed_by = serializers.CharField(allow_null=True)
+    assessed_at = serializers.DateTimeField(allow_null=True)
+
+
+class FindingSerializer(serializers.ModelSerializer):
+    owner = serializers.SlugRelatedField(
+        slug_field="username",
+        queryset=User.objects.filter(is_active=True),
+        allow_null=True,
+        required=False,
+    )
+    business_unit = serializers.PrimaryKeyRelatedField(
+        queryset=BusinessUnit.objects.all(), allow_null=True, required=False
+    )
+    audit: serializers.SlugRelatedField[Any] = serializers.SlugRelatedField(
+        slug_field="ref", read_only=True
+    )
+    control: serializers.SlugRelatedField[Any] = serializers.SlugRelatedField(
+        slug_field="ref", read_only=True
+    )
+    risk: serializers.SlugRelatedField[Any] = serializers.SlugRelatedField(
+        slug_field="ref", read_only=True
+    )
+    requirement = serializers.SerializerMethodField()
+    overdue = serializers.BooleanField(read_only=True)
+
+    class Meta:
+        model = Finding
+        fields = [
+            "ref",
+            "title",
+            "description",
+            "severity",
+            "status",
+            "owner",
+            "due_on",
+            "overdue",
+            "business_unit",
+            "audit",
+            "requirement",
+            "control",
+            "risk",
+            "remediation",
+            "created_at",
+            "resolved_at",
+            "closed_at",
+        ]
+        read_only_fields = ["ref", "created_at", "resolved_at", "closed_at"]
+
+    def get_requirement(self, obj: Any) -> str | None:
+        r = obj.requirement
+        return f"{r.framework.code} {r.ref}" if r else None
+
+
+class ExceptionSerializer(serializers.Serializer):
+    ref = serializers.CharField()
+    title = serializers.CharField()
+    status = serializers.CharField(source="effective_status")
+    justification = serializers.CharField()
+    compensating_measures = serializers.CharField()
+    expires_on = serializers.DateField()
+    owner = serializers.CharField(source="owner.username", allow_null=True)
+    requirements = serializers.SerializerMethodField()
+    controls = serializers.SerializerMethodField()
+
+    def get_requirements(self, obj: Any) -> list[str]:
+        return [f"{r.framework.code} {r.ref}" for r in obj.requirements.all()]
+
+    def get_controls(self, obj: Any) -> list[str]:
+        return [c.ref for c in obj.controls.all()]
+
+
+class PolicySerializer(serializers.Serializer):
+    ref = serializers.CharField()
+    title = serializers.CharField()
+    kind = serializers.CharField()
+    owner = serializers.CharField(source="owner.username", allow_null=True)
+    status = serializers.SerializerMethodField()
+    published_version = serializers.SerializerMethodField()
+    effective_on = serializers.SerializerMethodField()
+    next_review_on = serializers.SerializerMethodField()
+    controls = serializers.SerializerMethodField()
+
+    def _state(self, obj: Any) -> Any:
+        from threatledger.policies.services import policy_state
+
+        return policy_state(obj, list(obj.versions.all()))  # versions are prefetched
+
+    def get_status(self, obj: Any) -> str:
+        return str(self._state(obj).status)
+
+    def get_published_version(self, obj: Any) -> int | None:
+        v = self._state(obj).published
+        return v.number if v else None
+
+    def get_effective_on(self, obj: Any) -> str | None:
+        v = self._state(obj).published
+        return v.effective_on.isoformat() if v and v.effective_on else None
+
+    def get_next_review_on(self, obj: Any) -> str | None:
+        d = self._state(obj).next_review_on
+        return d.isoformat() if d else None
+
+    def get_controls(self, obj: Any) -> list[str]:
+        return [c.ref for c in obj.controls.all()]

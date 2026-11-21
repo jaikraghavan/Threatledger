@@ -6,7 +6,27 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+- **Audits and campaigns:** compliance audits of a framework (optionally a baseline) for a business
+  unit or the whole organisation. Auditors record a judgement, maturity (0–5), observation and
+  evidence per requirement. The status derived from controls is suggested, kept with each judgement,
+  and compared live, so disagreements are flagged. Workflow: planned → in progress → in review →
+  closed (closed audits are frozen). Campaigns create one audit per perimeter and can recur
+  quarterly, half-yearly or yearly. CSV export.
+- **Findings:** severity, owner, due date (defaulted by severity), links to an audit requirement,
+  control or risk; owners update remediation, and someone other than the owner verifies and closes.
+- **Exceptions:** time-boxed (≤ 1 year) waivers of requirements or controls with compensating
+  measures, approved by someone other than the requester, revocable, shown next to the derived
+  status without changing it.
+- **Policies:** policies, standards, procedures and guidelines with versions, approval by someone
+  other than the author, supersession, periodic review dates and "reviewed, no changes".
+- **Business-unit hierarchy:** admins manage nested units; scoping to a unit covers its sub-units.
+- Dashboard governance KPIs; findings, exceptions and policies on control and requirement pages;
+  API endpoints for audits, findings, exceptions and policies; demo data for all of the above.
+
 ### Changed
+- **Roles:** the Auditor role is no longer read-only: auditors record audit judgements and raise
+  findings, and still cannot change controls, risks or policies.
 - **Licence:** ThreatLedger is now licensed under the GNU AGPL v3.0 or later (previously Apache-2.0;
   v0.1.0 remains available under Apache-2.0). Every page footer links to the source code, set with
   the new `SOURCE_CODE_URL` setting, as AGPL §13 requires for network use.

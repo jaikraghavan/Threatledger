@@ -21,6 +21,9 @@ DPDP Act wherever MFA is mapped.
   expiry alerts, and test records.
 - **Compliance:** six seeded frameworks, an importer for your own, gap views, a cross-framework
   view, and CTID ATT&CK↔NIST mappings.
+- **Audits & governance:** compliance audits and recurring campaigns where auditors record
+  judgements and maturity next to the live derived status (differences are flagged), findings with
+  verified remediation, time-boxed exceptions, and versioned policies with approval and review dates.
 - **Reporting:** executive dashboard, printable board report and trend charts.
 - **Secure by default:** strict CSP, MFA, account lockout, hashed API tokens, an immutable
   hash-chained audit log, non-root read-only containers. See [SECURITY.md](SECURITY.md).
@@ -35,6 +38,8 @@ images with `make screenshots` (see [docs/screenshots/README.md](docs/screenshot
 | ![Dashboard](docs/screenshots/dashboard.png) | ![Coverage matrix](docs/screenshots/coverage.png) | ![Risk detail](docs/screenshots/risk-detail.png) |
 | **Compliance** | **Cross-framework** | **Board report** |
 | ![Compliance](docs/screenshots/compliance.png) | ![Cross-framework](docs/screenshots/cross-framework.png) | ![Board report](docs/screenshots/board-report.png) |
+| **Audit** | **Findings** | **Policy** |
+| ![Audit](docs/screenshots/audit.png) | ![Findings](docs/screenshots/findings.png) | ![Policy](docs/screenshots/policy.png) |
 
 ## Quick start (Docker)
 
@@ -65,7 +70,8 @@ docker compose exec web python manage.py import_ctid_mappings
 ```
 
 Give people roles by adding them to the organisation in **/admin → Users → Memberships**. Limit a user
-to certain business units by selecting those units on their membership.
+to certain business units by selecting those units on their membership; a user limited to a unit also
+sees every unit beneath it. Admins arrange the unit hierarchy under **Business units**.
 
 ## Loading MITRE ATT&CK
 
@@ -179,13 +185,19 @@ read** and never stored. Daily snapshots exist only to draw trend charts.
    that address them.
 4. **Score twice.** Inherent is before controls; residual is with the controls that are actually
    working. A residual you can't justify from the coverage panel is a finding.
-5. **Prove it.** Control owners attach evidence (with expiry dates) and record tests. Auditors get
-   read-only access to all of it, including the audit trail.
-6. **Treat or accept.** Plan treatment with target dates. Formally accept residual risk only through
-   an acceptance request: a different person must approve it, and it expires automatically.
-7. **Report.** Use the dashboard for weekly operations and the board report (print to PDF) each
+5. **Prove it.** Control owners attach evidence (with expiry dates) and record tests. Auditors see
+   all of it, including the audit trail, and change nothing they audit.
+6. **Audit.** Plan an audit (or a recurring campaign across business units). Auditors judge each
+   requirement, rate maturity and cite evidence. ThreatLedger suggests the status derived from your
+   controls and flags every judgement that disagrees with it, then and later. Gaps become findings
+   with an owner and a due date; the owner fixes, someone else verifies and closes.
+7. **Treat, accept or except.** Plan treatment with target dates. Formally accept residual risk only
+   through an acceptance request, and waive a requirement only through an exception: a different
+   person must approve either, and both expire automatically. Keep policies current: each version is
+   approved by someone other than its author and reviewed on a schedule.
+8. **Report.** Use the dashboard for weekly operations and the board report (print to PDF) each
    quarter. Export the ATT&CK coverage of a threat group or sector to Navigator for your SOC.
-8. **Keep it current.** Re-import ATT&CK after each MITRE release; review revoked-technique banners.
+9. **Keep it current.** Re-import ATT&CK after each MITRE release; review revoked-technique banners.
    Owners get review reminders and evidence-expiry emails. Automate status updates through the API,
    for example `PATCH /api/v1/controls/CTL-EDR/` from your EDR deployment pipeline.
 
@@ -198,7 +210,8 @@ curl -H "Authorization: Bearer tl_xxxxxxxx_…" https://grc.example.com/api/v1/r
 ```
 
 The API covers risks, controls, techniques with coverage, framework compliance, coverage and
-Navigator layers, and the audit log. The OpenAPI schema is at `/api/v1/schema/` and readable docs at
+Navigator layers, audits (with per-requirement results), findings (create and update), exceptions,
+policies, and the audit log. The OpenAPI schema is at `/api/v1/schema/` and readable docs at
 `/api/v1/docs/`. Tokens act with their owner's role, and every write is audited.
 
 ## Local development

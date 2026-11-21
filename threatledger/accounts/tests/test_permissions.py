@@ -38,6 +38,19 @@ EXPECTED = {
     Cap.VIEW_CONTROLS: set(Role),
     Cap.VIEW_FRAMEWORKS: set(Role),
     Cap.VIEW_ATTACK: set(Role),
+    # Phase 8 governance
+    Cap.VIEW_POLICIES: set(Role),
+    Cap.VIEW_AUDITS: {Role.ADMIN, Role.RISK_MANAGER, Role.CONTROL_OWNER, Role.AUDITOR},
+    Cap.VIEW_FINDINGS: {Role.ADMIN, Role.RISK_MANAGER, Role.CONTROL_OWNER, Role.AUDITOR},
+    Cap.MANAGE_AUDITS: {Role.ADMIN, Role.RISK_MANAGER},
+    Cap.PERFORM_AUDITS: {Role.ADMIN, Role.RISK_MANAGER, Role.AUDITOR},
+    Cap.RAISE_FINDINGS: {Role.ADMIN, Role.RISK_MANAGER, Role.AUDITOR},
+    Cap.EDIT_FINDINGS: {Role.ADMIN, Role.RISK_MANAGER},
+    Cap.UPDATE_OWN_FINDING: {Role.ADMIN, Role.RISK_MANAGER, Role.CONTROL_OWNER},
+    Cap.REQUEST_EXCEPTION: {Role.ADMIN, Role.RISK_MANAGER, Role.CONTROL_OWNER},
+    Cap.APPROVE_EXCEPTION: {Role.ADMIN, Role.RISK_MANAGER},
+    Cap.EDIT_POLICIES: {Role.ADMIN, Role.RISK_MANAGER},
+    Cap.APPROVE_POLICIES: {Role.ADMIN, Role.RISK_MANAGER},
 }
 
 
@@ -57,6 +70,13 @@ def test_auditor_and_viewer_have_no_write_capabilities():
     }
     assert not writes & ROLE_CAPABILITIES[Role.AUDITOR]
     assert not writes & ROLE_CAPABILITIES[Role.VIEWER]
+
+
+def test_auditor_only_writes_audit_judgements_and_findings():
+    """Auditor independence: they record judgements and raise findings, nothing else."""
+    reads = {c for c in Cap if c.value.startswith(("view_", "export_"))}
+    assert ROLE_CAPABILITIES[Role.AUDITOR] - reads == {Cap.PERFORM_AUDITS, Cap.RAISE_FINDINGS}
+    assert not (ROLE_CAPABILITIES[Role.VIEWER] - reads)
 
 
 def test_anonymous_user_has_nothing():

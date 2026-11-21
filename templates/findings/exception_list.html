@@ -1,0 +1,17 @@
+{% extends "base.html" %}{% load tl %}
+{% block title %}Exceptions{% endblock %}
+{% block content %}
+<div class="mb-4 flex flex-wrap items-end justify-between gap-3">
+  <div><h1 class="text-2xl font-semibold">Findings &amp; exceptions</h1><p class="text-sm text-slate-500">Time-boxed, approved deviations from a requirement or control. They never change derived compliance; they are shown next to it.</p></div>
+  {% if can_request %}<a class="btn btn-primary" href="{% url 'findings:exception_create' %}">Request an exception</a>{% endif %}
+</div>
+{% include "findings/_tabs.html" with tab="exceptions" %}
+<div class="mb-3 flex gap-2 text-sm"><a class="rounded px-2 py-1 {% if show == 'current' %}bg-slate-100 font-medium{% else %}text-slate-600{% endif %}" href="?show=current">Pending and active</a><a class="rounded px-2 py-1 {% if show == 'all' %}bg-slate-100 font-medium{% else %}text-slate-600{% endif %}" href="?show=all">All</a></div>
+<div class="card overflow-x-auto"><table class="data-table">
+  <thead><tr><th scope="col">Exception</th><th scope="col">Status</th><th scope="col">Owner</th><th scope="col">Expires</th></tr></thead>
+  <tbody class="divide-y divide-slate-100">{% for e in exceptions %}
+    <tr><td><a class="font-mono text-xs text-brand-700 hover:underline" href="{% url 'findings:exception' e.ref %}">{{ e.ref }}</a> <span class="font-medium">{{ e.title }}</span></td>
+      <td><span class="badge {{ e.effective_status|tone }}">{{ e.effective_status_label }}</span></td><td>{{ e.owner|default:"—" }}</td>
+      <td class="whitespace-nowrap {% if e.expires_soon %}font-medium text-amber-700{% endif %}">{{ e.expires_on|date:"Y-m-d" }}</td></tr>
+  {% empty %}<tr><td colspan="4" class="text-slate-500">No exceptions.</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

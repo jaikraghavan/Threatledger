@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}{{ policy.ref }} {{ version.label }}{% endblock %}
+{% block content %}
+<nav class="mb-3 text-sm text-slate-500" aria-label="Breadcrumb"><a class="hover:underline" href="{% url 'policies:list' %}">Policies</a> / <a class="hover:underline" href="{% url 'policies:detail' policy.ref %}">{{ policy.ref }}</a></nav>
+<h1 class="mb-4 text-2xl font-semibold">{{ policy.title }} <span class="text-slate-500">{{ version.label }} draft</span></h1>
+{% if version.decision_note %}<div class="mb-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900" role="status">Changes requested by {{ version.decided_by }}: {{ version.decision_note }}</div>{% endif %}
+<form method="post" class="card max-w-4xl space-y-4 p-5" novalidate>{% csrf_token %}
+  {% include "partials/_form_errors.html" %}
+  {% include "partials/_field.html" with field=form.body %}
+  <div class="grid gap-4 sm:grid-cols-2">{% include "partials/_field.html" with field=form.document_url %}{% include "partials/_field.html" with field=form.change_summary %}</div>
+  <div class="flex flex-wrap gap-2"><button class="btn btn-secondary" type="submit">Save draft</button><button class="btn btn-primary" type="submit" name="submit" value="1">Save and submit for approval</button>
+    <a class="btn btn-secondary" href="{% url 'policies:detail' policy.ref %}">Cancel</a></div>
+</form>
+{% endblock %}

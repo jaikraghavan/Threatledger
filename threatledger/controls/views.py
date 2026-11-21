@@ -192,7 +192,36 @@ class ControlDetailView(AccessControlMixin, DetailView):
         ctx["test_form"] = ControlTestForm(control=control)
         ctx["max_upload_mb"] = max_upload_bytes() // (1024 * 1024)
         ctx["requirements_by_framework"] = _requirements_by_framework(control)
+        ctx.update(governance_links(user, control=control))
         return ctx
+
+
+def governance_links(user: Any, **target: Any) -> dict[str, Any]:
+    """Open findings, live exceptions and policies attached to a control or requirement."""
+    from threatledger.findings.models import ExceptionStatus, FindingStatus
+    from threatledger.findings.services import visible_exceptions, visible_findings
+    from threatledger.policies.services import visible_policies
+
+    ((field, obj),) = target.items()
+    out: dict[str, Any] = {"show_governance": can(user, Cap.VIEW_FINDINGS)}
+    if out["show_governance"]:
+        out["open_findings"] = list(
+            visible_findings(user)
+            .filter(**{field: obj})
+            .exclude(status=FindingStatus.CLOSED)
+            .select_related("owner")[:20]
+        )
+        out["live_exceptions"] = [
+            e
+            for e in visible_exceptions(user)
+            .filter(**{f"{field}s": obj})
+            .filter(status__in=[ExceptionStatus.REQUESTED, ExceptionStatus.APPROVED])
+            if e.effective_status != "expired"
+        ]
+    out["linked_policies"] = list(
+        visible_policies(user).filter(**{f"{field}s": obj}, retired_at__isnull=True)
+    )
+    return out
 
 
 def _requirements_by_framework(control: Control) -> list[tuple[Any, list[Any]]]:

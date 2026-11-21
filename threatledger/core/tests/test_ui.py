@@ -18,12 +18,15 @@ def test_home_renders_role_navigation(client_for):
         "Risk register",
         "Controls",
         "Compliance",
+        "Audits",
+        "Findings",
+        "Policies",
         "ATT&CK coverage",
         "Techniques",
         "Threat groups",
         "Audit log",
     ]
-    assert b"Auditor (read-only)" in response.content
+    assert b"Auditor" in response.content
 
 
 def test_viewer_does_not_see_audit_link(client_for):
@@ -33,6 +36,7 @@ def test_viewer_does_not_see_audit_link(client_for):
         "Risk register",
         "Controls",
         "Compliance",
+        "Policies",
         "ATT&CK coverage",
         "Techniques",
         "Threat groups",

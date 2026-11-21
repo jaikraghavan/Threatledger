@@ -28,6 +28,20 @@ PAGES = [
     ("compliance", "/frameworks/"),
     ("cross-framework", "/frameworks/cross/"),
     ("board-report", "/reports/board/"),
+    ("audit", "/audits/A-0001/"),
+    ("findings", "/findings/"),
+    ("policy", "/policies/POL-002/"),
+]
+# Visited for the console/CSP check only (no screenshot).
+CHECK_ONLY = [
+    "/audits/",
+    "/audits/campaigns/",
+    "/audits/campaigns/C-0001/",
+    "/findings/exceptions/",
+    "/findings/exceptions/EX-0001/",
+    "/findings/F-0001/",
+    "/policies/",
+    "/controls/CTL-MFA/",
 ]
 
 
@@ -85,6 +99,14 @@ def main() -> int:
             page.screenshot(path=str(target))
             shown = target.relative_to(ROOT) if target.is_relative_to(ROOT) else target
             print(f"{status} {path} -> {shown}")
+        for path in CHECK_ONLY:
+            current["url"] = path
+            response = page.goto(f"{base}{path}")
+            page.wait_for_load_state("networkidle")
+            status = response.status if response else 0
+            if status != 200:
+                problems.append(f"{path}: HTTP {status}")
+            print(f"{status} {path} (checked)")
         browser.close()
 
     for problem in problems:

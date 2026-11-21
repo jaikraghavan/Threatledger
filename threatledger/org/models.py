@@ -49,3 +49,38 @@ class BusinessUnit(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
+
+def descendant_ids(organisation_id: int, roots: set[int] | frozenset[int]) -> set[int]:
+    """``roots`` plus every business unit beneath them (one query; BUs number in the dozens)."""
+    children: dict[int | None, list[int]] = {}
+    for pk, parent in BusinessUnit.objects.filter(organisation_id=organisation_id).values_list(
+        "pk", "parent_id"
+    ):
+        children.setdefault(parent, []).append(pk)
+    out: set[int] = set()
+    stack = list(roots)
+    while stack:
+        pk = stack.pop()
+        if pk in out:
+            continue
+        out.add(pk)
+        stack.extend(children.get(pk, []))
+    return out
+
+
+def tree(organisation_id: int) -> list[tuple[BusinessUnit, int]]:
+    """Business units in depth-first order with their depth, for indented display."""
+    units = list(BusinessUnit.objects.filter(organisation_id=organisation_id).order_by("name"))
+    by_parent: dict[int | None, list[BusinessUnit]] = {}
+    for bu in units:
+        by_parent.setdefault(bu.parent_id, []).append(bu)
+    out: list[tuple[BusinessUnit, int]] = []
+
+    def walk(parent: int | None, depth: int) -> None:
+        for bu in by_parent.get(parent, []):
+            out.append((bu, depth))
+            walk(bu.pk, depth + 1)
+
+    walk(None, 0)
+    return out

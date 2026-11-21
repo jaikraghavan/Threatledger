@@ -1,0 +1,44 @@
+{% extends "base.html" %}{% load tl %}
+{% block title %}{{ policy.ref }} {{ policy.title }}{% endblock %}
+{% block content %}
+<nav class="mb-3 text-sm text-slate-500" aria-label="Breadcrumb"><a class="hover:underline" href="{% url 'policies:list' %}">Policies</a></nav>
+<div class="flex flex-wrap items-start justify-between gap-4">
+  <div><div class="font-mono text-sm text-slate-500">{{ policy.ref }} · {{ policy.get_kind_display }}</div><h1 class="text-2xl font-semibold">{{ policy.title }}</h1>
+    <div class="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-600"><span class="badge {{ state.status|tone }}">{{ state.label }}</span>
+      {% if state.published %}<span>{{ state.published.label }} effective {{ state.published.effective_on|date:"Y-m-d" }}</span>{% endif %}
+      {% if state.next_review_on %}<span class="{% if state.status == 'review_overdue' %}font-medium text-red-700{% endif %}">· next review {{ state.next_review_on|date:"Y-m-d" }}</span>{% endif %}</div></div>
+  <div class="flex flex-wrap gap-2">
+    {% if can_edit %}<a class="btn btn-secondary" href="{% url 'policies:edit' policy.ref %}">Edit details</a>
+      {% if state.open_version %}{% if state.open_version.status == "draft" %}<a class="btn btn-primary" href="{% url 'policies:version_edit' policy.ref state.open_version.number %}">Continue {{ state.open_version.label }} draft</a>{% endif %}
+      {% else %}<form method="post" action="{% url 'policies:revise' policy.ref %}">{% csrf_token %}<button class="btn btn-primary" type="submit">Start a revision</button></form>{% endif %}{% endif %}
+    {% if user|can:"edit_policies" %}<form method="post" action="{% url 'policies:retire' policy.ref %}">{% csrf_token %}{% if policy.retired_at %}<input type="hidden" name="restore" value="1">{% endif %}<button class="btn btn-secondary" type="submit">{% if policy.retired_at %}Restore{% else %}Retire{% endif %}</button></form>{% endif %}
+  </div>
+</div>
+<div class="mt-6 grid gap-6 lg:grid-cols-3">
+  <div class="space-y-6 lg:col-span-2">
+    {% if shown %}<section class="card p-5" aria-labelledby="text-h">
+      <div class="mb-3 flex flex-wrap items-center justify-between gap-2"><h2 id="text-h" class="font-semibold">{{ shown.label }} <span class="badge {{ shown.status|tone }}">{{ shown.get_status_display }}</span></h2>
+        {% if shown.document_url %}<a class="text-sm text-brand-700 hover:underline" href="{{ shown.document_url }}" target="_blank" rel="noopener noreferrer nofollow">Formatted document ↗</a>{% endif %}</div>
+      {% if shown.change_summary %}<p class="mb-3 text-xs text-slate-500">{{ shown.change_summary }}</p>{% endif %}
+      <div class="whitespace-pre-line text-sm leading-relaxed text-slate-800">{{ shown.body|default:"No text yet." }}</div>
+      {% if can_decide %}<form method="post" action="{% url 'policies:version_decide' policy.ref shown.number %}" class="mt-5 space-y-3 border-t border-slate-200 pt-4">{% csrf_token %}
+        <label class="label" for="note">Note (required to request changes)</label><input id="note" name="note" class="field" maxlength="500">
+        <div class="flex gap-2"><button class="btn btn-primary" type="submit" name="decision" value="approve">Approve and publish</button><button class="btn btn-secondary" type="submit" name="decision" value="changes">Request changes</button></div></form>
+      {% elif shown.status == "in_review" and shown.author_id == user.pk %}<p class="mt-4 text-sm text-slate-500">Waiting for someone other than you to approve.</p>{% endif %}
+    </section>{% endif %}
+    {% if policy.summary %}<section class="card p-5"><h2 class="mb-2 font-semibold">Summary</h2><p class="whitespace-pre-line text-sm text-slate-700">{{ policy.summary }}</p></section>{% endif %}
+  </div>
+  <aside class="space-y-6">
+    <section class="card p-5"><h2 class="mb-3 font-semibold">Details</h2><dl class="space-y-2 text-sm">
+      <div><dt class="text-xs text-slate-500">Owner</dt><dd>{{ policy.owner|default:"—" }}</dd></div>
+      <div><dt class="text-xs text-slate-500">Review every</dt><dd>{{ policy.review_interval_months }} months</dd></div>
+      {% if policy.retired_at %}<div><dt class="text-xs text-slate-500">Retired</dt><dd>{{ policy.retired_at|date:"Y-m-d" }}</dd></div>{% endif %}</dl>
+      {% if can_confirm_review %}<form method="post" action="{% url 'policies:confirm_review' policy.ref %}" class="mt-4 space-y-2 border-t border-slate-200 pt-3">{% csrf_token %}
+        <label class="label" for="rnote">Reviewed with no changes</label><input id="rnote" name="note" class="field" maxlength="300" placeholder="Optional note">
+        <button class="btn btn-secondary" type="submit">Record review</button></form>{% endif %}</section>
+    <section class="card p-5"><h2 class="mb-3 font-semibold">Mandated controls</h2><ul class="space-y-1 text-sm">{% for c in controls %}<li><a class="font-mono text-xs text-brand-700 hover:underline" href="{% url 'controls:detail' c.ref %}">{{ c.ref }}</a> {{ c.name }}</li>{% empty %}<li class="text-slate-500">None linked.</li>{% endfor %}</ul></section>
+    <section class="card p-5"><h2 class="mb-3 font-semibold">Version history</h2><ol class="space-y-2 text-sm">{% for v in versions %}<li class="{% if v == shown %}font-medium{% endif %}"><a class="text-brand-700 hover:underline" href="?v={{ v.number }}">{{ v.label }}</a> <span class="badge {{ v.status|tone }}">{{ v.get_status_display }}</span>
+      <div class="text-xs text-slate-500">by {{ v.author }}{% if v.decided_by %} · decided by {{ v.decided_by }} {{ v.decided_at|date:"Y-m-d" }}{% endif %}</div></li>{% endfor %}</ol></section>
+  </aside>
+</div>
+{% endblock %}

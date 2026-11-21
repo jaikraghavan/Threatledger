@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Business units{% endblock %}
+{% block content %}
+<div class="mb-4 flex flex-wrap items-end justify-between gap-3">
+  <div><h1 class="text-2xl font-semibold">Business units</h1>
+    <p class="text-sm text-slate-500">Perimeters for risks, assets and audits. A user limited to a unit also sees every unit beneath it.</p></div>
+  <a class="btn btn-primary" href="{% url 'org:unit_create' %}">New business unit</a>
+</div>
+<div class="card overflow-x-auto">
+<table class="data-table">
+  <thead><tr><th scope="col">Unit</th><th scope="col">Code</th><th scope="col">Risks</th><th scope="col">Assets</th><th scope="col">Members</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead>
+  <tbody class="divide-y divide-slate-100">
+  {% for bu, indent, n in rows %}
+    <tr><td class="{{ indent }}">{% if indent %}<span class="text-slate-400" aria-hidden="true">└ </span>{% endif %}<span class="font-medium">{{ bu.name }}</span></td>
+      <td class="font-mono text-xs">{{ bu.code|default:"—" }}</td><td>{{ n.n_risks|default:0 }}</td><td>{{ n.n_assets|default:0 }}</td><td>{{ n.n_members|default:0 }}</td>
+      <td class="whitespace-nowrap text-right"><a class="text-brand-700 hover:underline" href="{% url 'org:unit_edit' bu.pk %}">Edit</a>
+        <form class="inline" method="post" action="{% url 'org:unit_delete' bu.pk %}">{% csrf_token %}<button class="ml-3 text-slate-500 hover:text-red-700" type="submit">Delete</button></form></td></tr>
+  {% empty %}<tr><td colspan="6" class="text-slate-500">No business units yet. Everything is organisation-wide.</td></tr>{% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

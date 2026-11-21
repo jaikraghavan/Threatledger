@@ -31,6 +31,7 @@ Access = Cap | str
 _OWNERSHIP_OVERRIDES: dict[Cap, Cap] = {
     Cap.EDIT_OWN_CONTROL: Cap.EDIT_ANY_CONTROL,
     Cap.UPLOAD_EVIDENCE: Cap.EDIT_ANY_CONTROL,
+    Cap.UPDATE_OWN_FINDING: Cap.EDIT_FINDINGS,
 }
 
 _ROLE_CACHE_ATTR = "_tl_role_cache"
@@ -177,12 +178,16 @@ def business_unit_scope(user: Any) -> frozenset[int] | None:
         return None
     if hasattr(user, _BU_CACHE_ATTR):
         return getattr(user, _BU_CACHE_ATTR)
+    from threatledger.org.models import descendant_ids
+
     from .models import Membership
 
-    ids = frozenset(
-        Membership.objects.filter(user=user).values_list("business_units", flat=True)
-    ) - {None}
-    scope = ids or None
+    rows = list(
+        Membership.objects.filter(user=user).values_list("organisation_id", "business_units")
+    )
+    ids = {bu for _, bu in rows if bu is not None}
+    # A membership limited to a business unit also covers every unit beneath it.
+    scope = frozenset(descendant_ids(rows[0][0], ids)) if ids else None
     setattr(user, _BU_CACHE_ATTR, scope)
     return scope
 

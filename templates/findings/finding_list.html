@@ -1,0 +1,23 @@
+{% extends "base.html" %}{% load tl %}
+{% block title %}Findings{% endblock %}
+{% block content %}
+<div class="mb-4 flex flex-wrap items-end justify-between gap-3">
+  <div><h1 class="text-2xl font-semibold">Findings &amp; exceptions</h1><p class="text-sm text-slate-500">Gaps that need remediation, from audits, control tests or reviews.</p></div>
+  {% if can_raise %}<a class="btn btn-primary" href="{% url 'findings:create' %}">Raise a finding</a>{% endif %}
+</div>
+{% include "findings/_tabs.html" with tab="findings" %}
+<form method="get" class="mb-3 flex flex-wrap items-center gap-2 text-sm">
+  <label class="sr-only" for="f-status">Status</label><select id="f-status" name="status" class="field w-auto"><option value="active"{% if filters.status == "active" %} selected{% endif %}>Not closed</option><option value=""{% if filters.status == "" %} selected{% endif %}>Any status</option>{% for v, l in statuses %}<option value="{{ v }}"{% if v == filters.status %} selected{% endif %}>{{ l }}</option>{% endfor %}</select>
+  <label class="sr-only" for="f-sev">Severity</label><select id="f-sev" name="severity" class="field w-auto"><option value="">Any severity</option>{% for v, l in severities %}<option value="{{ v }}"{% if v == filters.severity %} selected{% endif %}>{{ l }}</option>{% endfor %}</select>
+  <label class="inline-flex items-center gap-1"><input type="checkbox" name="owner" value="me" class="rounded border-slate-300"{% if filters.owner %} checked{% endif %}> Mine</label>
+  <label class="inline-flex items-center gap-1"><input type="checkbox" name="overdue" value="1" class="rounded border-slate-300"{% if filters.overdue %} checked{% endif %}> Overdue</label>
+  <button class="btn btn-secondary" type="submit">Filter</button></form>
+<div class="card overflow-x-auto"><table class="data-table">
+  <thead><tr><th scope="col">Finding</th><th scope="col">Severity</th><th scope="col">Status</th><th scope="col">Owner</th><th scope="col">Due</th><th scope="col">Source</th></tr></thead>
+  <tbody class="divide-y divide-slate-100">{% for f in findings %}
+    <tr><td><a class="font-mono text-xs text-brand-700 hover:underline" href="{% url 'findings:detail' f.ref %}">{{ f.ref }}</a> <span class="font-medium">{{ f.title }}</span></td>
+      <td><span class="badge {{ f.severity|tone }}">{{ f.get_severity_display }}</span></td><td><span class="badge {{ f.status|tone }}">{{ f.get_status_display }}</span></td>
+      <td>{{ f.owner|default:"Unassigned" }}</td><td class="whitespace-nowrap {% if f.overdue %}font-medium text-red-700{% endif %}">{{ f.due_on|date:"Y-m-d"|default:"—" }}{% if f.overdue %} · overdue{% endif %}</td>
+      <td class="text-xs text-slate-500">{% if f.audit %}{{ f.audit.ref }}{% if f.requirement %} · {{ f.requirement.ref }}{% endif %}{% else %}—{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="6" class="text-slate-500">No findings match.</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

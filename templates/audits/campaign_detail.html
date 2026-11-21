@@ -1,0 +1,22 @@
+{% extends "base.html" %}{% load tl %}
+{% block title %}{{ campaign.ref }} {{ campaign.name }}{% endblock %}
+{% block content %}
+<nav class="mb-3 text-sm text-slate-500" aria-label="Breadcrumb"><a class="hover:underline" href="{% url 'audits:campaigns' %}">Campaigns</a></nav>
+<div class="flex flex-wrap items-start justify-between gap-4">
+  <div><div class="font-mono text-sm text-slate-500">{{ campaign.ref }} · {{ campaign.framework.name }} · {{ campaign.get_recurrence_display }}</div>
+    <h1 class="text-2xl font-semibold">{{ campaign.name }}</h1>
+    <div class="mt-1 text-sm text-slate-600">{{ campaign.starts_on|date:"Y-m-d" }} → {{ campaign.due_on|date:"Y-m-d" }}
+      {% if campaign.previous %} · follows <a class="text-brand-700 hover:underline" href="{% url 'audits:campaign' campaign.previous.ref %}">{{ campaign.previous.ref }}</a>{% endif %}
+      {% if next_cycle %} · next cycle <a class="text-brand-700 hover:underline" href="{% url 'audits:campaign' next_cycle.ref %}">{{ next_cycle.ref }}</a>{% endif %}</div></div>
+  {% if can_launch_next %}<form method="post" action="{% url 'audits:campaign_next' campaign.ref %}">{% csrf_token %}<button class="btn btn-primary" type="submit">Launch next cycle</button></form>{% endif %}
+</div>
+{% if campaign.description %}<p class="mt-4 whitespace-pre-line text-sm text-slate-700">{{ campaign.description }}</p>{% endif %}
+<div class="card mt-6 overflow-x-auto"><table class="data-table">
+  <thead><tr><th scope="col">Audit</th><th scope="col">Perimeter</th><th scope="col">Lead</th><th scope="col">Status</th><th scope="col">Progress</th><th scope="col">Score</th></tr></thead>
+  <tbody class="divide-y divide-slate-100">{% for a, s in rows %}
+    <tr><td><a class="font-mono text-xs text-brand-700 hover:underline" href="{% url 'audits:detail' a.ref %}">{{ a.ref }}</a></td><td>{{ a.business_unit|default:"Organisation-wide" }}</td><td>{{ a.lead_auditor|default:"—" }}</td>
+      <td><span class="badge {{ a.status|tone }}">{{ a.get_status_display }}</span></td>
+      <td class="w-40"><div class="text-xs text-slate-600">{{ s.progress }}%</div>{% include "audits/_bar.html" %}</td>
+      <td>{% if s.score is not None %}{{ s.score }}%{% else %}—{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="6" class="text-slate-500">No audits in your scope.</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

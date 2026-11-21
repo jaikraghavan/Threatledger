@@ -1,0 +1,44 @@
+{% extends "base.html" %}{% load tl %}
+{% block title %}{{ audit.ref }} · {{ row.requirement.ref }}{% endblock %}
+{% block content %}
+<nav class="mb-3 flex flex-wrap items-center justify-between gap-2 text-sm text-slate-500" aria-label="Breadcrumb">
+  <div><a class="hover:underline" href="{% url 'audits:list' %}">Audits</a> / <a class="hover:underline" href="{% url 'audits:detail' audit.ref %}">{{ audit.ref }}</a> / {{ row.requirement.ref }}</div>
+  <div class="flex items-center gap-3">{% if prev %}<a class="hover:underline" href="{% url 'audits:requirement' audit.ref prev.requirement.pk %}">← {{ prev.requirement.ref }}</a>{% endif %}<span>{{ position }} of {{ total }}</span>{% if next %}<a class="hover:underline" href="{% url 'audits:requirement' audit.ref next.requirement.pk %}">{{ next.requirement.ref }} →</a>{% endif %}</div>
+</nav>
+<h1 class="text-2xl font-semibold"><span class="font-mono text-lg text-slate-500">{{ row.requirement.ref }}</span> {{ row.requirement.title }}</h1>
+<div class="mt-6 grid gap-6 lg:grid-cols-3">
+  <div class="space-y-6 lg:col-span-2">
+    {% if row.requirement.text %}<section class="card p-5"><h2 class="mb-2 font-semibold">Requirement</h2><p class="whitespace-pre-line text-sm text-slate-700">{{ row.requirement.text }}</p>
+      {% if audit.framework.is_indicative %}<p class="mt-2 text-xs text-slate-500">{{ audit.framework.licence_note }}</p>{% endif %}</section>{% endif %}
+    <section class="card p-5" aria-labelledby="j-h"><h2 id="j-h" class="mb-3 font-semibold">Auditor judgement</h2>
+      {% if row.result and row.result.assessed_at %}<p class="mb-3 text-xs text-slate-500">Last recorded by {{ row.result.assessed_by }} on {{ row.result.assessed_at|date:"Y-m-d H:i" }} (derived status was then: {{ row.result.derived_at_judgement|default:"—" }}).</p>{% endif %}
+      {% if can_perform %}
+      <form method="post" class="space-y-4" novalidate>{% csrf_token %}{% include "partials/_form_errors.html" %}
+        <fieldset><legend class="label">Judgement <span class="text-red-600" aria-hidden="true">*</span></legend>
+          <div class="flex flex-wrap gap-4 text-sm">{% for radio in form.judgement %}<label class="inline-flex items-center gap-2">{{ radio.tag }} {{ radio.choice_label }}{% if radio.data.value == row.suggestion %} <span class="text-xs text-slate-500">(suggested)</span>{% endif %}</label>{% endfor %}</div>
+          {% for e in form.judgement.errors %}<p class="mt-1 text-sm text-red-700">{{ e }}</p>{% endfor %}</fieldset>
+        <div class="grid gap-4 sm:grid-cols-3">{% include "partials/_field.html" with field=form.maturity %}</div>
+        {% include "partials/_field.html" with field=form.observation %}
+        {% if form.evidence.field.choices %}<fieldset><legend class="label">Evidence reviewed</legend><div class="space-y-1 text-sm">{% for cb in form.evidence %}<label class="flex items-center gap-2">{{ cb.tag }} {{ cb.choice_label }}</label>{% endfor %}</div></fieldset>{% endif %}
+        <div class="flex flex-wrap gap-2"><button class="btn btn-primary" type="submit" name="next" value="1">Save and next unjudged</button><button class="btn btn-secondary" type="submit">Save</button></div>
+      </form>
+      {% elif row.result %}
+        <dl class="grid gap-3 text-sm sm:grid-cols-2"><div><dt class="text-xs text-slate-500">Judgement</dt><dd><span class="badge {{ row.judgement|tone }}">{{ row.result.get_judgement_display }}</span></dd></div>
+          <div><dt class="text-xs text-slate-500">Maturity</dt><dd>{{ row.result.maturity|default_if_none:"Not rated" }}</dd></div>
+          <div class="sm:col-span-2"><dt class="text-xs text-slate-500">Observation</dt><dd class="whitespace-pre-line">{{ row.result.observation|default:"—" }}</dd></div>
+          <div class="sm:col-span-2"><dt class="text-xs text-slate-500">Evidence reviewed</dt><dd>{% for e in row.result.evidence.all %}{{ e.title }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}</dd></div></dl>
+      {% else %}<p class="text-sm text-slate-500">Not judged yet.</p>{% endif %}
+    </section>
+  </div>
+  <aside class="space-y-6">
+    <section class="card p-5"><h2 class="mb-1 font-semibold">Derived from controls</h2>
+      <p class="mb-3 text-xs text-slate-500">Live status from the controls mapped to this requirement. Suggested judgement: <strong>{{ row.suggestion.label }}</strong>.</p>
+      <div class="mb-3">{% if row.derived %}<span class="badge {% if row.derived == 'met' %}bg-green-100 text-green-800{% elif row.derived == 'partial' %}bg-amber-100 text-amber-800{% else %}bg-red-100 text-red-800{% endif %}">{{ row.derived.label }}</span>{% else %}<span class="badge bg-slate-100 text-slate-700">Not applicable (scoped out)</span>{% endif %}
+        {% if row.divergent %}<span class="badge bg-amber-100 text-amber-800">judgement differs</span>{% endif %}</div>
+      <ul class="space-y-2 text-sm">{% for c in row.controls %}<li><a class="font-mono text-xs text-brand-700 hover:underline" href="{% url 'controls:detail' c.ref %}">{{ c.ref }}</a> {{ c.name }} <span class="badge status-{{ c.status }}">{{ c.get_status_display }}</span></li>{% empty %}<li class="text-slate-500">No control mapped.</li>{% endfor %}</ul>
+      <p class="mt-3 text-xs"><a class="text-brand-700 hover:underline" href="{% url 'frameworks:requirement' audit.framework.code row.requirement.pk %}">Open the requirement page</a></p></section>
+    {% if can_raise %}<section class="card p-5"><h2 class="mb-2 font-semibold">Finding</h2><p class="mb-3 text-xs text-slate-500">Record a gap that needs remediation.</p>
+      <a class="btn btn-secondary" href="{% url 'findings:create' %}?audit={{ audit.ref }}&amp;requirement={{ row.requirement.pk }}">Raise a finding</a></section>{% endif %}
+  </aside>
+</div>
+{% endblock %}
