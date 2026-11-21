@@ -183,6 +183,19 @@ def test_seed_demo_is_complete_and_idempotent(org):
     assert nimbus.score == 75.0 and nimbus.last_assessment.status == "accepted"
     ledger = postures([Entity.objects.get(name="Ledgerline Payments")])[0]
     assert ledger.pending == 1 and "contract notice window" in ledger.flags
+    # Phase 11 privacy & incidents demo
+    from threatledger.incidents.models import Incident
+    from threatledger.incidents.services import obligations
+    from threatledger.privacy.models import Processing
+    from threatledger.privacy.services import dpia_state
+
+    states = {p.name: dpia_state(p) for p in Processing.objects.all()}
+    assert states["Driver telematics and safety monitoring"] == "approved"
+    assert states["Customer orders and delivery"] == "not_needed"
+    open_incident = Incident.objects.get(status="contained")
+    clocks = {(o.regime.key, o.step.key): o.state for o in obligations(open_incident)}
+    assert clocks[("gdpr", "authority")] == "filed" and clocks[("dpdp", "intimation")] == "overdue"
+    assert Incident.objects.filter(status="closed").count() == 1
 
     call_command("seed_demo", stdout=StringIO())
     assert Risk.objects.count() == 30
@@ -190,6 +203,7 @@ def test_seed_demo_is_complete_and_idempotent(org):
     assert Task.objects.count() == 6 and Comment.objects.count() == 2
     assert ControlChangeRequest.objects.count() == 1
     assert Entity.objects.count() == 5
+    assert Incident.objects.count() == 2 and Processing.objects.count() == 3
 
 
 @override_settings(DEBUG=False)

@@ -60,6 +60,13 @@ EXPECTED = {
     # Phase 10 third-party risk
     Cap.VIEW_VENDORS: {Role.ADMIN, Role.RISK_MANAGER, Role.CONTROL_OWNER, Role.AUDITOR},
     Cap.MANAGE_VENDORS: {Role.ADMIN, Role.RISK_MANAGER},
+    # Phase 11 privacy & incidents
+    Cap.VIEW_PRIVACY: {Role.ADMIN, Role.RISK_MANAGER, Role.CONTROL_OWNER, Role.AUDITOR},
+    Cap.MANAGE_PRIVACY: {Role.ADMIN, Role.RISK_MANAGER},
+    Cap.APPROVE_DPIA: {Role.ADMIN, Role.RISK_MANAGER},
+    Cap.VIEW_INCIDENTS: {Role.ADMIN, Role.RISK_MANAGER, Role.CONTROL_OWNER, Role.AUDITOR},
+    Cap.MANAGE_INCIDENTS: {Role.ADMIN, Role.RISK_MANAGER},
+    Cap.REPORT_INCIDENT: set(Role),
 }
 
 
@@ -89,8 +96,10 @@ def test_auditor_only_writes_audit_judgements_and_findings():
         Cap.RAISE_FINDINGS,
         Cap.REVIEW_EVIDENCE,
         Cap.COMMENT,
+        Cap.REPORT_INCIDENT,
     }
-    assert not (ROLE_CAPABILITIES[Role.VIEWER] - reads)
+    # Viewers change nothing; they may only report a suspected incident.
+    assert ROLE_CAPABILITIES[Role.VIEWER] - reads == {Cap.REPORT_INCIDENT}
 
 
 def test_anonymous_user_has_nothing():

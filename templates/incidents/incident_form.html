@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Edit {{ incident.ref }}{% endblock %}
+{% block content %}
+<nav class="mb-3 text-sm text-slate-500" aria-label="Breadcrumb"><a class="hover:underline" href="{% url 'incidents:list' %}">Incidents</a> / <a class="hover:underline" href="{% url 'incidents:detail' incident.ref %}">{{ incident.ref }}</a></nav>
+<h1 class="mb-4 text-2xl font-semibold">Edit {{ incident.ref }}</h1>
+<form method="post" class="card grid max-w-4xl gap-4 p-5 sm:grid-cols-2" novalidate>{% csrf_token %}
+  <div class="sm:col-span-2">{% include "partials/_form_errors.html" %}</div>
+  {% include "partials/_field.html" with field=form.title class="sm:col-span-2" %}
+  {% include "partials/_field.html" with field=form.severity %}{% include "partials/_field.html" with field=form.owner %}
+  {% include "partials/_field.html" with field=form.occurred_at %}{% include "partials/_field.html" with field=form.aware_at %}
+  {% include "partials/_field.html" with field=form.business_unit %}{% include "partials/_field.html" with field=form.data_subjects_affected %}
+  {% include "partials/_field.html" with field=form.personal_data_breach class="sm:col-span-2" %}
+  <fieldset class="sm:col-span-2"><legend class="label">Notification regimes</legend><div class="grid gap-1 text-sm sm:grid-cols-2">{% for cb in form.regimes %}<label class="flex items-center gap-2">{{ cb.tag }} {{ cb.choice_label }}{% if cb.data.value in suggested %} <span class="text-xs text-amber-700">(suggested: personal data)</span>{% endif %}</label>{% endfor %}</div><p class="mt-1 text-xs text-slate-500">{{ form.regimes.help_text }} Deadlines are indicative; confirm the rules that apply to you.</p></fieldset>
+  {% include "partials/_field.html" with field=form.techniques %}{% include "partials/_field.html" with field=form.assets %}
+  {% include "partials/_field.html" with field=form.risks %}{% include "partials/_field.html" with field=form.controls %}
+  {% include "partials/_field.html" with field=form.vendors %}
+  {% include "partials/_field.html" with field=form.description class="sm:col-span-2" %}
+  {% include "partials/_field.html" with field=form.root_cause %}{% include "partials/_field.html" with field=form.lessons_learned %}
+  <div class="flex gap-2 sm:col-span-2"><button class="btn btn-primary" type="submit">Save</button><a class="btn btn-secondary" href="{% url 'incidents:detail' incident.ref %}">Cancel</a></div>
+</form>
+{% endblock %}

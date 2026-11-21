@@ -371,3 +371,50 @@ class VendorSerializer(serializers.Serializer):
             }
             for c in obj.contracts
         ]
+
+
+# ----------------------------------------------------------------------------- Phase 11
+class IncidentSerializer(serializers.Serializer):
+    ref = serializers.CharField()
+    title = serializers.CharField()
+    severity = serializers.CharField()
+    status = serializers.CharField()
+    aware_at = serializers.DateTimeField()
+    personal_data_breach = serializers.BooleanField()
+    regimes = serializers.ListField(child=serializers.CharField())
+    techniques = serializers.SerializerMethodField()
+    obligations = serializers.SerializerMethodField()
+
+    def get_techniques(self, obj: Any) -> list[str]:
+        return [t.attack_id for t in obj.techniques.all()]
+
+    def get_obligations(self, obj: Any) -> list[dict[str, Any]]:
+        from threatledger.incidents.services import obligations
+
+        return [
+            {
+                "regime": o.regime.key,
+                "step": o.step.key,
+                "label": o.step.label,
+                "due_at": o.due_at.isoformat(),
+                "state": o.state,
+            }
+            for o in obligations(obj)
+        ]
+
+
+class ProcessingSerializer(serializers.Serializer):
+    ref = serializers.CharField()
+    name = serializers.CharField()
+    role = serializers.CharField()
+    legal_basis = serializers.CharField()
+    data_categories = serializers.ListField(child=serializers.CharField())
+    data_subjects = serializers.ListField(child=serializers.CharField())
+    special_category = serializers.BooleanField()
+    dpia_required = serializers.BooleanField()
+    dpia_state = serializers.SerializerMethodField()
+
+    def get_dpia_state(self, obj: Any) -> str:
+        from threatledger.privacy.services import dpia_state
+
+        return dpia_state(obj)

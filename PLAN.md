@@ -569,7 +569,7 @@ Each phase is one release with the same rules as Phases 1–7: tests and linters
 - Vendor posture view.
 - DORA register of information export.
 
-**Phase 11: Privacy & incidents**
+**Phase 11: Privacy & incidents** ✅ done
 - *Privacy:* records of processing (GDPR Art. 30 / DPDP Act), covering purposes, data categories,
   subjects, recipients, transfers and retention. Plus a DPIA, with links to risks and controls.
 - *Incidents:* timeline, evidence, affected assets/techniques, and regulatory clocks with reminders:

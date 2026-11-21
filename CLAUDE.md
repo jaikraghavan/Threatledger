@@ -89,6 +89,11 @@ The design lives in [PLAN.md](PLAN.md). Read it before changing models or scorin
   `work.Assignment` rows with `entity` + `external_email` and no `respondent`; access goes through
   `work.AccessLink` (hash only) and the PUBLIC views in `work/respond.py` (`/respond/`). Never put
   the raw token anywhere but the one-time link page/email; tokens travel as `?token=`.
+- **Privacy & incidents (Phase 11)**: `threatledger/privacy` (Processing, Dpia; DPIA need is the
+  derived `Processing.dpia_required`, state via `services.dpia_state()`), `threatledger/incidents`
+  (Incident, TimelineEntry append-only, Notification filings, DeadlineAlert dedupe). Regulatory
+  steps live in `incidents/regimes.py`; deadlines are `aware_at + step.after`, never stored. The
+  15-minute job `incidents.tasks.deadline_alerts` is in `core/schedules.py` (`MINUTES`).
 - **Ops commands**: `backup`, `verify_backup`, `restore --force`, `seed_demo`, `perf_check --risks 1000`.
   Backups must run outside a DB transaction (tests use `django_db(transaction=True)`).
 - Test helpers for risks/controls/techniques: `threatledger/risks/tests/helpers.py`.

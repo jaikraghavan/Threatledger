@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Report an incident{% endblock %}
+{% block content %}
+<nav class="mb-3 text-sm text-slate-500" aria-label="Breadcrumb"><a class="hover:underline" href="{% url 'incidents:list' %}">Incidents</a></nav>
+<h1 class="mb-1 text-2xl font-semibold">Report an incident</h1>
+<p class="mb-4 text-sm text-slate-600">Report anything suspicious straight away, even if you are not sure. The incident team is alerted as soon as you submit, and regulatory clocks start from now.</p>
+<form method="post" class="card grid max-w-3xl gap-4 p-5 sm:grid-cols-2" novalidate>{% csrf_token %}
+  <div class="sm:col-span-2">{% include "partials/_form_errors.html" %}</div>
+  {% include "partials/_field.html" with field=form.title class="sm:col-span-2" %}
+  {% include "partials/_field.html" with field=form.severity %}{% include "partials/_field.html" with field=form.occurred_at %}
+  {% include "partials/_field.html" with field=form.business_unit %}
+  {% include "partials/_field.html" with field=form.description class="sm:col-span-2" %}
+  <div class="flex gap-2 sm:col-span-2"><button class="btn btn-primary" type="submit">Report</button><a class="btn btn-secondary" href="{% url 'incidents:list' %}">Cancel</a></div>
+</form>
+{% endblock %}

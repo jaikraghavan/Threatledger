@@ -38,6 +38,8 @@ class DemoReport:
     tasks: int = 0
     questionnaires: int = 0
     vendors: int = 0
+    processing: int = 0
+    incidents: int = 0
 
 
 def _days(n: int | None) -> Any:
@@ -155,6 +157,7 @@ def seed_demo(org: Organisation, path: Path = DEMO_FILE) -> DemoReport:
     seed_governance(org, data, users, bus, controls, report)
     seed_work(org, data, users, controls, report)
     seed_vendors(org, data, users, assets, report)
+    seed_privacy_incidents(org, data, users, controls, report)
     take_snapshots(org)
     return report
 
@@ -505,3 +508,126 @@ def seed_vendors(
                 if spec["status"] == "accepted":
                     work_services.review_assignment(submitted, user=users["admin"], accept=True)
         report.vendors += 1
+
+
+def seed_privacy_incidents(
+    org: Organisation,
+    data: dict[str, Any],
+    users: dict[str, User],
+    controls: dict[str, Control],
+    report: DemoReport,
+) -> None:
+    """Phase 11: records of processing, a DPIA, and incidents with regulatory clocks."""
+    from threatledger.incidents import services as incident_services
+    from threatledger.incidents.models import Incident
+    from threatledger.privacy import services as privacy_services
+    from threatledger.privacy.models import Processing
+    from threatledger.risks.models import Risk
+    from threatledger.vendors.models import Entity
+
+    rm, admin = users["riskmanager"], users["admin"]
+    for item in data.get("processing", []):
+        if Processing.objects.filter(organisation=org, name=item["name"]).exists():
+            continue
+        countries, safeguard = item.get("transfer") or ["", ""]
+        p = privacy_services.create_processing(
+            user=rm,
+            data={
+                "name": item["name"],
+                "purpose": item["purpose"],
+                "legal_basis": item["legal_basis"],
+                "data_categories": item["categories"],
+                "data_subjects": item["subjects"],
+                "retention": item["retention"],
+                "owner": rm,
+                "transfer_countries": countries,
+                "transfer_safeguard": safeguard,
+                "large_scale": item.get("large_scale", False),
+                "systematic_monitoring": item.get("systematic_monitoring", False),
+                "automated_decisions": item.get("automated_decisions", False),
+            },
+            links={
+                "processors": Entity.objects.filter(
+                    organisation=org, name__in=item.get("processors", [])
+                ),
+                "controls": [controls[c] for c in item.get("controls", []) if c in controls],
+            },
+        )
+        if item.get("dpia") == "approved":
+            dpia = privacy_services.create_dpia(
+                p,
+                user=rm,
+                data={
+                    "description": p.purpose,
+                    "necessity": (
+                        "Location is needed for routing; behaviour scores only for safety coaching."
+                    ),
+                    "risks_to_individuals": (
+                        "Excessive monitoring; use of data for performance management."
+                    ),
+                    "measures": (
+                        "Purpose limitation in policy, 90-day retention, "
+                        "access limited to the safety team."
+                    ),
+                    "residual_risk": "low",
+                },
+            )
+            privacy_services.submit_dpia(dpia, user=rm)
+            privacy_services.decide_dpia(dpia, user=admin, approve=True)
+        report.processing += 1
+    techniques = {t.attack_id: t for t in Technique.objects.active()}
+    for item in data.get("incidents", []):
+        if Incident.objects.filter(organisation=org, title=item["title"]).exists():
+            continue
+        aware = timezone.now() - timedelta(hours=item["aware_hours_ago"])
+        incident = incident_services.report_incident(
+            user=rm,
+            data={
+                "title": item["title"],
+                "description": item["description"],
+                "severity": item["severity"],
+                "aware_at": aware,
+                "owner": rm,
+                "personal_data_breach": item.get("personal_data", False),
+                "data_subjects_affected": item.get("affected"),
+                "regimes": item.get("regimes", []),
+                "root_cause": item.get("root_cause", ""),
+                "lessons_learned": item.get("lessons", ""),
+            },
+        )
+        incident_services.update_incident(
+            incident,
+            user=rm,
+            data={},
+            links={
+                "techniques": [
+                    techniques[t] for t in item.get("techniques", []) if t in techniques
+                ],
+                "controls": [controls[c] for c in item.get("controls", []) if c in controls],
+                "risks": Risk.objects.filter(organisation=org, ref__in=item.get("risks", [])),
+            },
+        )
+        for kind, hours_ago, text in item.get("timeline", []):
+            incident_services.add_entry(
+                incident,
+                user=rm,
+                kind=kind,
+                text=text,
+                at=timezone.now() - timedelta(hours=hours_ago),
+            )
+        for regime, step, ref in item.get("filed", []):
+            incident_services.record_filing(
+                incident,
+                user=rm,
+                regime=regime,
+                step=step,
+                reference=ref,
+                submitted_at=aware + timedelta(hours=20),
+            )
+        path = {
+            "contained": ["triage", "contained"],
+            "closed": ["triage", "contained", "eradicated", "recovered", "closed"],
+        }.get(item.get("status", ""), [])
+        for status in path:
+            incident_services.set_status(incident, user=rm, status=status)
+        report.incidents += 1

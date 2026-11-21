@@ -751,3 +751,60 @@ vendors:
     country: GB
     contracts:
       - [Office cleaning, 2025-01-01, 200, 30, true, 24000, GB]
+
+# Phase 11 privacy and incidents.
+processing:
+  - name: Customer orders and delivery
+    purpose: Take, fulfil and deliver customer orders, including delivery notifications.
+    legal_basis: contract
+    categories: [identity, contact, financial, location]
+    subjects: [customers]
+    retention: 6 years after the last order (tax law)
+    processors: [Nimbus Cloud Services, Ledgerline Payments]
+    controls: [CTL-MFA, CTL-BACKUP, CTL-EDR]
+    transfer: [US, scc]
+    large_scale: true
+  - name: Driver telematics and safety monitoring
+    purpose: Monitor driving behaviour and location of delivery drivers for safety and routing.
+    legal_basis: legitimate_interests
+    categories: [identity, location, employment]
+    subjects: [employees, contractors]
+    retention: 90 days, then aggregated
+    processors: [Kestrel Logistics Software]
+    systematic_monitoring: true
+    large_scale: true
+    dpia: approved
+  - name: Occupational health records
+    purpose: Manage fitness-to-drive assessments and workplace adjustments.
+    legal_basis: legal_obligation
+    categories: [identity, health, employment]
+    subjects: [employees]
+    retention: 40 years after employment ends
+    controls: [CTL-PAM, CTL-DLP]
+    large_scale: false
+    automated_decisions: false
+incidents:
+  - title: Customer portal credential-stuffing attack
+    description: Spike of failed logins from residential proxies; 312 accounts accessed before rate limiting.
+    severity: high
+    aware_hours_ago: 30
+    status: contained
+    personal_data: true
+    affected: 312
+    regimes: [gdpr, dpdp]
+    filed: [[gdpr, authority, "DPC-2026-0412"]]
+    techniques: [T1110, T1078]
+    controls: [CTL-MFA]
+    risks: [R-0002]
+    timeline:
+      - [action, 29, "Blocked proxy ASN ranges at the WAF; enforced rate limit per IP."]
+      - [action, 26, "Forced password reset for the 312 affected accounts."]
+  - title: Phishing email reported by finance
+    description: Invoice-themed phishing reported by an accounts payable clerk; no clicks.
+    severity: low
+    aware_hours_ago: 400
+    status: closed
+    root_cause: Lookalike domain bypassed reputation filtering.
+    lessons: Added lookalike-domain detection; phishing simulation scheduled.
+    techniques: [T1566]
+    controls: [CTL-EMAIL]

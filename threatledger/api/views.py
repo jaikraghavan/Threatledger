@@ -37,8 +37,12 @@ from threatledger.findings import services as finding_services
 from threatledger.findings.models import Finding, SecurityException
 from threatledger.frameworks import services as fw_services
 from threatledger.frameworks.models import Framework, Requirement
+from threatledger.incidents import services as incident_services
+from threatledger.incidents.models import Incident
 from threatledger.policies import services as policy_services
 from threatledger.policies.models import Policy
+from threatledger.privacy import services as privacy_services
+from threatledger.privacy.models import Processing
 from threatledger.risks import services as risk_services
 from threatledger.risks.models import Risk, RiskMatrix
 from threatledger.vendors import services as vendor_services
@@ -52,8 +56,10 @@ from .serializers import (
     ControlSerializer,
     ExceptionSerializer,
     FindingSerializer,
+    IncidentSerializer,
     LinkTechniqueSerializer,
     PolicySerializer,
+    ProcessingSerializer,
     RiskSerializer,
     TaskSerializer,
     TechniqueSerializer,
@@ -639,3 +645,34 @@ class VendorViewSet(viewsets.ViewSet):
     def retrieve(self, request: Request, ref: str | None = None) -> Response:
         entity = get_object_or_404(vendor_services.visible_entities(request.user), ref__iexact=ref)
         return Response(VendorSerializer(vendor_services.postures([entity])[0]).data)
+
+
+# ----------------------------------------------------------------------------- Phase 11
+class IncidentViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+    """Incidents visible to you, with derived regulatory notification deadlines."""
+
+    tl_access = AUTHENTICATED  # reporters see their own; incident viewers see all in scope
+    serializer_class = IncidentSerializer
+    lookup_field = "ref"
+
+    def get_queryset(self) -> QuerySet[Any]:
+        if getattr(self, "swagger_fake_view", False):
+            return Incident.objects.none()
+        return (
+            incident_services.visible_incidents(self.request.user)
+            .prefetch_related("techniques", "filings")
+            .order_by("-aware_at")
+        )
+
+
+class ProcessingViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+    """Records of processing with DPIA screening and state."""
+
+    tl_access = Cap.VIEW_PRIVACY
+    serializer_class = ProcessingSerializer
+    lookup_field = "ref"
+
+    def get_queryset(self) -> QuerySet[Any]:
+        if getattr(self, "swagger_fake_view", False):
+            return Processing.objects.none()
+        return privacy_services.visible_processing(self.request.user).order_by("ref")

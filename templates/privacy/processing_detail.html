@@ -1,0 +1,31 @@
+{% extends "base.html" %}{% load work %}
+{% block title %}{{ p.ref }} {{ p.name }}{% endblock %}
+{% block content %}
+<nav class="mb-3 text-sm text-slate-500" aria-label="Breadcrumb"><a class="hover:underline" href="{% url 'privacy:list' %}">Privacy</a></nav>
+<div class="flex flex-wrap items-start justify-between gap-4">
+  <div><div class="font-mono text-sm text-slate-500">{{ p.ref }} · {{ p.get_role_display }}</div><h1 class="text-2xl font-semibold">{{ p.name }}</h1>
+    <div class="mt-1 flex flex-wrap items-center gap-2 text-sm">{% with s=dpia_state %}{% include "privacy/_dpia_badge.html" %}{% endwith %}<span class="text-slate-600">{{ p.get_status_display }}</span>{% if p.special_category %}<span class="badge bg-red-100 text-red-800">special-category data</span>{% endif %}</div></div>
+  {% if can_manage %}<div class="flex gap-2"><a class="btn btn-secondary" href="{% url 'privacy:edit' p.ref %}">Edit</a>{% if dpia_state != "in_progress" %}<a class="btn btn-primary" href="{% url 'privacy:dpia_create' p.ref %}">{% if dpia %}New DPIA version{% else %}Start DPIA{% endif %}</a>{% endif %}</div>{% endif %}
+</div>
+<div class="mt-6 grid gap-6 lg:grid-cols-3">
+  <div class="space-y-6 lg:col-span-2">
+    <section class="card p-5"><h2 class="mb-3 font-semibold">Article 30 record</h2><dl class="grid gap-3 text-sm sm:grid-cols-2">
+      <div class="sm:col-span-2"><dt class="text-xs text-slate-500">Purpose</dt><dd class="whitespace-pre-line">{{ p.purpose }}</dd></div>
+      <div><dt class="text-xs text-slate-500">Legal basis</dt><dd>{{ p.get_legal_basis_display }}{% if p.legal_basis_note %}: {{ p.legal_basis_note }}{% endif %}</dd></div>
+      <div><dt class="text-xs text-slate-500">Retention</dt><dd>{{ p.retention }}</dd></div>
+      <div><dt class="text-xs text-slate-500">Personal data</dt><dd>{{ p.category_labels|join:", " }}</dd></div>
+      <div><dt class="text-xs text-slate-500">Data subjects</dt><dd>{{ p.subject_labels|join:", "|default:"—" }}</dd></div>
+      <div><dt class="text-xs text-slate-500">Recipients</dt><dd class="whitespace-pre-line">{{ p.recipients|default:"—" }}</dd></div>
+      <div><dt class="text-xs text-slate-500">International transfers</dt><dd>{% if p.transfer_countries %}{{ p.transfer_countries }} · <span class="{% if p.transfer_safeguard == 'unknown' %}text-red-700{% endif %}">{{ p.get_transfer_safeguard_display }}</span>{% else %}None{% endif %}</dd></div>
+      <div class="sm:col-span-2"><dt class="text-xs text-slate-500">Security measures</dt><dd class="whitespace-pre-line">{{ p.security_measures|default:"—" }}{% for c in p.controls.all %}{% if forloop.first %}<br>{% endif %}<a class="font-mono text-xs text-brand-700 hover:underline" href="{% url 'controls:detail' c.ref %}">{{ c.ref }}</a> {{ c.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</dd></div></dl></section>
+    <section class="card p-5"><h2 class="mb-2 font-semibold">DPIA screening</h2>
+      {% with t=p.dpia_triggers %}<p class="text-sm">{% if p.dpia_required %}A DPIA is expected: {{ t|join:", " }}.{% elif t %}One criterion met ({{ t|join:", " }}); a DPIA is not strictly required, but record why.{% else %}No high-risk criteria met.{% endif %}</p>{% endwith %}
+      <ul class="mt-3 space-y-1 text-sm">{% for d in dpias %}<li><a class="font-mono text-xs text-brand-700 hover:underline" href="{% url 'privacy:dpia' d.ref %}">{{ d.ref }}</a> <span class="badge bg-slate-100 text-slate-700">{{ d.get_status_display }}</span> <span class="text-xs text-slate-500">residual risk {{ d.get_residual_risk_display|lower }}{% if d.review_due %} · review {{ d.review_due|date:"Y-m-d" }}{% endif %}</span></li>{% endfor %}</ul></section>
+    {% comments p %}
+  </div>
+  <aside class="space-y-6"><section class="card p-5"><h2 class="mb-3 font-semibold">Linked</h2><dl class="space-y-2 text-sm">
+    <div><dt class="text-xs text-slate-500">Owner</dt><dd>{{ p.owner|default:"—" }}</dd></div>
+    <div><dt class="text-xs text-slate-500">Processors</dt><dd>{% for e in p.processors.all %}<a class="text-brand-700 hover:underline" href="{% url 'vendors:detail' e.ref %}">{{ e.name }}</a>{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}</dd></div>
+    <div><dt class="text-xs text-slate-500">Assets</dt><dd>{% for a in p.assets.all %}{{ a.name }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}</dd></div></dl></section></aside>
+</div>
+{% endblock %}

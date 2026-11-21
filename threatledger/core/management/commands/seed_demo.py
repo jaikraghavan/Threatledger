@@ -35,7 +35,7 @@ class Command(BaseCommand):
             f"{r.acceptances} acceptances, {r.evidence} evidence items, {r.tests} control tests, "
             f"{r.audits} audits, {r.findings} findings, {r.exceptions} exceptions, "
             f"{r.policies} policies, {r.tasks} tasks, {r.questionnaires} questionnaires, "
-            f"{r.vendors} vendors."
+            f"{r.vendors} vendors, {r.processing} processing activities, {r.incidents} incidents."
         )
         if r.missing_techniques:
             self.stdout.write(

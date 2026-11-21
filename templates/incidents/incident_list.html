@@ -1,0 +1,18 @@
+{% extends "base.html" %}{% load tl %}
+{% block title %}Incidents{% endblock %}
+{% block content %}
+<div class="mb-4 flex flex-wrap items-end justify-between gap-3">
+  <div><h1 class="text-2xl font-semibold">Incidents</h1><p class="text-sm text-slate-500">{% if sees_all %}Handling, timeline and regulatory notification clocks.{% else %}Incidents you reported.{% endif %}</p></div>
+  {% if can_report %}<a class="btn btn-primary" href="{% url 'incidents:report' %}">Report an incident</a>{% endif %}
+</div>
+<div class="mb-3 flex gap-2 text-sm"><a class="rounded px-2 py-1 {% if show == 'open' %}bg-slate-100 font-medium{% else %}text-slate-600{% endif %}" href="?show=open">Open</a><a class="rounded px-2 py-1 {% if show != 'open' %}bg-slate-100 font-medium{% else %}text-slate-600{% endif %}" href="?show=all">All</a></div>
+<div class="card overflow-x-auto"><table class="data-table">
+  <thead><tr><th scope="col">Incident</th><th scope="col">Severity</th><th scope="col">Status</th><th scope="col">Aware since</th><th scope="col">Next regulatory deadline</th><th scope="col">Manager</th></tr></thead>
+  <tbody class="divide-y divide-slate-100">{% for i, o in rows %}<tr>
+    <td><a class="font-mono text-xs text-brand-700 hover:underline" href="{% url 'incidents:detail' i.ref %}">{{ i.ref }}</a> <span class="font-medium">{{ i.title }}</span>{% if i.personal_data_breach %} <span class="badge bg-purple-100 text-purple-800">personal data</span>{% endif %}</td>
+    <td><span class="badge {{ i.severity|tone }}">{{ i.get_severity_display }}</span></td><td><span class="badge bg-slate-100 text-slate-700">{{ i.get_status_display }}</span></td>
+    <td class="whitespace-nowrap text-xs">{{ i.aware_at|date:"Y-m-d H:i" }}</td>
+    <td class="text-xs">{% if o %}{{ o.regime.label }}: {{ o.step.label }} {% include "incidents/_clock.html" %}{% else %}—{% endif %}</td>
+    <td class="text-xs">{{ i.owner|default:"Unassigned" }}</td></tr>
+  {% empty %}<tr><td colspan="6" class="text-slate-500">No incidents.</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

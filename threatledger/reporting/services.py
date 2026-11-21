@@ -290,6 +290,18 @@ def governance_kpis(user: Any) -> dict[str, Any]:
         audits = visible_audits(user)
         out["audits_active"] = audits.exclude(status__in=["planned", "closed"]).count()
         out["audits_overdue"] = audits.exclude(status="closed").filter(due_on__lt=today).count()
+    if can(user, Cap.VIEW_INCIDENTS):
+        from threatledger.incidents.models import OPEN_STATUSES
+        from threatledger.incidents.services import pending_obligations, visible_incidents
+
+        open_incidents = list(
+            visible_incidents(user).filter(status__in=OPEN_STATUSES).prefetch_related("filings")
+        )
+        out["incidents_open"] = len(open_incidents)
+        out["incidents_severe"] = sum(i.severity in ("high", "critical") for i in open_incidents)
+        out["notifications_overdue"] = sum(
+            o.state == "overdue" for i in open_incidents for o in pending_obligations(i)
+        )
     if can(user, Cap.VIEW_POLICIES):
         policies = visible_policies(user).filter(retired_at__isnull=True)
         states = [

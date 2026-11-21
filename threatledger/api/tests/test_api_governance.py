@@ -153,3 +153,38 @@ def test_vendors_api(users, tokens):
     one = api(tokens[Role.AUDITOR]).get(f"/api/v1/vendors/{v.ref}/").json()
     assert one["tier"] == "critical" and one["assessment_score"] is None
     assert api(tokens[Role.VIEWER]).get("/api/v1/vendors/").status_code == 403
+
+
+def test_incidents_and_processing_api(users, tokens):
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    from threatledger.incidents import services as incident_services
+    from threatledger.privacy import services as privacy_services
+
+    rm = users[Role.RISK_MANAGER]
+    i = incident_services.report_incident(
+        user=rm,
+        data={
+            "title": "Ransomware",
+            "description": "x",
+            "regimes": ["certin"],
+            "aware_at": timezone.now() - timedelta(hours=7),
+        },
+    )
+    data = api(tokens[Role.AUDITOR]).get(f"/api/v1/incidents/{i.ref}/").json()
+    assert data["obligations"][0]["state"] == "overdue"
+    assert api(tokens[Role.VIEWER]).get("/api/v1/incidents/").json()["results"] == []
+    privacy_services.create_processing(
+        user=rm,
+        data={
+            "name": "HR",
+            "purpose": "p",
+            "retention": "r",
+            "data_categories": ["health", "employment"],
+            "large_scale": True,
+        },
+    )
+    rows = api(tokens[Role.AUDITOR]).get("/api/v1/processing/").json()["results"]
+    assert rows[0]["dpia_required"] is True and rows[0]["dpia_state"] == "missing"

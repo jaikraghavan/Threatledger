@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}{{ dpia.ref }}{% endblock %}
+{% block content %}
+<nav class="mb-3 text-sm text-slate-500" aria-label="Breadcrumb"><a class="hover:underline" href="{% url 'privacy:list' %}">Privacy</a> / <a class="hover:underline" href="{% url 'privacy:detail' dpia.processing.ref %}">{{ dpia.processing.ref }}</a></nav>
+<div class="flex flex-wrap items-start justify-between gap-4"><div><div class="font-mono text-sm text-slate-500">{{ dpia.ref }}</div><h1 class="text-2xl font-semibold">DPIA: {{ dpia.processing.name }}</h1>
+  <div class="mt-1 flex flex-wrap gap-2 text-sm"><span class="badge bg-slate-100 text-slate-700">{{ dpia.get_status_display }}</span><span class="text-slate-600">residual risk: {{ dpia.get_residual_risk_display }}</span>{% if dpia.review_due %}<span class="text-slate-600">· review by {{ dpia.review_due|date:"Y-m-d" }}</span>{% endif %}</div></div>
+  {% if can_edit %}<a class="btn btn-primary" href="{% url 'privacy:dpia_edit' dpia.ref %}">Edit / submit</a>{% endif %}</div>
+<div class="mt-6 space-y-6">
+  <section class="card p-5"><h2 class="mb-2 font-semibold">Description of the processing</h2><p class="whitespace-pre-line text-sm">{{ dpia.description }}</p></section>
+  <section class="card p-5"><h2 class="mb-2 font-semibold">Necessity and proportionality</h2><p class="whitespace-pre-line text-sm">{{ dpia.necessity }}</p></section>
+  <section class="card p-5"><h2 class="mb-2 font-semibold">Risks to individuals</h2><p class="whitespace-pre-line text-sm">{{ dpia.risks_to_individuals }}</p>
+    {% if risks %}<p class="mt-3 text-xs text-slate-500">Risk register: {% for r in risks %}<a class="font-mono text-brand-700 hover:underline" href="{% url 'risks:detail' r.ref %}">{{ r.ref }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}</p>{% endif %}</section>
+  <section class="card p-5"><h2 class="mb-2 font-semibold">Measures</h2><p class="whitespace-pre-line text-sm">{{ dpia.measures }}</p></section>
+  {% if dpia.dpo_advice %}<section class="card p-5"><h2 class="mb-2 font-semibold">DPO advice</h2><p class="whitespace-pre-line text-sm">{{ dpia.dpo_advice }}</p></section>{% endif %}
+  {% if dpia.decided_by %}<p class="text-sm text-slate-600">Decided by {{ dpia.decided_by }} on {{ dpia.decided_at|date:"Y-m-d" }}{% if dpia.decision_note %}: {{ dpia.decision_note }}{% endif %}</p>{% endif %}
+  {% if can_decide %}<section class="card p-5"><h2 class="mb-3 font-semibold">Decision</h2>
+    <form method="post" action="{% url 'privacy:dpia_decide' dpia.ref %}" class="space-y-3">{% csrf_token %}<label class="label" for="note">Note (required to send back)</label><input id="note" name="note" class="field" maxlength="500">
+      <div class="flex gap-2"><button class="btn btn-primary" name="decision" value="approve" type="submit">Approve</button><button class="btn btn-secondary" name="decision" value="reject" type="submit">Send back for rework</button></div></form></section>{% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}DPIA for {{ p.name }}{% endblock %}
+{% block content %}
+<nav class="mb-3 text-sm text-slate-500" aria-label="Breadcrumb"><a class="hover:underline" href="{% url 'privacy:list' %}">Privacy</a> / <a class="hover:underline" href="{% url 'privacy:detail' p.ref %}">{{ p.ref }}</a></nav>
+<h1 class="mb-1 text-2xl font-semibold">{% if dpia %}{{ dpia.ref }}{% else %}New DPIA{% endif %}: {{ p.name }}</h1>
+{% if dpia.decision_note %}<div class="mb-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900" role="status">{{ dpia.decided_by }}: {{ dpia.decision_note }}</div>{% endif %}
+<form method="post" class="card mt-4 max-w-4xl space-y-4 p-5" novalidate>{% csrf_token %}{% include "partials/_form_errors.html" %}
+  {% for field in form %}{% include "partials/_field.html" with field=field %}{% endfor %}
+  <div class="flex flex-wrap gap-2"><button class="btn btn-secondary" type="submit">Save draft</button>{% if dpia %}<button class="btn btn-primary" type="submit" name="submit" value="1">Save and submit for approval</button>{% endif %}<a class="btn btn-secondary" href="{% url 'privacy:detail' p.ref %}">Cancel</a></div>
+</form>
+{% endblock %}

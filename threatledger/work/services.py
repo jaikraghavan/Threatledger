@@ -249,12 +249,16 @@ def _registry() -> dict[str, Callable[[Any], QuerySet[Any]]]:
     from threatledger.audits.services import visible_audits
     from threatledger.controls.services import visible_controls
     from threatledger.findings.services import visible_exceptions, visible_findings
+    from threatledger.incidents.services import visible_incidents
     from threatledger.policies.services import visible_policies
+    from threatledger.privacy.services import visible_processing
     from threatledger.risks.services import visible_risks
     from threatledger.vendors.services import visible_entities
 
     return {
         "vendors.entity": visible_entities,
+        "incidents.incident": visible_incidents,
+        "privacy.processing": visible_processing,
         "risks.risk": visible_risks,
         "controls.control": visible_controls,
         "findings.finding": visible_findings,
@@ -305,6 +309,8 @@ def detail_url(obj: Any) -> str:
         "policies.policy": "policies:detail",
         "work.task": "work:task",
         "vendors.entity": "vendors:detail",
+        "incidents.incident": "incidents:detail",
+        "privacy.processing": "privacy:detail",
     }
     return _url(names[label], obj.ref) if label in names else ""
 

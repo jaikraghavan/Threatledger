@@ -65,6 +65,13 @@ class Cap(StrEnum):
     # third-party risk (Phase 10)
     VIEW_VENDORS = "view_vendors"
     MANAGE_VENDORS = "manage_vendors"  # vendors, contracts, external assessment links
+    # privacy & incidents (Phase 11)
+    VIEW_PRIVACY = "view_privacy"
+    MANAGE_PRIVACY = "manage_privacy"
+    APPROVE_DPIA = "approve_dpia"  # never your own DPIA
+    VIEW_INCIDENTS = "view_incidents"
+    MANAGE_INCIDENTS = "manage_incidents"
+    REPORT_INCIDENT = "report_incident"  # anyone can report a suspected incident
 
 
 _READ_ALL = {
@@ -83,8 +90,11 @@ _READ_SENSITIVE = {
     Cap.VIEW_FINDINGS,
     Cap.VIEW_TASKS,
     Cap.VIEW_VENDORS,
+    Cap.VIEW_PRIVACY,
+    Cap.VIEW_INCIDENTS,
 }
 # Auditors judge and report; they never change the controls, risks or policies they audit.
+_EVERYONE = {Cap.REPORT_INCIDENT}
 _AUDIT_WORK = {Cap.PERFORM_AUDITS, Cap.RAISE_FINDINGS, Cap.REVIEW_EVIDENCE, Cap.COMMENT}
 
 ROLE_CAPABILITIES: dict[Role, frozenset[Cap]] = {
@@ -110,8 +120,12 @@ ROLE_CAPABILITIES: dict[Role, frozenset[Cap]] = {
             Cap.MANAGE_TASKS,
             Cap.APPROVE_CONTROL_CHANGES,
             Cap.MANAGE_VENDORS,
+            Cap.MANAGE_PRIVACY,
+            Cap.APPROVE_DPIA,
+            Cap.MANAGE_INCIDENTS,
         }
         | _AUDIT_WORK
+        | _EVERYONE
     ),
     Role.CONTROL_OWNER: frozenset(
         _READ_ALL
@@ -123,9 +137,10 @@ ROLE_CAPABILITIES: dict[Role, frozenset[Cap]] = {
             Cap.REQUEST_EXCEPTION,
             Cap.COMMENT,
         }
+        | _EVERYONE
     ),
-    Role.AUDITOR: frozenset(_READ_ALL | _READ_SENSITIVE | _AUDIT_WORK),
-    Role.VIEWER: frozenset(_READ_ALL),
+    Role.AUDITOR: frozenset(_READ_ALL | _READ_SENSITIVE | _AUDIT_WORK | _EVERYONE),
+    Role.VIEWER: frozenset(_READ_ALL | _EVERYONE),
 }
 
 # Capabilities that only apply to objects the user owns (checked against ``obj.owner_id``).

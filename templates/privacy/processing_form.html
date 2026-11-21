@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}{% if p %}Edit {{ p.ref }}{% else %}New processing activity{% endif %}{% endblock %}
+{% block content %}
+<nav class="mb-3 text-sm text-slate-500" aria-label="Breadcrumb"><a class="hover:underline" href="{% url 'privacy:list' %}">Privacy</a>{% if p %} / <a class="hover:underline" href="{% url 'privacy:detail' p.ref %}">{{ p.ref }}</a>{% endif %}</nav>
+<h1 class="mb-4 text-2xl font-semibold">{% if p %}Edit {{ p.name }}{% else %}New processing activity{% endif %}</h1>
+<form method="post" class="card grid max-w-4xl gap-4 p-5 sm:grid-cols-2" novalidate>{% csrf_token %}
+  <div class="sm:col-span-2">{% include "partials/_form_errors.html" %}</div>
+  {% include "partials/_field.html" with field=form.name class="sm:col-span-2" %}
+  {% include "partials/_field.html" with field=form.purpose class="sm:col-span-2" %}
+  {% include "partials/_field.html" with field=form.role %}{% include "partials/_field.html" with field=form.legal_basis %}
+  {% include "partials/_field.html" with field=form.legal_basis_note %}{% include "partials/_field.html" with field=form.status %}
+  {% include "partials/_field.html" with field=form.owner %}{% include "partials/_field.html" with field=form.business_unit %}
+  <fieldset class="sm:col-span-2"><legend class="label">Categories of personal data <span class="text-red-600" aria-hidden="true">*</span></legend><div class="grid gap-1 text-sm sm:grid-cols-3">{% for cb in form.data_categories %}<label class="flex items-center gap-2">{{ cb.tag }} {{ cb.choice_label }}</label>{% endfor %}</div>{% for e in form.data_categories.errors %}<p class="mt-1 text-sm text-red-700">{{ e }}</p>{% endfor %}</fieldset>
+  <fieldset class="sm:col-span-2"><legend class="label">Data subjects</legend><div class="grid gap-1 text-sm sm:grid-cols-4">{% for cb in form.data_subjects %}<label class="flex items-center gap-2">{{ cb.tag }} {{ cb.choice_label }}</label>{% endfor %}</div></fieldset>
+  {% include "partials/_field.html" with field=form.recipients %}{% include "partials/_field.html" with field=form.retention %}
+  {% include "partials/_field.html" with field=form.transfer_countries %}{% include "partials/_field.html" with field=form.transfer_safeguard %}
+  {% include "partials/_field.html" with field=form.processors %}{% include "partials/_field.html" with field=form.assets %}
+  {% include "partials/_field.html" with field=form.controls %}{% include "partials/_field.html" with field=form.security_measures %}
+  <fieldset class="sm:col-span-2"><legend class="label">DPIA screening</legend><div class="grid gap-2 sm:grid-cols-2">{% include "partials/_field.html" with field=form.large_scale %}{% include "partials/_field.html" with field=form.systematic_monitoring %}{% include "partials/_field.html" with field=form.automated_decisions %}{% include "partials/_field.html" with field=form.new_technology %}</div></fieldset>
+  <div class="flex gap-2 sm:col-span-2"><button class="btn btn-primary" type="submit">Save</button><a class="btn btn-secondary" href="{% if p %}{% url 'privacy:detail' p.ref %}{% else %}{% url 'privacy:list' %}{% endif %}">Cancel</a></div>
+</form>
+{% endblock %}

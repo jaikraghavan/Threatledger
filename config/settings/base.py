@@ -65,6 +65,8 @@ INSTALLED_APPS = [
     "threatledger.policies",
     "threatledger.work",
     "threatledger.vendors",
+    "threatledger.privacy",
+    "threatledger.incidents",
     "threatledger.api",
 ]
 

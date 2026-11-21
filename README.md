@@ -32,6 +32,10 @@ DPDP Act wherever MFA is mapped.
   readiness, linked risks and findings; security questionnaires that vendors answer through a
   private, expiring link (no account needed); derived posture and reassessment dates; and an
   indicative DORA register-of-information workbook.
+- **Privacy & incidents:** records of processing (GDPR Art. 30 / India DPDP) with DPIA screening and
+  approved DPIAs; incident handling with a timeline, the ATT&CK techniques, risks, controls, assets
+  and vendors involved, and regulatory notification clocks (GDPR 72 h, NIS2 24 h / 72 h / 1 month,
+  DORA, DPDP, CERT-In 6 h) that alert before and after each deadline. Anyone can report an incident.
 - **Reporting:** executive dashboard, printable board report and trend charts.
 - **Secure by default:** strict CSP, MFA, account lockout, hashed API tokens, an immutable
   hash-chained audit log, non-root read-only containers. See [SECURITY.md](SECURITY.md).
@@ -50,8 +54,10 @@ images with `make screenshots` (see [docs/screenshots/README.md](docs/screenshot
 | ![Audit](docs/screenshots/audit.png) | ![Findings](docs/screenshots/findings.png) | ![Policy](docs/screenshots/policy.png) |
 | **Task board** | **Approvals** | **My work** |
 | ![Task board](docs/screenshots/task-board.png) | ![Approvals](docs/screenshots/approvals.png) | ![My work](docs/screenshots/my-work.png) |
-| **Third parties** | **Vendor** | |
-| ![Third parties](docs/screenshots/third-parties.png) | ![Vendor](docs/screenshots/vendor.png) | |
+| **Third parties** | **Vendor** | **Incident** |
+| ![Third parties](docs/screenshots/third-parties.png) | ![Vendor](docs/screenshots/vendor.png) | ![Incident](docs/screenshots/incident.png) |
+| **Privacy** | | |
+| ![Records of processing](docs/screenshots/privacy.png) | | |
 
 ## Quick start (Docker)
 
@@ -219,7 +225,13 @@ read** and never stored. Daily snapshots exist only to draw trend charts.
    questionnaire through a private link (they need no account); review the answers like any
    other questionnaire. Watch the "needs attention" flags (never assessed, reassessment overdue,
    no exit plan, notice window) and, if DORA applies, export the register of information.
-11. **Keep it current.** Re-import ATT&CK after each MITRE release; review revoked-technique banners.
+11. **Handle incidents and personal data.** Anyone can report a suspected incident; the incident
+   manager records the awareness time, picks the notification regimes that apply and works the
+   timeline. ThreatLedger shows every regulatory deadline and alerts two hours before and when one
+   is missed. Link the techniques observed so the next risk review learns from it. Keep records of
+   processing current; when screening says a DPIA is expected, write it and have someone else
+   approve it.
+12. **Keep it current.** Re-import ATT&CK after each MITRE release; review revoked-technique banners.
    Owners get review reminders and evidence-expiry emails. Automate status updates through the API,
    for example `PATCH /api/v1/controls/CTL-EDR/` from your EDR deployment pipeline.
 
@@ -234,7 +246,8 @@ curl -H "Authorization: Bearer tl_xxxxxxxx_…" https://grc.example.com/api/v1/r
 The API covers risks, controls, techniques with coverage, framework compliance, coverage and
 Navigator layers, audits (with per-requirement results), findings (create and update), exceptions,
 policies, tasks (including completing them, for example from a backup job), vendors with their
-derived posture, and the audit log. The OpenAPI schema is at `/api/v1/schema/` and readable docs at
+derived posture, incidents with their regulatory deadlines, records of processing, and the audit
+log. The OpenAPI schema is at `/api/v1/schema/` and readable docs at
 `/api/v1/docs/`. Tokens act with their owner's role, and every write is audited.
 
 ## Local development

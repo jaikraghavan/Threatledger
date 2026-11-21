@@ -36,6 +36,8 @@ PAGES = [
     ("my-work", "/work/"),
     ("third-parties", "/vendors/"),
     ("vendor", "/vendors/V-0001/"),
+    ("incident", "/incidents/INC-0001/"),
+    ("privacy", "/privacy/"),
 ]
 # Visited for the console/CSP check only (no screenshot).
 CHECK_ONLY = [
@@ -58,6 +60,13 @@ CHECK_ONLY = [
     "/vendors/contracts/",
     "/vendors/V-0002/",
     "/vendors/new/",
+    "/incidents/",
+    "/incidents/report/",
+    "/incidents/INC-0001/edit/",
+    "/incidents/INC-0002/",
+    "/privacy/PA-0002/",
+    "/privacy/PA-0001/edit/",
+    "/privacy/dpia/DPIA-0001/",
 ]
 
 

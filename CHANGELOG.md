@@ -41,12 +41,23 @@ All notable changes to this project are documented here. The format follows
 - **External questionnaires:** vendors answer through a private, expiring, revocable link (token
   stored only as a hash, exchanged for a session, rate-limited); answers, uploads and review use
   the same rules as internal questionnaires.
+- **Records of processing** (GDPR Art. 30 / DPDP): purpose, role, legal basis, data categories and
+  subjects, recipients and processors, assets and controls, transfers with safeguards, retention;
+  derived DPIA screening (two or more high-risk criteria, or automated decisions); DPIAs linked to
+  the risk register with approval by someone who did not write them and a yearly review; CSV
+  export.
+- **Incidents:** anyone can report one; managers record awareness time, severity, the ATT&CK
+  techniques, assets, risks, controls and vendors involved, an append-only timeline, root cause and
+  lessons learned. Regulatory clocks for GDPR, DPDP, NIS2, DORA and CERT-In are derived from the
+  awareness time, recorded as filed or not required (with justification), checked before closure,
+  and alerted every 15 minutes when due within 2 hours or missed. Incidents and processing APIs.
 - **DORA register of information** export (indicative Excel workbook: B_01.01, B_02.01, B_02.02,
   B_05.01, B_06.01).
 - Dashboard governance KPIs; findings, exceptions and policies on control and requirement pages;
   API endpoints for audits, findings, exceptions and policies; demo data for all of the above.
 
 ### Changed
+- **Roles (Phase 11):** every role, including Viewer, can report a suspected incident.
 - **Roles:** the Auditor role is no longer read-only: auditors record audit judgements and raise
   findings, and still cannot change controls, risks or policies.
 - **Licence:** ThreatLedger is now licensed under the GNU AGPL v3.0 or later (previously Apache-2.0;

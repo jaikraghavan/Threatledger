@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Privacy{% endblock %}
+{% block content %}
+<div class="mb-4 flex flex-wrap items-end justify-between gap-3">
+  <div><h1 class="text-2xl font-semibold">Records of processing</h1><p class="text-sm text-slate-500">GDPR Article 30 and India DPDP Act. Whether a DPIA is needed is screened from each record.</p></div>
+  <div class="flex gap-2">{% if can_export %}<a class="btn btn-secondary" href="{% url 'privacy:export' %}">Export (.csv)</a>{% endif %}{% if can_manage %}<a class="btn btn-primary" href="{% url 'privacy:create' %}">New processing activity</a>{% endif %}</div>
+</div>
+<div class="mb-3 flex flex-wrap gap-2 text-sm"><a class="rounded px-2 py-1 {% if not state %}bg-slate-100 font-medium{% else %}text-slate-600{% endif %}" href="?">All</a><a class="rounded px-2 py-1 {% if state == 'missing' %}bg-slate-100 font-medium{% else %}text-slate-600{% endif %}" href="?dpia=missing">DPIA needed</a><a class="rounded px-2 py-1 {% if state == 'in_progress' %}bg-slate-100 font-medium{% else %}text-slate-600{% endif %}" href="?dpia=in_progress">DPIA in progress</a><a class="rounded px-2 py-1 {% if state == 'review_due' %}bg-slate-100 font-medium{% else %}text-slate-600{% endif %}" href="?dpia=review_due">Review due</a></div>
+<div class="card overflow-x-auto"><table class="data-table">
+  <thead><tr><th scope="col">Processing activity</th><th scope="col">Role · legal basis</th><th scope="col">Personal data</th><th scope="col">Transfers</th><th scope="col">DPIA</th></tr></thead>
+  <tbody class="divide-y divide-slate-100">{% for p, s in rows %}<tr>
+    <td><a class="font-mono text-xs text-brand-700 hover:underline" href="{% url 'privacy:detail' p.ref %}">{{ p.ref }}</a> <span class="font-medium">{{ p.name }}</span><div class="text-xs text-slate-500">{{ p.get_status_display }}{% if p.owner %} · {{ p.owner }}{% endif %}</div></td>
+    <td class="text-xs">{{ p.get_role_display }}<div class="text-slate-500">{{ p.get_legal_basis_display }}</div></td>
+    <td class="text-xs">{{ p.category_labels|join:", "|truncatechars:90 }}{% if p.special_category %} <span class="badge bg-red-100 text-red-800">special</span>{% endif %}</td>
+    <td class="text-xs">{% if p.transfer_countries %}{{ p.transfer_countries }} <span class="{% if p.transfer_safeguard == 'unknown' %}text-red-700{% else %}text-slate-500{% endif %}">{{ p.get_transfer_safeguard_display }}</span>{% else %}—{% endif %}</td>
+    <td>{% include "privacy/_dpia_badge.html" %}</td></tr>
+  {% empty %}<tr><td colspan="5" class="text-slate-500">No processing activities recorded.</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}
