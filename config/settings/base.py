@@ -342,3 +342,6 @@ ATTACK_MAX_BUNDLE_BYTES = env.int("ATTACK_MAX_BUNDLE_BYTES", default=200 * 1024 
 
 # ------------------------------------------------------------------ app
 THREATLEDGER_VERSION = "0.1.0"
+# AGPL-3.0 §13: users interacting over a network must be offered the Corresponding Source.
+# If you run a modified version, point this at the source of *your* version.
+SOURCE_CODE_URL = env.str("SOURCE_CODE_URL", default="https://github.com/jaikraghavan/Threatledger")

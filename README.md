@@ -215,6 +215,12 @@ loaded instance: `manage.py perf_check --risks 1000`.
 
 ## Licence
 
-Apache-2.0. See [LICENSE](LICENSE). ATT&CK® is a registered trademark of The MITRE Corporation, used
+GNU Affero General Public License v3.0 or later (AGPL-3.0-or-later). See [LICENSE](LICENSE) and
+[NOTICE](NOTICE). If you run a modified ThreatLedger as a network service, AGPL §13 requires you to
+offer its source to your users: set `SOURCE_CODE_URL` to your version's source (the link is shown in
+every page footer). Releases up to and including v0.1.0 were published under Apache-2.0 and remain
+available under it.
+
+ATT&CK® is a registered trademark of The MITRE Corporation, used
 under MITRE's terms of use. CTID mappings © Center for Threat-Informed Defense (Apache-2.0). NIST SP
 800-53 is a US Government work.

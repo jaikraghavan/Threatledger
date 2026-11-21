@@ -6,6 +6,11 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+- **Licence:** ThreatLedger is now licensed under the GNU AGPL v3.0 or later (previously Apache-2.0;
+  v0.1.0 remains available under Apache-2.0). Every page footer links to the source code, set with
+  the new `SOURCE_CODE_URL` setting, as AGPL §13 requires for network use.
+
 ## [0.1.0] - 2026-11-21
 
 First public release.

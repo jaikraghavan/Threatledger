@@ -510,3 +510,144 @@ Postgres/Redis** (only Python 3.9 and git).
 
 **Q13. Name/branding:** OK to use the package name `threatledger` and the domain-neutral default
 `localhost`? Any licence header/copyright holder name for LICENSE/NOTICE?
+
+---
+
+## 12. Roadmap to CISO Assistant feature parity (proposed, v0.2 → v1.0)
+
+Reference: intuitem's CISO Assistant (Community = AGPL-3.0; Pro/Enterprise = commercial). Feature
+inventory taken from intuitem.com, its `/compare` page and the community README on 2026-11-21.
+
+### 12.1 Licence and reuse (decided 2026-11-21)
+ThreatLedger is relicensed to **AGPL-3.0-or-later** from v0.2.0. v0.1.0 stays Apache-2.0. Each page
+footer links to `SOURCE_CODE_URL` to satisfy AGPL §13.
+- **Code:** CISO Assistant Community files outside `enterprise/` are AGPL-3.0, so they *may* be
+  adapted. Keep intuitem's copyright notice in each adapted file and list it in NOTICE.
+  Its architecture differs (SvelteKit front end, different models), so expect to adapt logic and
+  data, not to copy code wholesale.
+- **Never** use anything from `enterprise/` (intuitem Commercial License) or the Pro-only builds.
+- **Framework libraries** (`backend/library/libraries/*.yaml`) each carry their own `copyright`,
+  `provider` and `packager` fields, e.g. "EUROPEAN COMMISSION + ENISA", or a CC-BY 4.0 notice with an
+  attribution line. Ingest them through a **CISO Assistant library importer** that stores those
+  fields on `Framework` and shows them in the UI. Bundle a library only if its copyright field
+  permits redistribution. Copyrighted standards (ISO, PCI, etc.) stay IDs and titles only.
+
+### 12.2 Where ThreatLedger already is
+| CISO Assistant feature | ThreatLedger today |
+|---|---|
+| Risk assessments, risk matrix, acceptance | ✅ register, configurable matrix, SoD acceptance with expiry |
+| Threat catalogs | ✅ full ATT&CK (better: coverage engine, revocation remap) |
+| Compliance, multiple frameworks, customisation | ✅ 6 frameworks, importer, derived status (no audit campaigns yet) |
+| Assets, evidence, documents | ✅ assets, validated evidence with expiry (no policy docs) |
+| Applied/reference controls | ✅ control library + starter set |
+| Users, RBAC, MFA (TOTP) | ✅ 5 roles, BU scoping, TOTP (no SSO, no security keys) |
+| Audit log + per-object trail (Pro) | ✅ immutable hash-chained log (stronger than theirs) |
+| Analytics, export, API, CLI, self-hosted | ✅ dashboard, board report, REST API, manage.py, Compose |
+
+### 12.3 Gaps, grouped into phases
+Each phase is one release with the same rules as Phases 1–7: tests and linters pass, commit, summary.
+
+**Phase 8: Compliance audits & governance objects**
+- *Compliance assessments (audits):* an audit snapshot of a framework for a perimeter. Each
+  requirement gets an auditor result (compliant / partial / non-compliant / N/A), a maturity score
+  and evidence. The derived status is shown alongside as a suggestion (see Q14).
+- *Campaigns:* recurring audits across several perimeters.
+- *Findings* with severity, owner, due date and remediation follow-up.
+- *Exceptions* (time-boxed waivers on a requirement or control, with approval).
+- *Policies & documents:* versioned, with an owner, approval and review date.
+- *Perimeters / domains:* a nested business-unit hierarchy.
+
+**Phase 9: Work management**
+- Tasks, including periodic checks with multiple assignees.
+- Assignments and respondent mode, questionnaires with required evidence.
+- Comments, a notification centre and email reminders.
+- Kanban board, plus approval flows for controls and evidence (four-eyes evidence review).
+
+**Phase 10: Third-party risk (TPRM)**
+- Entities (vendors), solutions/services, contracts, criticality and tiering.
+- Vendor assessments through a time-limited external respondent link.
+- Vendor posture view.
+- DORA register of information export.
+
+**Phase 11: Privacy & incidents**
+- *Privacy:* records of processing (GDPR Art. 30 / DPDP Act), covering purposes, data categories,
+  subjects, recipients, transfers and retention. Plus a DPIA, with links to risks and controls.
+- *Incidents:* timeline, evidence, affected assets/techniques, and regulatory clocks with reminders:
+  NIS2 24h/72h/1-month, GDPR 72h, DORA, DPDP, CERT-In 6h.
+
+**Phase 12: Business impact analysis & resilience**
+- Business processes with impact over time and MTPD/RTO/RPO.
+- Dependencies on assets and vendors.
+- Links to risks and the action plan.
+
+**Phase 13: Advanced risk methods**
+- *EBIOS RM:* all five workshops, with export.
+- *Cyber risk quantification:* FAIR-style Monte Carlo with distribution presets and
+  loss-exceedance curves, comparing several treatment hypotheses. Pure-Python stdlib, no numpy.
+- Risk trajectory and projection.
+
+**Phase 14: Framework library & mapping engine**
+- *Versioned library packages* with an update path, including the "bring your own licence" loading
+  flow.
+- *Requirement↔requirement mappings* using NIST OLIR relationship types (equal, subset, superset,
+  intersects), with confidence. Includes order-independent inference.
+- *Compliance carried across frameworks* through mappings.
+- *New frameworks from primary sources:* NIST CSF 2.0, SP 800-171 r3, SP 800-218 SSDF, AI RMF,
+  Privacy Framework; GDPR; NIS2 + 2024/2690; DORA; EU AI Act; Cyber Resilience Act; CMMC 2.0;
+  Essential Eight; NYDFS 500; FedRAMP baselines; UK CAF; India SEBI CSCRF / RBI / CERT-In
+  directions. PCI DSS, TISAX and C5 ship as IDs only.
+- *Not targeted:* "200+ frameworks". CISO Assistant has about 200 because it bundles community
+  YAML that we can't reuse. The target is roughly 30 well-sourced frameworks, plus the importer.
+
+**Phase 15: Identity & enterprise access**
+- SSO with SAML 2.0 and OIDC.
+- SCIM 2.0 provisioning.
+- WebAuthn security keys.
+- Custom roles and fine-grained permissions on top of `Cap`.
+- Custom fields.
+
+**Phase 16: Integrations**
+- Signed outgoing webhooks.
+- Jira / ServiceNow sync for findings and tasks.
+- SIEM forwarding of the audit log (syslog/HTTPS).
+- S3 / Azure Blob evidence storage.
+- MCP server (read-only first).
+- An OData-style feed for Power BI.
+- Import wizard (Excel/CSV).
+- *Excluded:* Kafka.
+
+**Phase 17: Reporting & UX**
+- PDF audit reports and Word export.
+- Gantt view of the action plan, an effort-vs-impact matrix, and an impact-analysis graph
+  (control → requirements, techniques, risks).
+- Global search and a command palette.
+- Custom branding and email templates.
+- i18n: Django translation framework, languages per Q16.
+- Helm chart.
+
+**Phase 18 (optional): local AI assistant.** RAG over your own data with a local model. Heavy
+dependencies, and off by default (see Q17).
+
+### 12.4 New dependencies these phases need (ask-first list)
+| Phase | Package | Purpose | Alternative |
+|---|---|---|---|
+| 15 | `python3-saml` (xmlsec system lib) or `pysaml2` | SAML SSO | OIDC only |
+| 15 | `authlib` | OIDC client + MCP OAuth | `mozilla-django-oidc` |
+| 15 | `webauthn` | Security keys | TOTP only |
+| 16 | `django-storages` + `boto3` / `azure-storage-blob` | Object storage | Local volume only |
+| 17 | `python-docx` | Word export | None |
+| 17 | `WeasyPrint` (system libs) or Typst CLI | Server-side PDF | Keep print-to-PDF (Q10) |
+| 18 | local LLM runtime + vector store | AI assistant | Skip |
+
+### 12.5 Questions for you (round 2)
+**Q14. Audit vs derived status.** ★ Hybrid: derived status stays the live truth and is never stored.
+An audit records the auditor's *judgement* at a point in time, pre-filled from the derived value,
+and any difference is highlighted. This keeps the core invariant.
+**Q15. Order.** ★ Phases 8 → 17 in the order listed; 18 only if asked.
+**Q16. Languages.** ★ English plus Hindi, French, German, Spanish and Japanese, translated by me
+and marked "machine-assisted". Not 28 languages.
+**Q17. AI assistant.** ★ Defer; decide after Phase 17.
+**Q18. Dependencies (§12.4).** ★ Ask again at the start of each phase that needs one.
+
+**Decisions (2026-11-21):** licence → AGPL (above). Scope → *everything*, including Phase 18 (AI
+assistant). Audits → hybrid (Q14 ★). Q15–Q18 take their ★ defaults unless revisited.

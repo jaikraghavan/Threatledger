@@ -80,4 +80,8 @@ The design lives in [PLAN.md](PLAN.md). Read it before changing models or scorin
   header for HTMX. Avoid inline `<script>` because a strict CSP arrives in Phase 7.
 - Tests: pytest, fixtures in root `conftest.py` (`org`, `users`, `make_user`, `client_for(Role.X)`).
   Mark Postgres-only tests with `@pytest.mark.postgres` plus a vendor `skipif`.
+- **Licence: AGPL-3.0-or-later** (v0.1.0 was Apache-2.0). Code adapted from CISO Assistant Community
+  keeps intuitem's copyright notice and gets a NOTICE entry; never use its `enterprise/` directory.
+  Framework libraries keep their own `copyright`/`provider` fields. Keep the footer source link
+  (`SOURCE_CODE_URL`, AGPL §13). Roadmap to CISO Assistant parity: PLAN.md §12.
 - Ruff line length is 100. Keep mypy clean. Ask before adding any dependency not listed in PLAN.md §10.

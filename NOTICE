@@ -1,0 +1,23 @@
+ThreatLedger
+Copyright (C) 2026 The ThreatLedger contributors
+
+This program is free software: you can redistribute it and/or modify it under the terms of the
+GNU Affero General Public License as published by the Free Software Foundation, either version 3
+of the License, or (at your option) any later version. See LICENSE.
+
+Licence history
+- v0.1.0 and earlier were released under the Apache License 2.0 and remain available under it.
+- Later versions are licensed under AGPL-3.0-or-later.
+
+Third-party material included in this repository
+- MITRE ATT&CK® data is downloaded at run time from github.com/mitre-attack/attack-stix-data under
+  MITRE's terms of use. ATT&CK® is a registered trademark of The MITRE Corporation.
+- ATT&CK ↔ NIST SP 800-53 mappings: © Center for Threat-Informed Defense, Apache-2.0
+  (downloaded at run time by import_ctid_mappings).
+- NIST SP 800-53 Rev. 5 text (data/frameworks/): US Government work, public domain.
+- Chart.js 4.6.1 (static/vendor/): © Chart.js Contributors, MIT licence.
+
+Material adapted from CISO Assistant Community (github.com/intuitem/ciso-assistant-community,
+© intuitem SARL, AGPL-3.0) is listed below as it is added, file by file, with the original
+copyright and provider of each framework library preserved. Nothing from its enterprise/
+directory (intuitem Commercial License) is used.

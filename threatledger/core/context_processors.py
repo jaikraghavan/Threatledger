@@ -27,7 +27,10 @@ NAV_ITEMS: list[tuple[str, str, Cap, str]] = [
 def navigation(request: HttpRequest) -> dict[str, Any]:
     user = getattr(request, "user", None)
     if user is None or not user.is_authenticated:
-        return {"tl_version": settings.THREATLEDGER_VERSION}
+        return {
+            "tl_version": settings.THREATLEDGER_VERSION,
+            "tl_source_url": settings.SOURCE_CODE_URL,
+        }
     caps = capabilities(user)
     items = []
     for label, url_name, cap, icon in NAV_ITEMS:
@@ -39,4 +42,5 @@ def navigation(request: HttpRequest) -> dict[str, Any]:
         "nav_items": items,
         "tl_role": role.label if role else "No role",
         "tl_version": settings.THREATLEDGER_VERSION,
+        "tl_source_url": settings.SOURCE_CODE_URL,
     }

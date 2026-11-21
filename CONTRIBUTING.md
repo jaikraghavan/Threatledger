@@ -7,7 +7,7 @@ Thanks for helping. Bug reports, framework content, mappings, docs and code are 
 - Be kind; assume good intent.
 - **Security issues go to [SECURITY.md](SECURITY.md)**, not public issues.
 - Do not contribute copyrighted framework text (ISO, AICPA, CIS, etc.) unless you hold the right to
-  license it under Apache-2.0. Identifiers and short paraphrased titles are fine.
+  license it under AGPL-3.0-or-later. Identifiers and short paraphrased titles are fine.
 - Mappings you contribute are reviewed as *indicative*; cite your source in the PR.
 
 ## Development setup
@@ -52,4 +52,6 @@ Imperative subject (≤ 72 chars), blank line, then *why* the change is needed. 
 
 ## Licence
 
-By contributing you agree that your contributions are licensed under the Apache License 2.0.
+By contributing you agree that your contributions are licensed under the GNU Affero General Public
+License v3.0 or later. Code or content adapted from other projects must keep its original copyright
+notices and be listed in [NOTICE](NOTICE).

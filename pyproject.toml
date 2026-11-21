@@ -3,7 +3,7 @@ name = "threatledger"
 version = "0.1.0"
 description = "Open-source, threat-informed GRC platform linking risks to MITRE ATT&CK, controls and compliance frameworks."
 readme = "README.md"
-license = "Apache-2.0"
+license = "AGPL-3.0-or-later"
 requires-python = ">=3.12,<3.13"
 dependencies = [
     "django>=5.2,<5.3",
