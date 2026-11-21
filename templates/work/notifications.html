@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Notifications{% endblock %}
+{% block content %}
+<div class="mb-4 flex flex-wrap items-end justify-between gap-3"><h1 class="text-2xl font-semibold">Notifications</h1>
+  <div class="flex gap-2"><a class="btn btn-secondary" href="?{% if not show_all %}all=1{% endif %}">{% if show_all %}Unread only{% else %}Show all{% endif %}</a>
+    <form method="post" action="{% url 'work:notifications_read' %}">{% csrf_token %}<button class="btn btn-secondary" type="submit">Mark all read</button></form>
+    <a class="btn btn-secondary" href="{% url 'work:preferences' %}">Email settings</a></div></div>
+<div class="card"><ul class="divide-y divide-slate-100 text-sm">{% for n in notifications %}<li class="flex flex-wrap items-center justify-between gap-2 px-5 py-3 {% if not n.read_at %}bg-brand-50{% endif %}">
+  <a class="{% if not n.read_at %}font-medium{% endif %} hover:underline" href="{% url 'work:notification_open' n.pk %}">{{ n.message }}</a><span class="text-xs text-slate-500">{{ n.created_at|date:"Y-m-d H:i" }}</span></li>
+{% empty %}<li class="px-5 py-4 text-slate-500">{% if show_all %}No notifications.{% else %}You're all caught up.{% endif %}</li>{% endfor %}</ul></div>
+{% endblock %}

@@ -115,3 +115,29 @@ def test_exceptions_and_policies_read(org, users, tokens):
     got = api(tokens[Role.VIEWER]).get(f"/api/v1/policies/{p.ref}/").json()
     assert got["status"] == "published" and got["published_version"] == 1
     assert got["next_review_on"]
+
+
+def test_tasks_api(users, tokens):
+    from threatledger.work import services as work_services
+    from threatledger.work.models import Task
+
+    rm, viewer = users[Role.RISK_MANAGER], users[Role.VIEWER]
+    t = work_services.create_task(
+        user=rm,
+        data={"title": "Monthly backup restore test", "recurrence": "monthly"},
+        assignees=[viewer],
+    )
+    other = work_services.create_task(user=rm, data={"title": "Not yours"})
+    v = api(tokens[Role.VIEWER])
+    refs = [x["ref"] for x in v.get("/api/v1/tasks/").json()["results"]]
+    assert refs == [t.ref]
+    assert v.get(f"/api/v1/tasks/{other.ref}/").status_code == 404
+    r = v.patch(
+        f"/api/v1/tasks/{t.ref}/", {"status": "done", "note": "Restored"}, content_type=JSON
+    )
+    assert r.status_code == 200 and r.json()["status"] == "done"
+    assert Task.objects.filter(previous=t).exists()
+    bad = api(tokens[Role.AUDITOR]).patch(
+        f"/api/v1/tasks/{other.ref}/", {"status": "done"}, content_type=JSON
+    )
+    assert bad.status_code == 403

@@ -195,6 +195,12 @@ def evidence_storage() -> Storage:
     return storages["evidence"]
 
 
+class EvidenceReview(models.TextChoices):
+    PENDING = "pending", "Awaiting review"
+    ACCEPTED = "accepted", "Accepted"
+    REJECTED = "rejected", "Rejected"
+
+
 class Evidence(models.Model):
     class Kind(models.TextChoices):
         FILE = "file", "File"
@@ -219,6 +225,16 @@ class Evidence(models.Model):
     valid_until = models.DateField(null=True, blank=True, help_text="Evidence expiry date")
     expiry_notice_stage = models.PositiveSmallIntegerField(default=0, editable=False)
     archived_at = models.DateTimeField(null=True, blank=True)
+    # Four-eyes review (Phase 9). Existing evidence and organisations that do not require review
+    # are "accepted"; with review required, new evidence starts "pending".
+    review_status = models.CharField(
+        max_length=16, choices=EvidenceReview.choices, default=EvidenceReview.ACCEPTED
+    )
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.PROTECT, related_name="+"
+    )
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    review_note = models.CharField(max_length=500, blank=True)
 
     AUDIT_EXCLUDE = ("file", "expiry_notice_stage")
 
@@ -244,3 +260,52 @@ class Evidence(models.Model):
         if self.valid_until is None or self.is_expired:
             return False
         return (self.valid_until - timezone.localdate()).days <= days
+
+
+# ----------------------------------------------------------------------------- approvals
+class ChangeRequestStatus(models.TextChoices):
+    PENDING = "pending", "Pending approval"
+    APPROVED = "approved", "Approved"
+    REJECTED = "rejected", "Rejected"
+    WITHDRAWN = "withdrawn", "Withdrawn"
+
+
+class ControlChangeRequest(models.Model):
+    """A control owner's status change awaiting approval (when the organisation requires it).
+
+    The control's status, and therefore every derived coverage/compliance figure, changes only
+    when the request is approved.
+    """
+
+    control = models.ForeignKey(Control, on_delete=models.CASCADE, related_name="change_requests")
+    from_status = models.CharField(max_length=20, choices=ControlStatus.choices)
+    to_status = models.CharField(max_length=20, choices=ControlStatus.choices)
+    reason = models.TextField(blank=True)
+    status = models.CharField(
+        max_length=16,
+        choices=ChangeRequestStatus.choices,
+        default=ChangeRequestStatus.PENDING,
+        db_index=True,
+    )
+    requested_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+"
+    )
+    requested_at = models.DateTimeField(default=timezone.now)
+    decided_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.PROTECT, related_name="+"
+    )
+    decided_at = models.DateTimeField(null=True, blank=True)
+    decision_note = models.CharField(max_length=500, blank=True)
+
+    class Meta:
+        ordering = ["-requested_at", "-id"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["control"],
+                condition=models.Q(status="pending"),
+                name="one_pending_change_per_control",
+            )
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.control.ref}: {self.from_status} → {self.to_status} ({self.status})"

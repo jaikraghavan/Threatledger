@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     "threatledger.audits",
     "threatledger.findings",
     "threatledger.policies",
+    "threatledger.work",
     "threatledger.api",
 ]
 

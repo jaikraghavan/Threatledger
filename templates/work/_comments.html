@@ -1,0 +1,8 @@
+<section class="card p-5" id="comments" aria-labelledby="comments-h"><h2 id="comments-h" class="mb-3 font-semibold">Discussion ({{ comments|length }})</h2>
+  <ol class="space-y-3 text-sm">{% for c in comments %}<li class="border-l-2 border-slate-200 pl-3"><div class="text-xs text-slate-500"><span class="font-medium text-slate-700">{{ c.author }}</span> · {{ c.created_at|date:"Y-m-d H:i" }}</div><p class="mt-1 whitespace-pre-line text-slate-800">{{ c.body }}</p></li>
+  {% empty %}<li class="text-slate-500">No comments yet.</li>{% endfor %}</ol>
+  {% if can_comment %}<form method="post" action="{% url 'work:comment_add' %}" class="mt-4 space-y-2">{% csrf_token %}
+    <input type="hidden" name="target" value="{{ target }}"><input type="hidden" name="object_id" value="{{ obj.pk }}"><input type="hidden" name="next" value="{{ next }}">
+    <label class="sr-only" for="comment-body">Comment</label><textarea id="comment-body" name="body" rows="3" maxlength="5000" class="field" placeholder="Add a comment. Mention someone with @username." required></textarea>
+    <button class="btn btn-secondary" type="submit">Comment</button></form>{% endif %}
+</section>

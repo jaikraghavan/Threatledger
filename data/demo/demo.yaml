@@ -665,3 +665,29 @@ policies:
     body: |
       Production data is backed up daily to an immutable vault in a separate account; restores
       are tested quarterly.
+
+# Phase 9 work management.
+workflow: {require_evidence_review: true, control_status_approval: true}
+tasks:
+  # title, assignee, due (days), recurrence, control, requires evidence, status
+  - [Monthly backup restore test, controlowner, 5, monthly, CTL-BACKUP, true, todo]
+  - [Quarterly privileged access review, riskmanager, -3, quarterly, CTL-PAM, true, in_progress]
+  - [Weekly EDR coverage check, controlowner, 2, weekly, CTL-EDR, false, todo]
+  - [Annual incident response tabletop exercise, riskmanager, 40, annual, CTL-IR, true, blocked]
+  - [Review DMARC aggregate reports, controlowner, -20, monthly, CTL-EMAIL, false, done]
+questionnaires:
+  - title: Control owner self-assessment
+    description: Quarterly confirmation that your controls operate as designed.
+    send_to: [controlowner]
+    due: 10
+    questions:
+      - {text: "Did the control operate as designed throughout the quarter?", kind: yes_no, evidence_required: true}
+      - {text: "How is operation monitored?", kind: choice, choices: [Automated alerting, Manual review, Not monitored]}
+      - {text: "Exceptions or incidents in the period", kind: text, required: false}
+comments:
+  # object (risk title prefix or control ref), author, body
+  - [R-0001, riskmanager, "Residual score assumes the EDR rollout finishes in Q1. @controlowner can you confirm the date?"]
+  - [R-0001, controlowner, "Confirmed: 96% of endpoints now, remaining warehouse kiosks by end of January."]
+pending:
+  evidence: [CTL-PATCH, Patch compliance export (December), https://grafana.halcyon.example/d/patch-dec]
+  change: [CTL-HARDEN, implemented, "CIS benchmarks now enforced by MDM on all laptops and servers."]

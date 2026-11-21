@@ -1,4 +1,4 @@
-{% extends "base.html" %}{% load tl %}
+{% extends "base.html" %}{% load work tl %}
 {% block title %}{{ audit.ref }} {{ audit.name }}{% endblock %}
 {% block content %}
 <nav class="mb-3 text-sm text-slate-500" aria-label="Breadcrumb"><a class="hover:underline" href="{% url 'audits:list' %}">Audits</a>{% if audit.campaign %} / <a class="hover:underline" href="{% url 'audits:campaign' audit.campaign.ref %}">{{ audit.campaign.ref }}</a>{% endif %}</nav>
@@ -53,4 +53,5 @@
   <ul class="divide-y divide-slate-100 text-sm">{% for f in findings %}<li class="flex flex-wrap items-center justify-between gap-2 py-2"><div><a class="font-mono text-xs text-brand-700 hover:underline" href="{% url 'findings:detail' f.ref %}">{{ f.ref }}</a> {{ f.title }}{% if f.requirement %} <span class="text-xs text-slate-500">({{ f.requirement.ref }})</span>{% endif %}</div>
     <div class="flex gap-2"><span class="badge {{ f.severity|tone }}">{{ f.get_severity_display }}</span><span class="badge {{ f.status|tone }}">{{ f.get_status_display }}</span></div></li>
   {% empty %}<li class="py-2 text-slate-500">No findings raised from this audit.</li>{% endfor %}</ul></section>{% endif %}
+<div class="mt-6">{% comments audit %}</div>
 {% endblock %}

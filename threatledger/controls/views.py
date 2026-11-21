@@ -193,6 +193,7 @@ class ControlDetailView(AccessControlMixin, DetailView):
         ctx["max_upload_mb"] = max_upload_bytes() // (1024 * 1024)
         ctx["requirements_by_framework"] = _requirements_by_framework(control)
         ctx.update(governance_links(user, control=control))
+        ctx["pending_change"] = services.pending_change(control)
         return ctx
 
 
@@ -292,6 +293,13 @@ class ControlFormView(AccessControlMixin, View):
                     form.add_error(None, _message(exc))
             else:
                 messages.success(request, f"Saved {saved.ref}.")
+                pending = services.pending_change(saved)
+                if pending is not None and pending.requested_by_id == request.user.pk:
+                    messages.info(
+                        request,
+                        f"Status change to {pending.get_to_status_display()} is awaiting "
+                        "approval; coverage and compliance change once it is approved.",
+                    )
                 return redirect("controls:detail", ref=saved.ref)
         return render(request, self.template_name, {"form": form, "control": control})
 

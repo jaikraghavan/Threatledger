@@ -323,3 +323,24 @@ class PolicySerializer(serializers.Serializer):
 
     def get_controls(self, obj: Any) -> list[str]:
         return [c.ref for c in obj.controls.all()]
+
+
+# ----------------------------------------------------------------------------- Phase 9
+class TaskSerializer(serializers.Serializer):
+    ref = serializers.CharField(read_only=True)
+    title = serializers.CharField(read_only=True)
+    status = serializers.ChoiceField(
+        choices=["todo", "in_progress", "blocked", "done", "cancelled"]
+    )
+    note = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    priority = serializers.CharField(read_only=True)
+    due_on = serializers.DateField(read_only=True)
+    recurrence = serializers.CharField(read_only=True)
+    requires_evidence = serializers.BooleanField(read_only=True)
+    assignees = serializers.SerializerMethodField()
+    control = serializers.CharField(source="control.ref", read_only=True, allow_null=True)
+    overdue = serializers.BooleanField(read_only=True)
+    completed_at = serializers.DateTimeField(read_only=True)
+
+    def get_assignees(self, obj: Any) -> list[str]:
+        return [u.get_username() for u in obj.assignees.all()]

@@ -1,0 +1,26 @@
+{% extends "base.html" %}{% load tl %}
+{% block title %}My work{% endblock %}
+{% block content %}
+<h1 class="mb-1 text-2xl font-semibold">My work</h1><p class="mb-4 text-sm text-slate-500">Everything assigned to you or waiting for your decision.</p>
+{% include "work/_tabs.html" %}
+<div class="grid gap-6 xl:grid-cols-2">
+  <section class="card p-5"><h2 class="mb-3 font-semibold">My tasks ({{ tasks|length }})</h2>
+    <ul class="divide-y divide-slate-100 text-sm">{% for t in tasks %}<li class="flex flex-wrap items-center justify-between gap-2 py-2"><span><a class="font-mono text-xs text-brand-700 hover:underline" href="{% url 'work:task' t.ref %}">{{ t.ref }}</a> {{ t.title }}{% if t.recurrence != "none" %} <span class="text-xs text-slate-500">↻ {{ t.get_recurrence_display|lower }}</span>{% endif %}</span>
+      <span class="flex gap-2"><span class="badge {{ t.status|tone }}">{{ t.get_status_display }}</span><span class="whitespace-nowrap text-xs {% if t.overdue %}font-medium text-red-700{% else %}text-slate-500{% endif %}">{{ t.due_on|date:"Y-m-d"|default:"no due date" }}</span></span></li>
+    {% empty %}<li class="py-2 text-slate-500">Nothing assigned to you.</li>{% endfor %}</ul></section>
+  <section class="card p-5"><h2 class="mb-3 font-semibold">Waiting for my decision ({{ approvals.total }})</h2>
+    {% if approvals.total %}<p class="text-sm"><a class="text-brand-700 hover:underline" href="{% url 'work:approvals' %}">Open the approvals queue →</a></p>
+      <ul class="mt-2 space-y-1 text-sm text-slate-600">{% if approvals.changes %}<li>{{ approvals.changes|length }} control status change{{ approvals.changes|length|pluralize }}</li>{% endif %}{% if approvals.evidence %}<li>{{ approvals.evidence|length }} evidence item{{ approvals.evidence|length|pluralize }} to review</li>{% endif %}{% if approvals.exceptions %}<li>{{ approvals.exceptions|length }} exception request{{ approvals.exceptions|length|pluralize }}</li>{% endif %}{% if approvals.policies %}<li>{{ approvals.policies|length }} policy version{{ approvals.policies|length|pluralize }}</li>{% endif %}{% if approvals.questionnaires %}<li>{{ approvals.questionnaires|length }} questionnaire{{ approvals.questionnaires|length|pluralize }} to review</li>{% endif %}</ul>
+    {% else %}<p class="text-sm text-slate-500">Nothing is waiting for you.</p>{% endif %}</section>
+  <section class="card p-5"><h2 class="mb-3 font-semibold">Questionnaires to answer ({{ assignments|length }})</h2>
+    <ul class="divide-y divide-slate-100 text-sm">{% for a in assignments %}<li class="flex flex-wrap items-center justify-between gap-2 py-2"><a class="text-brand-700 hover:underline" href="{% url 'work:assignment' a.ref %}">{{ a.questionnaire.title }}</a>
+      <span class="flex gap-2"><span class="badge {% if a.status == 'returned' %}bg-amber-100 text-amber-800{% elif a.status == 'submitted' %}bg-purple-100 text-purple-800{% else %}bg-slate-100 text-slate-700{% endif %}">{{ a.get_status_display }}</span>{% if a.due_on %}<span class="text-xs {% if a.overdue %}font-medium text-red-700{% else %}text-slate-500{% endif %}">due {{ a.due_on|date:"Y-m-d" }}</span>{% endif %}</span></li>
+    {% empty %}<li class="py-2 text-slate-500">No questionnaires.</li>{% endfor %}</ul></section>
+  <section class="card p-5"><h2 class="mb-3 font-semibold">Findings I own ({{ findings|length }})</h2>
+    <ul class="divide-y divide-slate-100 text-sm">{% for f in findings %}<li class="flex flex-wrap items-center justify-between gap-2 py-2"><span><a class="font-mono text-xs text-brand-700 hover:underline" href="{% url 'findings:detail' f.ref %}">{{ f.ref }}</a> {{ f.title }}</span>
+      <span class="flex gap-2"><span class="badge {{ f.severity|tone }}">{{ f.get_severity_display }}</span><span class="text-xs {% if f.overdue %}font-medium text-red-700{% else %}text-slate-500{% endif %}">{{ f.due_on|date:"Y-m-d"|default:"" }}</span></span></li>
+    {% empty %}<li class="py-2 text-slate-500">No open findings.</li>{% endfor %}</ul></section>
+</div>
+{% if notifications %}<section class="card mt-6 p-5"><div class="mb-3 flex items-center justify-between"><h2 class="font-semibold">Unread notifications</h2><a class="text-sm text-brand-700 hover:underline" href="{% url 'work:notifications' %}">All notifications</a></div>
+  <ul class="divide-y divide-slate-100 text-sm">{% for n in notifications %}<li class="py-2"><a class="hover:underline" href="{% url 'work:notification_open' n.pk %}">{{ n.message }}</a> <span class="text-xs text-slate-500">{{ n.created_at|timesince }} ago</span></li>{% endfor %}</ul></section>{% endif %}
+{% endblock %}

@@ -21,6 +21,18 @@ All notable changes to this project are documented here. The format follows
 - **Policies:** policies, standards, procedures and guidelines with versions, approval by someone
   other than the author, supersession, periodic review dates and "reviewed, no changes".
 - **Business-unit hierarchy:** admins manage nested units; scoping to a unit covers its sub-units.
+- **Work management:** tasks and periodic checks (several assignees; links to a control, risk,
+  finding, policy or audit; the next occurrence is created on completion; evidence-required checks
+  need a note and new evidence on the linked control), a task board and list, and a "My work" page.
+- **Questionnaires:** reusable templates (yes/no, choice, free text; required evidence) sent to any
+  member (respondent mode), with validated private file or link evidence, submit, and review by
+  someone other than the respondent.
+- **Comments and @mentions** on risks, controls, findings, exceptions, audits, policies and tasks.
+- **Notifications:** in-app centre with an unread badge, and a once-a-day email digest (opt-out).
+- **Four-eyes workflow (optional, per organisation):** evidence review by someone other than the
+  uploader, and approval of control owners' status changes before coverage and compliance change.
+  One approvals queue for control changes, evidence, exceptions, policy versions and questionnaires.
+- Tasks API (`/api/v1/tasks/`, PATCH `status` to complete).
 - Dashboard governance KPIs; findings, exceptions and policies on control and requirement pages;
   API endpoints for audits, findings, exceptions and policies; demo data for all of the above.
 

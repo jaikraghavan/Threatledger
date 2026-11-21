@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Email settings{% endblock %}
+{% block content %}
+<h1 class="mb-4 text-2xl font-semibold">Email settings</h1>
+<form method="post" class="card max-w-xl space-y-4 p-5">{% csrf_token %}
+  {% include "partials/_field.html" with field=form.email_digest %}
+  <p class="text-xs text-slate-500">The digest lists tasks and findings due within 3 days or overdue, questionnaires to answer, approvals waiting for you and policy reviews you own. It is sent at most once a day, and only when something needs you. In-app notifications are always kept.</p>
+  <button class="btn btn-primary" type="submit">Save</button></form>
+{% endblock %}

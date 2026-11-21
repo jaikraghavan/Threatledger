@@ -164,10 +164,22 @@ def test_seed_demo_is_complete_and_idempotent(org):
     assert states["Access control standard"] == "review_overdue"
     assert states["Incident response procedure"] == "in_review"
     assert "5 findings" in out.getvalue()
+    # Phase 9 work management demo
+    from threatledger.controls.models import ControlChangeRequest, Evidence
+    from threatledger.work.models import Assignment, Comment, Task
+
+    assert Task.objects.filter(previous__isnull=True).count() == 5
+    assert Task.objects.filter(previous__isnull=False).count() == 1  # the done monthly check
+    assert Assignment.objects.get().status == "sent"
+    assert Comment.objects.count() == 2
+    assert Evidence.objects.filter(review_status="pending").count() == 1
+    assert ControlChangeRequest.objects.filter(status="pending").count() == 1
 
     call_command("seed_demo", stdout=StringIO())
     assert Risk.objects.count() == 30
     assert Finding.objects.count() == 5 and Policy.objects.count() == 4
+    assert Task.objects.count() == 6 and Comment.objects.count() == 2
+    assert ControlChangeRequest.objects.count() == 1
 
 
 @override_settings(DEBUG=False)

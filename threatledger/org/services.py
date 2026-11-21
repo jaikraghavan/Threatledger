@@ -80,3 +80,31 @@ def delete_business_unit(bu: BusinessUnit, *, user: Any) -> None:
         object_repr=str(before.get("name", "")),
         changes=diff(before, {}),
     )
+
+
+WORKFLOW_LABELS = {
+    "require_evidence_review": "Four-eyes evidence review: new evidence waits for someone other "
+    "than the uploader to accept it.",
+    "control_status_approval": "Control owners' status changes need approval from a risk manager "
+    "before coverage and compliance change.",
+}
+
+
+@transaction.atomic
+def set_workflow(org: Any, *, user: Any, values: dict[str, bool]) -> None:
+    _require(user)
+    from .models import Organisation
+
+    org = Organisation.objects.select_for_update().get(pk=org.pk)
+    settings = dict(org.settings or {})
+    changes = {}
+    for key in Organisation.WORKFLOW_DEFAULTS:
+        if key in values:
+            before = org.workflow(key)
+            settings[key] = bool(values[key])
+            if before != settings[key]:
+                changes[key] = [before, settings[key]]
+    org.settings = settings
+    org.save(update_fields=["settings"])
+    if changes:
+        record(Action.UPDATE, org, actor=user, changes=changes)

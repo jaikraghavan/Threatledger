@@ -29,6 +29,15 @@ class Organisation(models.Model):
             self.slug = slugify(self.name)[:200]
         super().save(*args, **kwargs)
 
+    # Workflow switches kept in ``settings`` (Phase 9). Defaults keep earlier behaviour.
+    WORKFLOW_DEFAULTS = {
+        "require_evidence_review": False,
+        "control_status_approval": False,
+    }
+
+    def workflow(self, key: str) -> bool:
+        return bool((self.settings or {}).get(key, self.WORKFLOW_DEFAULTS[key]))
+
 
 class BusinessUnit(models.Model):
     organisation = models.ForeignKey(

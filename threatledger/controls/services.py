@@ -26,7 +26,9 @@ from threatledger.audit.services import diff, record, snapshot
 from threatledger.org.models import Organisation
 
 from .models import (
+    ChangeRequestStatus,
     Control,
+    ControlChangeRequest,
     ControlMitigation,
     ControlQuerySet,
     ControlStatus,
@@ -34,6 +36,7 @@ from .models import (
     ControlTest,
     ControlType,
     Evidence,
+    EvidenceReview,
     MappingSource,
 )
 from .uploads import validate_upload
@@ -104,6 +107,17 @@ def update_control(control: Control, *, user: Any, data: dict[str, Any]) -> Cont
         raise ControlError("You cannot edit this control.")
     if not can_edit_fully(user) and set(data) - OWNER_FIELDS:
         raise ControlError("Control owners may only change status, effectiveness and description.")
+    data = dict(data)
+    if (
+        "status" in data
+        and data["status"] != control.status
+        and not can(user, Cap.APPROVE_CONTROL_CHANGES)
+        and control.organisation.workflow("control_status_approval")
+    ):
+        request_status_change(
+            control, user=user, to_status=data.pop("status"), reason=data.pop("reason", "")
+        )
+    data.pop("reason", None)
     before = snapshot(control)
     for key, value in data.items():
         setattr(control, key, value)
@@ -208,6 +222,136 @@ def covered_techniques(control: Control) -> list[CoveredTechnique]:
     return sorted(out, key=lambda c: c.technique.attack_id)
 
 
+# ----------------------------------------------------------------------------- approvals
+def pending_change(control: Control) -> ControlChangeRequest | None:
+    return control.change_requests.filter(status=ChangeRequestStatus.PENDING).first()
+
+
+@transaction.atomic
+def request_status_change(
+    control: Control, *, user: Any, to_status: str, reason: str = ""
+) -> ControlChangeRequest:
+    if not can_edit(user, control):
+        raise ControlError("You cannot change this control.")
+    if to_status not in ControlStatus.values or to_status == control.status:
+        raise ControlError("Choose a different status.")
+    if pending_change(control) is not None:
+        raise ControlError("A status change is already awaiting approval for this control.")
+    cr = ControlChangeRequest.objects.create(
+        control=control,
+        from_status=control.status,
+        to_status=to_status,
+        reason=reason.strip()[:2000],
+        requested_by=user,
+    )
+    record(
+        Action.CREATE,
+        cr,
+        actor=user,
+        changes={"status": [control.status, to_status], "control": [None, control.ref]},
+    )
+    _notify(
+        _approvers(control),
+        f"{user} asks to set {control.ref} to {ControlStatus(to_status).label}",
+        reverse("work:approvals"),
+        actor=user,
+    )
+    return cr
+
+
+def _approvers(control: Control) -> list[Any]:
+    from threatledger.work.notify import users_with
+
+    return users_with(control.organisation, Cap.APPROVE_CONTROL_CHANGES)
+
+
+def _notify(recipients: Any, message: str, url: str, *, actor: Any) -> None:
+    from threatledger.work.notify import notify
+
+    notify(recipients, message, url, actor=actor)
+
+
+@transaction.atomic
+def decide_change(
+    cr: ControlChangeRequest, *, user: Any, approve: bool, note: str = ""
+) -> ControlChangeRequest:
+    if not can(user, Cap.APPROVE_CONTROL_CHANGES):
+        raise ControlError("You cannot approve control changes.")
+    if cr.status != ChangeRequestStatus.PENDING:
+        raise ControlError("This request has already been decided.")
+    if cr.requested_by_id == user.pk:
+        raise ControlError("Segregation of duties: you cannot approve your own request.")
+    if not approve and not note.strip():
+        raise ControlError("Explain why the change is rejected.")
+    control = cr.control
+    cr.status = ChangeRequestStatus.APPROVED if approve else ChangeRequestStatus.REJECTED
+    cr.decided_by, cr.decided_at, cr.decision_note = user, timezone.now(), note.strip()[:500]
+    cr.save()
+    record(Action.UPDATE, cr, actor=user, changes={"status": ["pending", cr.status]})
+    if approve:
+        before = snapshot(control)
+        control.status = cr.to_status
+        control.updated_by = user
+        control.save(update_fields=["status", "updated_by", "updated_at"])
+        _audit(Action.UPDATE, control, user, before)
+    _notify(
+        [cr.requested_by],
+        f"{control.ref} status change to {ControlStatus(cr.to_status).label} "
+        + ("approved" if approve else "rejected"),
+        reverse("controls:detail", args=[control.ref]),
+        actor=user,
+    )
+    return cr
+
+
+@transaction.atomic
+def withdraw_change(cr: ControlChangeRequest, *, user: Any) -> None:
+    if cr.requested_by_id != user.pk or cr.status != ChangeRequestStatus.PENDING:
+        raise ControlError("Only the requester can withdraw a pending request.")
+    cr.status = ChangeRequestStatus.WITHDRAWN
+    cr.save(update_fields=["status"])
+    record(Action.UPDATE, cr, actor=user, changes={"status": ["pending", "withdrawn"]})
+
+
+# ----------------------------------------------------------------------------- evidence review
+def _initial_review(control: Control) -> str:
+    return (
+        EvidenceReview.PENDING
+        if control.organisation.workflow("require_evidence_review")
+        else EvidenceReview.ACCEPTED
+    )
+
+
+@transaction.atomic
+def review_evidence(evidence: Evidence, *, user: Any, accept: bool, note: str = "") -> Evidence:
+    if not can(user, Cap.REVIEW_EVIDENCE):
+        raise ControlError("You cannot review evidence.")
+    if evidence.uploaded_by_id == user.pk:
+        raise ControlError("Four-eyes review: someone other than the uploader must review it.")
+    if evidence.review_status != EvidenceReview.PENDING:
+        raise ControlError("This evidence has already been reviewed.")
+    if not accept and not note.strip():
+        raise ControlError("Explain why the evidence is rejected.")
+    evidence.review_status = EvidenceReview.ACCEPTED if accept else EvidenceReview.REJECTED
+    evidence.reviewed_by, evidence.reviewed_at = user, timezone.now()
+    evidence.review_note = note.strip()[:500]
+    evidence.save(update_fields=["review_status", "reviewed_by", "reviewed_at", "review_note"])
+    record(
+        Action.UPDATE,
+        evidence,
+        actor=user,
+        changes={"review_status": ["pending", evidence.review_status], "note": [None, note]},
+    )
+    if not accept:
+        _notify(
+            [evidence.uploaded_by],
+            f"Evidence “{evidence.title}” on {evidence.control.ref} was rejected: {note}"[:300],
+            reverse("controls:detail", args=[evidence.control.ref]),
+            actor=user,
+        )
+    return evidence
+
+
 # ----------------------------------------------------------------------------- evidence
 @transaction.atomic
 def add_file_evidence(
@@ -233,6 +377,7 @@ def add_file_evidence(
         sha256=checked.sha256,
         uploaded_by=user,
         valid_until=valid_until,
+        review_status=_initial_review(control),
     )
     evidence.file.save(checked.original_filename, upload, save=False)
     evidence.save()
@@ -272,6 +417,7 @@ def add_link_evidence(
         url=url,
         uploaded_by=user,
         valid_until=valid_until,
+        review_status=_initial_review(control),
     )
     evidence.full_clean(exclude=["file", "control", "uploaded_by"])
     evidence.save()

@@ -77,3 +77,18 @@ def unit_delete(request: HttpRequest, pk: int) -> HttpResponse:
     else:
         messages.success(request, "Business unit deleted.")
     return redirect("org:units")
+
+
+@access(Cap.MANAGE_SETTINGS)
+def workflow(request: HttpRequest) -> HttpResponse:
+    org = current_organisation(request.user)
+    if request.method == "POST":
+        services.set_workflow(
+            org,
+            user=request.user,
+            values={key: request.POST.get(key) == "on" for key in services.WORKFLOW_LABELS},
+        )
+        messages.success(request, "Workflow settings saved.")
+        return redirect("org:workflow")
+    rows = [(key, label, org.workflow(key)) for key, label in services.WORKFLOW_LABELS.items()]
+    return render(request, "org/workflow.html", {"rows": rows})

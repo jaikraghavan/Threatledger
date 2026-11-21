@@ -1,0 +1,22 @@
+{% extends "base.html" %}{% load tl %}
+{% block title %}Task board{% endblock %}
+{% block content %}
+<div class="mb-1 flex flex-wrap items-end justify-between gap-3"><div><h1 class="text-2xl font-semibold">Task board</h1><p class="text-sm text-slate-500">Open tasks and those finished in the last 14 days.</p></div>
+  <div class="flex gap-2"><a class="btn btn-secondary" href="?{% if not mine %}mine=1{% endif %}">{% if mine %}Everyone's tasks{% else %}Only mine{% endif %}</a>{% if can_manage %}<a class="btn btn-primary" href="{% url 'work:task_create' %}">New task</a>{% endif %}</div></div>
+<div class="mt-4">{% include "work/_tabs.html" %}</div>
+<div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+  {% for status, label, items in columns %}<section class="rounded-lg bg-slate-100 p-3" aria-labelledby="col-{{ status }}">
+    <h2 id="col-{{ status }}" class="mb-3 flex items-center justify-between text-sm font-semibold text-slate-700">{{ label }} <span class="badge bg-white text-slate-600">{{ items|length }}</span></h2>
+    <ul class="space-y-2">{% for t in items %}<li class="card p-3 text-sm">
+      <div class="flex items-start justify-between gap-2"><a class="font-medium hover:underline" href="{% url 'work:task' t.ref %}">{{ t.title }}</a><span class="badge {% if t.priority == 'high' %}bg-red-100 text-red-800{% elif t.priority == 'medium' %}bg-amber-100 text-amber-800{% else %}bg-slate-100 text-slate-700{% endif %}">{{ t.get_priority_display }}</span></div>
+      <div class="mt-1 text-xs text-slate-500"><span class="font-mono">{{ t.ref }}</span>{% if t.due_on %} · <span class="{% if t.overdue %}font-medium text-red-700{% endif %}">due {{ t.due_on|date:"Y-m-d" }}</span>{% endif %}{% if t.recurrence != "none" %} · ↻ {{ t.get_recurrence_display|lower }}{% endif %}</div>
+      <div class="mt-1 text-xs text-slate-600">{% for a in t.assignees.all %}{{ a }}{% if not forloop.last %}, {% endif %}{% empty %}Unassigned{% endfor %}</div>
+      {% if t.is_open %}<form method="post" action="{% url 'work:task_status' t.ref %}" class="mt-2 flex flex-wrap gap-1">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+        {% if status != "todo" %}<button class="rounded border border-slate-300 bg-white px-2 py-0.5 text-xs hover:bg-slate-50" name="status" value="todo" type="submit">To do</button>{% endif %}
+        {% if status != "in_progress" %}<button class="rounded border border-slate-300 bg-white px-2 py-0.5 text-xs hover:bg-slate-50" name="status" value="in_progress" type="submit">Start</button>{% endif %}
+        {% if status != "blocked" %}<button class="rounded border border-slate-300 bg-white px-2 py-0.5 text-xs hover:bg-slate-50" name="status" value="blocked" type="submit">Blocked</button>{% endif %}
+        {% if not t.requires_evidence %}<button class="rounded border border-slate-300 bg-white px-2 py-0.5 text-xs hover:bg-slate-50" name="status" value="done" type="submit">Done</button>{% else %}<a class="rounded border border-slate-300 bg-white px-2 py-0.5 text-xs hover:bg-slate-50" href="{% url 'work:task' t.ref %}">Complete…</a>{% endif %}
+      </form>{% endif %}</li>
+    {% empty %}<li class="text-xs text-slate-500">Nothing here.</li>{% endfor %}</ul></section>{% endfor %}
+</div>
+{% endblock %}

@@ -21,6 +21,7 @@ def test_home_renders_role_navigation(client_for):
         "Audits",
         "Findings",
         "Policies",
+        "Tasks",
         "ATT&CK coverage",
         "Techniques",
         "Threat groups",

@@ -1,0 +1,28 @@
+{% extends "base.html" %}{% load tl %}
+{% block title %}Approvals{% endblock %}
+{% block content %}
+<h1 class="mb-1 text-2xl font-semibold">Approvals</h1><p class="mb-4 text-sm text-slate-500">Four-eyes decisions: you never see your own requests here.</p>
+{% include "work/_tabs.html" %}
+{% if not a.total and not own_changes %}<p class="card p-5 text-sm text-slate-500">Nothing is waiting for you.</p>{% endif %}
+<div class="space-y-6">
+{% if a.changes %}<section class="card p-5"><h2 class="mb-3 font-semibold">Control status changes ({{ a.changes|length }})</h2>
+  <ul class="divide-y divide-slate-100 text-sm">{% for cr in a.changes %}<li class="py-3"><div><a class="font-mono text-xs text-brand-700 hover:underline" href="{% url 'controls:detail' cr.control.ref %}">{{ cr.control.ref }}</a> {{ cr.control.name }}: <span class="badge status-{{ cr.from_status }}">{{ cr.get_from_status_display }}</span> → <span class="badge status-{{ cr.to_status }}">{{ cr.get_to_status_display }}</span></div>
+    <div class="text-xs text-slate-500">requested by {{ cr.requested_by }} · {{ cr.requested_at|date:"Y-m-d" }}</div>{% if cr.reason %}<p class="mt-1 text-slate-700">{{ cr.reason }}</p>{% endif %}
+    <form method="post" action="{% url 'work:change_decide' cr.pk %}" class="mt-2 flex flex-wrap items-center gap-2">{% csrf_token %}<label class="sr-only" for="cn{{ cr.pk }}">Note</label><input id="cn{{ cr.pk }}" name="note" class="field w-64" placeholder="Note (required to reject)" maxlength="500">
+      <button class="btn btn-primary" name="decision" value="approve" type="submit">Approve</button><button class="btn btn-secondary" name="decision" value="reject" type="submit">Reject</button></form></li>{% endfor %}</ul></section>{% endif %}
+{% if a.evidence %}<section class="card p-5"><h2 class="mb-3 font-semibold">Evidence to review ({{ a.evidence|length }})</h2>
+  <ul class="divide-y divide-slate-100 text-sm">{% for e in a.evidence %}<li class="py-3"><div><a class="font-mono text-xs text-brand-700 hover:underline" href="{% url 'controls:detail' e.control.ref %}">{{ e.control.ref }}</a>
+      {% if e.kind == "file" %}<a class="font-medium text-brand-700 hover:underline" href="{% url 'controls:evidence_download' e.pk %}">{{ e.title }}</a> <span class="text-xs text-slate-500">{{ e.original_filename }}</span>{% else %}<a class="font-medium text-brand-700 hover:underline" href="{{ e.url }}" target="_blank" rel="noopener noreferrer nofollow">{{ e.title }} ↗</a>{% endif %}</div>
+    <div class="text-xs text-slate-500">uploaded by {{ e.uploaded_by }} · {{ e.uploaded_at|date:"Y-m-d" }}{% if e.valid_until %} · valid to {{ e.valid_until|date:"Y-m-d" }}{% endif %}</div>
+    <form method="post" action="{% url 'work:evidence_review' e.pk %}" class="mt-2 flex flex-wrap items-center gap-2">{% csrf_token %}<label class="sr-only" for="en{{ e.pk }}">Note</label><input id="en{{ e.pk }}" name="note" class="field w-64" placeholder="Note (required to reject)" maxlength="500">
+      <button class="btn btn-primary" name="decision" value="accept" type="submit">Accept</button><button class="btn btn-secondary" name="decision" value="reject" type="submit">Reject</button></form></li>{% endfor %}</ul></section>{% endif %}
+{% if a.exceptions %}<section class="card p-5"><h2 class="mb-3 font-semibold">Exception requests ({{ a.exceptions|length }})</h2>
+  <ul class="space-y-2 text-sm">{% for e in a.exceptions %}<li><a class="font-mono text-xs text-brand-700 hover:underline" href="{% url 'findings:exception' e.ref %}">{{ e.ref }}</a> {{ e.title }} <span class="text-xs text-slate-500">until {{ e.expires_on|date:"Y-m-d" }}</span></li>{% endfor %}</ul></section>{% endif %}
+{% if a.policies %}<section class="card p-5"><h2 class="mb-3 font-semibold">Policy versions ({{ a.policies|length }})</h2>
+  <ul class="space-y-2 text-sm">{% for v in a.policies %}<li><a class="text-brand-700 hover:underline" href="{% url 'policies:detail' v.policy.ref %}?v={{ v.number }}">{{ v.policy.ref }} {{ v.label }}</a> {{ v.policy.title }} <span class="text-xs text-slate-500">by {{ v.author }}</span></li>{% endfor %}</ul></section>{% endif %}
+{% if a.questionnaires %}<section class="card p-5"><h2 class="mb-3 font-semibold">Questionnaires to review ({{ a.questionnaires|length }})</h2>
+  <ul class="space-y-2 text-sm">{% for x in a.questionnaires %}<li><a class="text-brand-700 hover:underline" href="{% url 'work:assignment' x.ref %}">{{ x.questionnaire.title }}</a> <span class="text-xs text-slate-500">from {{ x.respondent }} · {{ x.submitted_at|date:"Y-m-d" }}</span></li>{% endfor %}</ul></section>{% endif %}
+{% if own_changes %}<section class="card p-5"><h2 class="mb-3 font-semibold">My pending requests</h2>
+  <ul class="space-y-2 text-sm">{% for cr in own_changes %}<li class="flex flex-wrap items-center gap-2">{{ cr.control.ref }} → {{ cr.get_to_status_display }} <form method="post" action="{% url 'work:change_withdraw' cr.pk %}">{% csrf_token %}<button class="text-xs text-slate-500 hover:text-red-700" type="submit">Withdraw</button></form></li>{% endfor %}</ul></section>{% endif %}
+</div>
+{% endblock %}

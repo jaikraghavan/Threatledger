@@ -217,6 +217,16 @@ def submit_version(version: PolicyVersion, *, user: Any) -> PolicyVersion:
     version.submitted_at = timezone.now()
     version.save()
     record(Action.UPDATE, version, actor=user, changes={"status": ["draft", "in_review"]})
+    from django.urls import reverse
+
+    from threatledger.work.notify import notify, users_with
+
+    notify(
+        users_with(version.policy.organisation, Cap.APPROVE_POLICIES),
+        f"{version.policy.ref} {version.label} awaits approval: {version.policy.title}",
+        reverse("policies:detail", args=[version.policy.ref]) + f"?v={version.number}",
+        actor=user,
+    )
     return version
 
 

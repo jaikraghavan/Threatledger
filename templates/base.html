@@ -27,11 +27,14 @@
   <div class="flex min-w-0 flex-1 flex-col">
     <header class="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 sm:px-6">
       <div class="font-medium md:hidden">ThreatLedger</div>
-      <div class="ml-auto flex items-center gap-4 text-sm">
+      <div class="ml-auto flex flex-wrap items-center justify-end gap-x-4 gap-y-1 text-sm">
+        <a href="{% url 'work:mine' %}" class="font-medium text-slate-700 hover:text-slate-900">My work</a>
+        <a href="{% url 'work:notifications' %}" class="relative text-slate-600 hover:text-slate-900" aria-label="Notifications{% if tl_unread %}: {{ tl_unread }} unread{% endif %}">Notifications{% if tl_unread %} <span class="badge bg-red-600 text-white">{{ tl_unread }}</span>{% endif %}</a>
         <span class="text-slate-600">{{ user }} <span class="badge bg-slate-100 text-slate-700">{{ tl_role }}</span></span>
         <a href="{% url 'accounts:password_change' %}" class="text-slate-600 hover:text-slate-900">Password</a>
         <a href="{% url 'accounts:mfa_setup' %}" class="text-slate-600 hover:text-slate-900">Two-factor</a>
         <a href="{% url 'accounts:tokens' %}" class="text-slate-600 hover:text-slate-900">API tokens</a>
+        <a href="{% url 'work:preferences' %}" class="text-slate-600 hover:text-slate-900">Email</a>
         <form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}
           <button type="submit" class="text-slate-600 hover:text-slate-900">Sign out</button>
         </form>

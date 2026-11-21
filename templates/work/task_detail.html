@@ -1,0 +1,34 @@
+{% extends "base.html" %}{% load tl work %}
+{% block title %}{{ task.ref }} {{ task.title }}{% endblock %}
+{% block content %}
+<nav class="mb-3 text-sm text-slate-500" aria-label="Breadcrumb"><a class="hover:underline" href="{% url 'work:board' %}">Tasks</a></nav>
+<div class="flex flex-wrap items-start justify-between gap-4">
+  <div><div class="font-mono text-sm text-slate-500">{{ task.ref }}{% if task.recurrence != "none" %} · repeats {{ task.get_recurrence_display|lower }}{% endif %}</div><h1 class="text-2xl font-semibold">{{ task.title }}</h1>
+    <div class="mt-1 flex flex-wrap items-center gap-2 text-sm"><span class="badge {{ task.status|tone }}">{{ task.get_status_display }}</span><span class="text-slate-600">{{ task.get_priority_display }} priority</span>{% if task.due_on %}<span class="{% if task.overdue %}font-medium text-red-700{% else %}text-slate-600{% endif %}">· due {{ task.due_on|date:"Y-m-d" }}</span>{% endif %}</div></div>
+  {% if can_manage and task.is_open %}<a class="btn btn-secondary" href="{% url 'work:task_edit' task.ref %}">Edit</a>{% endif %}
+</div>
+<div class="mt-6 grid gap-6 lg:grid-cols-3">
+  <div class="space-y-6 lg:col-span-2">
+    {% if task.description %}<section class="card p-5"><h2 class="mb-2 font-semibold">Description</h2><p class="whitespace-pre-line text-sm text-slate-700">{{ task.description }}</p></section>{% endif %}
+    {% if transitions %}<section class="card p-5"><h2 class="mb-3 font-semibold">Update</h2>
+      <form method="post" action="{% url 'work:task_status' task.ref %}" class="space-y-3">{% csrf_token %}
+        <label class="label" for="note">Completion note{% if task.requires_evidence %} <span class="text-red-600" aria-hidden="true">*</span>{% endif %}</label>
+        <textarea id="note" name="note" rows="3" class="field" maxlength="5000" placeholder="What was checked or done, where the evidence is."></textarea>
+        {% if task.requires_evidence %}<p class="text-xs text-slate-500">This check requires evidence{% if task.control %}: upload it to <a class="text-brand-700 hover:underline" href="{% url 'controls:detail' task.control.ref %}">{{ task.control.ref }}</a> first{% endif %}.</p>{% endif %}
+        <div class="flex flex-wrap gap-2">{% for value, label in transitions %}<button class="btn {% if value == 'done' %}btn-primary{% else %}btn-secondary{% endif %}" type="submit" name="status" value="{{ value }}">{% if value == "done" %}Mark done{% else %}{{ label }}{% endif %}</button>{% endfor %}</div></form></section>{% endif %}
+    {% if task.completion_note %}<section class="card p-5"><h2 class="mb-2 font-semibold">Completion</h2><p class="text-xs text-slate-500">{{ task.completed_by }} · {{ task.completed_at|date:"Y-m-d H:i" }}</p><p class="mt-1 whitespace-pre-line text-sm text-slate-700">{{ task.completion_note }}</p></section>{% endif %}
+    {% comments task %}
+  </div>
+  <aside><section class="card p-5"><h2 class="mb-3 font-semibold">Details</h2><dl class="space-y-2 text-sm">
+    <div><dt class="text-xs text-slate-500">Assignees</dt><dd>{% for a in task.assignees.all %}{{ a }}{% if not forloop.last %}, {% endif %}{% empty %}Unassigned{% endfor %}</dd></div>
+    {% if task.business_unit %}<div><dt class="text-xs text-slate-500">Business unit</dt><dd>{{ task.business_unit }}</dd></div>{% endif %}
+    {% if task.control %}<div><dt class="text-xs text-slate-500">Control</dt><dd><a class="text-brand-700 hover:underline" href="{% url 'controls:detail' task.control.ref %}">{{ task.control }}</a></dd></div>{% endif %}
+    {% if task.risk %}<div><dt class="text-xs text-slate-500">Risk</dt><dd><a class="text-brand-700 hover:underline" href="{% url 'risks:detail' task.risk.ref %}">{{ task.risk.ref }} {{ task.risk.title }}</a></dd></div>{% endif %}
+    {% if task.finding %}<div><dt class="text-xs text-slate-500">Finding</dt><dd><a class="text-brand-700 hover:underline" href="{% url 'findings:detail' task.finding.ref %}">{{ task.finding }}</a></dd></div>{% endif %}
+    {% if task.policy %}<div><dt class="text-xs text-slate-500">Policy</dt><dd><a class="text-brand-700 hover:underline" href="{% url 'policies:detail' task.policy.ref %}">{{ task.policy }}</a></dd></div>{% endif %}
+    {% if task.audit %}<div><dt class="text-xs text-slate-500">Audit</dt><dd><a class="text-brand-700 hover:underline" href="{% url 'audits:detail' task.audit.ref %}">{{ task.audit }}</a></dd></div>{% endif %}
+    {% if task.previous %}<div><dt class="text-xs text-slate-500">Previous occurrence</dt><dd><a class="text-brand-700 hover:underline" href="{% url 'work:task' task.previous.ref %}">{{ task.previous.ref }}</a></dd></div>{% endif %}
+    {% if next_occurrence %}<div><dt class="text-xs text-slate-500">Next occurrence</dt><dd><a class="text-brand-700 hover:underline" href="{% url 'work:task' next_occurrence.ref %}">{{ next_occurrence.ref }}</a> due {{ next_occurrence.due_on|date:"Y-m-d" }}</dd></div>{% endif %}
+  </dl></section></aside>
+</div>
+{% endblock %}

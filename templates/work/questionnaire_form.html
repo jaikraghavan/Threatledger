@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}New questionnaire{% endblock %}
+{% block content %}
+<nav class="mb-3 text-sm text-slate-500" aria-label="Breadcrumb"><a class="hover:underline" href="{% url 'work:questionnaires' %}">Questionnaires</a></nav>
+<h1 class="mb-4 text-2xl font-semibold">New questionnaire</h1>
+<form method="post" class="card max-w-2xl space-y-4 p-5" novalidate>{% csrf_token %}{% include "partials/_form_errors.html" %}
+  {% include "partials/_field.html" with field=form.title %}{% include "partials/_field.html" with field=form.description %}
+  <div class="flex gap-2"><button class="btn btn-primary" type="submit">Create and add questions</button><a class="btn btn-secondary" href="{% url 'work:questionnaires' %}">Cancel</a></div></form>
+{% endblock %}

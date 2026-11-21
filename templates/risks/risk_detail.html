@@ -1,4 +1,4 @@
-{% extends "base.html" %}{% load risks tl %}
+{% extends "base.html" %}{% load work risks tl %}
 {% block title %}{{ risk.ref }} {{ risk.title }}{% endblock %}
 {% block head_scripts %}{% load static %}<script src="{% static 'vendor/chart-4.6.1.umd.min.js' %}" defer></script>{% endblock %}
 {% block content %}
@@ -64,4 +64,5 @@
         {% for f, pair in e.changes.items %}<div class="pl-3 text-slate-600">{{ f }}: {% if pair.0 is not None %}<span class="line-through">{{ pair.0|truncatechars:40 }}</span> → {% endif %}{{ pair.1|default_if_none:""|truncatechars:40 }}</div>{% endfor %}</li>{% empty %}<li class="text-slate-500">No events.</li>{% endfor %}</ul></section>{% endif %}
   </aside>
 </div>
+<div class="mt-6">{% comments risk %}</div>
 {% endblock %}

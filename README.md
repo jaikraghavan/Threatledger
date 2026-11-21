@@ -24,6 +24,10 @@ DPDP Act wherever MFA is mapped.
 - **Audits & governance:** compliance audits and recurring campaigns where auditors record
   judgements and maturity next to the live derived status (differences are flagged), findings with
   verified remediation, time-boxed exceptions, and versioned policies with approval and review dates.
+- **Work management:** periodic checks with several assignees (the next occurrence appears when one
+  is done), a task board, questionnaires anyone can be asked to answer with required evidence,
+  comments with @mentions, in-app notifications and a daily email digest, plus optional four-eyes
+  review of evidence and approval of control-owner status changes.
 - **Reporting:** executive dashboard, printable board report and trend charts.
 - **Secure by default:** strict CSP, MFA, account lockout, hashed API tokens, an immutable
   hash-chained audit log, non-root read-only containers. See [SECURITY.md](SECURITY.md).
@@ -40,6 +44,8 @@ images with `make screenshots` (see [docs/screenshots/README.md](docs/screenshot
 | ![Compliance](docs/screenshots/compliance.png) | ![Cross-framework](docs/screenshots/cross-framework.png) | ![Board report](docs/screenshots/board-report.png) |
 | **Audit** | **Findings** | **Policy** |
 | ![Audit](docs/screenshots/audit.png) | ![Findings](docs/screenshots/findings.png) | ![Policy](docs/screenshots/policy.png) |
+| **Task board** | **Approvals** | **My work** |
+| ![Task board](docs/screenshots/task-board.png) | ![Approvals](docs/screenshots/approvals.png) | ![My work](docs/screenshots/my-work.png) |
 
 ## Quick start (Docker)
 
@@ -140,7 +146,7 @@ passwords here.
 | `EVIDENCE_MAX_BYTES` | `26214400` | Max evidence upload (25 MB) |
 | `ATTACK_MAX_BUNDLE_BYTES` | `209715200` | Max ATT&CK bundle size (200 MB) |
 | `AUDIT_IP_MODE` | `full` | `truncated` stores /24 (IPv4) or /48 (IPv6) for privacy |
-| `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `EMAIL_USE_TLS`, `DEFAULT_FROM_EMAIL` | none | SMTP for review reminders and evidence-expiry alerts |
+| `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `EMAIL_USE_TLS`, `DEFAULT_FROM_EMAIL` | none | SMTP for review reminders, evidence-expiry alerts and the daily digest |
 | `SECURE_HSTS_SECONDS` / `SECURE_HSTS_PRELOAD` | `31536000` / `false` | HSTS; preload is opt-in |
 | `GUNICORN_WORKERS` / `Q_WORKERS` | `3` / `2` | Web and background worker processes |
 | `LOG_LEVEL` / `TIME_ZONE` | `INFO` / `UTC` | Logging and time zone |
@@ -197,7 +203,12 @@ read** and never stored. Daily snapshots exist only to draw trend charts.
    approved by someone other than its author and reviewed on a schedule.
 8. **Report.** Use the dashboard for weekly operations and the board report (print to PDF) each
    quarter. Export the ATT&CK coverage of a threat group or sector to Navigator for your SOC.
-9. **Keep it current.** Re-import ATT&CK after each MITRE release; review revoked-technique banners.
+9. **Run it as routine work.** Turn recurring checks (restore tests, access reviews, tabletop
+   exercises) into periodic tasks; tasks that require evidence can't be closed until it is attached.
+   Send questionnaires to control owners each quarter. Admins can switch on four-eyes evidence review
+   and approval of control-owner status changes under **Workflow settings**, so coverage and
+   compliance only move once a second person agrees. Everyone works from **My work**.
+10. **Keep it current.** Re-import ATT&CK after each MITRE release; review revoked-technique banners.
    Owners get review reminders and evidence-expiry emails. Automate status updates through the API,
    for example `PATCH /api/v1/controls/CTL-EDR/` from your EDR deployment pipeline.
 
@@ -211,7 +222,7 @@ curl -H "Authorization: Bearer tl_xxxxxxxx_…" https://grc.example.com/api/v1/r
 
 The API covers risks, controls, techniques with coverage, framework compliance, coverage and
 Navigator layers, audits (with per-requirement results), findings (create and update), exceptions,
-policies, and the audit log. The OpenAPI schema is at `/api/v1/schema/` and readable docs at
+policies, tasks (including completing them, for example from a backup job), and the audit log. The OpenAPI schema is at `/api/v1/schema/` and readable docs at
 `/api/v1/docs/`. Tokens act with their owner's role, and every write is audited.
 
 ## Local development

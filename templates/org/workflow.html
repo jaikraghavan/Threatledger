@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Workflow settings{% endblock %}
+{% block content %}
+<h1 class="mb-1 text-2xl font-semibold">Workflow settings</h1><p class="mb-4 text-sm text-slate-500">Optional four-eyes controls. Changes are recorded in the audit log.</p>
+<form method="post" class="card max-w-2xl space-y-4 p-5">{% csrf_token %}
+  {% for key, label, on in rows %}<label class="flex items-start gap-3 text-sm"><input type="checkbox" name="{{ key }}" class="mt-1 rounded border-slate-300"{% if on %} checked{% endif %}><span>{{ label }}</span></label>{% endfor %}
+  <button class="btn btn-primary" type="submit">Save</button></form>
+{% endblock %}

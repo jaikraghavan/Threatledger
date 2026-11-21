@@ -8,6 +8,7 @@ from django.urls import reverse
 
 from threatledger.accounts.permissions import capabilities, get_role
 from threatledger.accounts.roles import Cap
+from threatledger.work.notify import unread_count
 
 # (label, url name, capability, icon). Later phases append entries here.
 NAV_ITEMS: list[tuple[str, str, Cap, str]] = [
@@ -18,12 +19,14 @@ NAV_ITEMS: list[tuple[str, str, Cap, str]] = [
     ("Audits", "audits:list", Cap.VIEW_AUDITS, "clipboard"),
     ("Findings", "findings:list", Cap.VIEW_FINDINGS, "flag"),
     ("Policies", "policies:list", Cap.VIEW_POLICIES, "book"),
+    ("Tasks", "work:board", Cap.VIEW_TASKS, "kanban"),
     ("ATT&CK coverage", "coverage:matrix", Cap.VIEW_ATTACK, "grid"),
     ("Techniques", "attack:technique_list", Cap.VIEW_ATTACK, "grid"),
     ("Threat groups", "attack:group_list", Cap.VIEW_ATTACK, "users"),
     ("Audit log", "audit:list", Cap.VIEW_AUDIT_LOG, "log"),
     ("Risk matrix", "risks:matrix", Cap.MANAGE_SETTINGS, "settings"),
     ("Business units", "org:units", Cap.MANAGE_SETTINGS, "settings"),
+    ("Workflow settings", "org:workflow", Cap.MANAGE_SETTINGS, "settings"),
     ("ATT&CK data", "attack:data", Cap.RUN_IMPORTS, "database"),
 ]
 
@@ -47,4 +50,5 @@ def navigation(request: HttpRequest) -> dict[str, Any]:
         "tl_role": role.label if role else "No role",
         "tl_version": settings.THREATLEDGER_VERSION,
         "tl_source_url": settings.SOURCE_CODE_URL,
+        "tl_unread": unread_count(user),
     }

@@ -133,7 +133,17 @@ def create_finding(*, user: Any, data: dict[str, Any]) -> Finding:
     finding.full_clean(exclude=["organisation", "created_by", "updated_by"])
     finding.save()
     record(Action.CREATE, finding, actor=user, changes=_changes({}, finding))
+    _tell([finding.owner], f"Finding {finding.ref} assigned to you: {finding.title}", finding, user)
     return finding
+
+
+def _tell(recipients: Any, message: str, obj: Any, actor: Any) -> None:
+    from django.urls import reverse
+
+    from threatledger.work.notify import notify
+
+    name = "findings:detail" if isinstance(obj, Finding) else "findings:exception"
+    notify(recipients, message, reverse(name, args=[obj.ref]), actor=actor)
 
 
 @transaction.atomic
@@ -147,8 +157,16 @@ def update_finding(finding: Finding, *, user: Any, data: dict[str, Any]) -> Find
         merged = {f: getattr(finding, f) for f in FINDING_FIELDS} | data
         _validate_links(user, merged)
     before = snapshot(finding)
+    previous_owner = finding.owner_id
     for key, value in data.items():
         setattr(finding, key, value)
+    if finding.owner_id and finding.owner_id != previous_owner:
+        _tell(
+            [finding.owner],
+            f"Finding {finding.ref} assigned to you: {finding.title}",
+            finding,
+            user,
+        )
     finding.updated_by = user
     finding.full_clean(exclude=["organisation", "created_by", "updated_by"])
     finding.save()
@@ -202,6 +220,17 @@ def set_finding_status(finding: Finding, *, user: Any, status: str, note: str = 
     if note.strip():
         changes["note"] = [None, note.strip()[:500]]
     record(Action.UPDATE, finding, actor=user, changes=changes)
+    if status == FindingStatus.RESOLVED:
+        _tell(
+            [finding.created_by], f"Finding {finding.ref} is resolved: please verify", finding, user
+        )
+    elif status in (FindingStatus.CLOSED, FindingStatus.IN_PROGRESS, FindingStatus.OPEN):
+        _tell(
+            [finding.owner],
+            f"Finding {finding.ref} is now {finding.get_status_display()}",
+            finding,
+            user,
+        )
     return finding
 
 
@@ -271,6 +300,14 @@ def request_exception(
     changes["requirements"] = [None, sorted(r.ref for r in requirements)]
     changes["controls"] = [None, sorted(c.ref for c in controls)]
     record(Action.CREATE, exc, actor=user, changes=changes)
+    from threatledger.work.notify import users_with
+
+    _tell(
+        users_with(org, Cap.APPROVE_EXCEPTION, exc.business_unit_id),
+        f"Exception {exc.ref} awaits approval: {exc.title}",
+        exc,
+        user,
+    )
     return exc
 
 
@@ -294,6 +331,12 @@ def decide_exception(
     exc.updated_by = user
     exc.save()
     record(Action.UPDATE, exc, actor=user, changes=_changes(before, exc))
+    _tell(
+        [exc.created_by, exc.owner],
+        f"Exception {exc.ref} {exc.get_status_display().lower()}",
+        exc,
+        user,
+    )
     return exc
 
 

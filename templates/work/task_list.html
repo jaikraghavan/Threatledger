@@ -1,0 +1,15 @@
+{% extends "base.html" %}{% load tl %}
+{% block title %}Tasks{% endblock %}
+{% block content %}
+<div class="mb-1 flex flex-wrap items-end justify-between gap-3"><h1 class="text-2xl font-semibold">Tasks</h1>{% if can_manage %}<a class="btn btn-primary" href="{% url 'work:task_create' %}">New task</a>{% endif %}</div>
+<div class="mt-4">{% include "work/_tabs.html" %}</div>
+<form method="get" class="mb-3 flex flex-wrap items-center gap-2 text-sm"><label class="sr-only" for="f-status">Status</label>
+  <select id="f-status" name="status" class="field w-auto"><option value="open"{% if status == "open" %} selected{% endif %}>Not finished</option><option value="all"{% if status == "all" %} selected{% endif %}>Any status</option>{% for v, l in statuses %}<option value="{{ v }}"{% if v == status %} selected{% endif %}>{{ l }}</option>{% endfor %}</select>
+  <label class="inline-flex items-center gap-1"><input type="checkbox" name="mine" value="1" class="rounded border-slate-300"{% if mine %} checked{% endif %}> Mine</label><button class="btn btn-secondary" type="submit">Filter</button></form>
+<div class="card overflow-x-auto"><table class="data-table"><thead><tr><th scope="col">Task</th><th scope="col">Status</th><th scope="col">Priority</th><th scope="col">Assignees</th><th scope="col">Due</th><th scope="col">Repeats</th></tr></thead>
+  <tbody class="divide-y divide-slate-100">{% for t in tasks %}<tr><td><a class="font-mono text-xs text-brand-700 hover:underline" href="{% url 'work:task' t.ref %}">{{ t.ref }}</a> <span class="font-medium">{{ t.title }}</span></td>
+    <td><span class="badge {{ t.status|tone }}">{{ t.get_status_display }}</span></td><td>{{ t.get_priority_display }}</td>
+    <td class="text-xs">{% for a in t.assignees.all %}{{ a }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}</td>
+    <td class="whitespace-nowrap {% if t.overdue %}font-medium text-red-700{% endif %}">{{ t.due_on|date:"Y-m-d"|default:"—" }}</td><td class="text-xs">{{ t.get_recurrence_display }}</td></tr>
+  {% empty %}<tr><td colspan="6" class="text-slate-500">No tasks.</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

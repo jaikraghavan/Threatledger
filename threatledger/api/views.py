@@ -41,6 +41,8 @@ from threatledger.policies import services as policy_services
 from threatledger.policies.models import Policy
 from threatledger.risks import services as risk_services
 from threatledger.risks.models import Risk, RiskMatrix
+from threatledger.work import services as work_services
+from threatledger.work.models import Task
 
 from .serializers import (
     AuditEventSerializer,
@@ -52,6 +54,7 @@ from .serializers import (
     LinkTechniqueSerializer,
     PolicySerializer,
     RiskSerializer,
+    TaskSerializer,
     TechniqueSerializer,
 )
 
@@ -568,3 +571,46 @@ class PolicyViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.G
             .prefetch_related("versions", "controls")
             .order_by("ref")
         )
+
+
+# ----------------------------------------------------------------------------- Phase 9
+class TaskViewSet(
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    viewsets.GenericViewSet,
+):
+    """Tasks visible to you (``?mine=1``, ``?status=``). PATCH ``status`` (+ ``note``) to move one;
+    completing a periodic task creates its next occurrence."""
+
+    tl_access = AUTHENTICATED  # everyone sees and updates the tasks assigned to them
+    serializer_class = TaskSerializer
+    lookup_field = "ref"
+    http_method_names = ["get", "patch", "head", "options"]
+
+    def get_queryset(self) -> QuerySet[Any]:
+        if getattr(self, "swagger_fake_view", False):
+            return Task.objects.none()
+        qs = (
+            work_services.visible_tasks(self.request.user)
+            .select_related("control")
+            .prefetch_related("assignees")
+        )
+        if self.request.query_params.get("mine") == "1":
+            qs = qs.filter(Q(assignees=self.request.user.pk))
+        status_ = self.request.query_params.get("status")
+        if status_:
+            qs = qs.filter(status=status_)
+        return qs.order_by("due_on", "id")
+
+    def perform_update(self, serializer: Any) -> None:
+        data = serializer.validated_data
+        try:
+            serializer.instance = work_services.set_task_status(
+                serializer.instance,
+                user=self.request.user,
+                status=data["status"],
+                note=data.get("note", ""),
+            )
+        except work_services.WorkError as exc:
+            raise exceptions.PermissionDenied(str(exc)) from exc

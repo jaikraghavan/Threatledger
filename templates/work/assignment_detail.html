@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}{{ a.questionnaire.title }}{% endblock %}
+{% block content %}
+<nav class="mb-3 text-sm text-slate-500" aria-label="Breadcrumb"><a class="hover:underline" href="{% url 'work:mine' %}">My work</a> / {{ a.ref }}</nav>
+<h1 class="text-2xl font-semibold">{{ a.questionnaire.title }}</h1>
+<div class="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-600"><span class="badge {% if a.status == 'accepted' %}bg-green-100 text-green-800{% elif a.status == 'returned' %}bg-amber-100 text-amber-800{% elif a.status == 'submitted' %}bg-purple-100 text-purple-800{% else %}bg-slate-100 text-slate-700{% endif %}">{{ a.get_status_display }}</span>
+  <span>respondent: {{ a.respondent }}</span>{% if a.due_on %}<span class="{% if a.overdue %}font-medium text-red-700{% endif %}">· due {{ a.due_on|date:"Y-m-d" }}</span>{% endif %}{% if a.control %}<span>· about <a class="text-brand-700 hover:underline" href="{% url 'controls:detail' a.control.ref %}">{{ a.control.ref }}</a></span>{% endif %}</div>
+{% if a.message %}<p class="mt-3 whitespace-pre-line text-sm text-slate-700">{{ a.message }}</p>{% endif %}
+{% if a.review_note %}<div class="mt-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900" role="status">{{ a.reviewed_by }}: {{ a.review_note }}</div>{% endif %}
+{% if can_edit %}<form method="post" enctype="multipart/form-data" class="mt-6 space-y-4" novalidate>{% csrf_token %}{% endif %}
+<ol class="space-y-4">{% for q, ans in rows %}<li class="card p-5"><fieldset><legend class="font-medium">{{ forloop.counter }}. {{ q.text }}{% if q.required %} <span class="text-red-600" aria-label="required">*</span>{% endif %}</legend>
+  {% if q.help_text %}<p class="mt-1 text-xs text-slate-500">{{ q.help_text }}</p>{% endif %}
+  {% if can_edit %}<div class="mt-3 space-y-3 text-sm">
+    {% if q.kind == "text" %}<label class="sr-only" for="q{{ q.pk }}">Answer</label><textarea id="q{{ q.pk }}" name="q{{ q.pk }}" rows="3" class="field">{{ ans.value|default:"" }}</textarea>
+    {% else %}<div class="flex flex-wrap gap-4">{% for opt in q.options %}<label class="inline-flex items-center gap-2"><input type="radio" name="q{{ q.pk }}" value="{{ opt }}"{% if ans.value == opt %} checked{% endif %}> {{ opt }}</label>{% endfor %}</div>{% endif %}
+    <label class="label" for="q{{ q.pk }}_comment">Comment</label><textarea id="q{{ q.pk }}_comment" name="q{{ q.pk }}_comment" rows="2" class="field">{{ ans.comment|default:"" }}</textarea>
+    <div class="grid gap-3 sm:grid-cols-2"><div><label class="label" for="q{{ q.pk }}_url">Evidence link{% if q.evidence_required %} or file <span class="text-red-600" aria-hidden="true">*</span>{% endif %}</label><input id="q{{ q.pk }}_url" name="q{{ q.pk }}_url" type="url" class="field" value="{{ ans.evidence_url|default:'' }}" placeholder="https://"></div>
+      <div><label class="label" for="q{{ q.pk }}_file">Evidence file</label><input id="q{{ q.pk }}_file" name="q{{ q.pk }}_file" type="file" class="block text-sm">{% if ans.file %}<p class="mt-1 text-xs text-slate-500">Attached: <a class="text-brand-700 hover:underline" href="{% url 'work:answer_file' ans.pk %}">{{ ans.original_filename }}</a> (uploading again replaces it)</p>{% endif %}</div></div></div>
+  {% else %}<dl class="mt-3 space-y-1 text-sm"><div><dt class="sr-only">Answer</dt><dd class="whitespace-pre-line">{{ ans.value|default:"— not answered —" }}</dd></div>
+    {% if ans.comment %}<div><dt class="text-xs text-slate-500">Comment</dt><dd class="whitespace-pre-line">{{ ans.comment }}</dd></div>{% endif %}
+    {% if ans.evidence_url %}<div><dt class="text-xs text-slate-500">Evidence link</dt><dd><a class="text-brand-700 hover:underline" href="{{ ans.evidence_url }}" target="_blank" rel="noopener noreferrer nofollow">{{ ans.evidence_url|truncatechars:80 }} ↗</a></dd></div>{% endif %}
+    {% if ans.file %}<div><dt class="text-xs text-slate-500">Evidence file</dt><dd><a class="text-brand-700 hover:underline" href="{% url 'work:answer_file' ans.pk %}">{{ ans.original_filename }}</a> <span class="text-xs text-slate-500">{{ ans.size|filesizeformat }}</span></dd></div>{% endif %}</dl>{% endif %}
+</fieldset></li>{% endfor %}</ol>
+{% if can_edit %}<div class="flex flex-wrap gap-2"><button class="btn btn-secondary" type="submit">Save answers</button><button class="btn btn-primary" type="submit" name="submit" value="1">Save and submit for review</button></div>
+  {% if missing %}<p class="text-xs text-slate-500">{{ missing|length }} question{{ missing|length|pluralize }} still need an answer or evidence before you can submit.</p>{% endif %}</form>{% endif %}
+{% if can_review %}<section class="card mt-6 p-5"><h2 class="mb-3 font-semibold">Review</h2>
+  <form method="post" action="{% url 'work:assignment_review' a.ref %}" class="space-y-3">{% csrf_token %}<label class="label" for="rnote">Note (required to return for changes)</label><input id="rnote" name="note" class="field" maxlength="500">
+    <div class="flex gap-2"><button class="btn btn-primary" name="decision" value="accept" type="submit">Accept</button><button class="btn btn-secondary" name="decision" value="return" type="submit">Return for changes</button></div></form></section>{% endif %}
+{% endblock %}

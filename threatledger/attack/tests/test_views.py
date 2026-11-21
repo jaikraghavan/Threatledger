@@ -225,7 +225,7 @@ def test_nav_shows_attack_links_by_role(client_for):
         # +2 over steady state: the first request after login writes the session once
         # (idle-timeout activity stamp), which happens at most once a minute.
         (LIST, 14),
-        (reverse("attack:technique_detail", args=["T1059.001"]), 27),
+        (reverse("attack:technique_detail", args=["T1059.001"]), 28),
         (reverse("attack:group_list"), 9),
         (reverse("attack:group_detail", args=["G0001"]), 12),
     ],

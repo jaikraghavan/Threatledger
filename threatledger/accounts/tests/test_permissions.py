@@ -51,6 +51,12 @@ EXPECTED = {
     Cap.APPROVE_EXCEPTION: {Role.ADMIN, Role.RISK_MANAGER},
     Cap.EDIT_POLICIES: {Role.ADMIN, Role.RISK_MANAGER},
     Cap.APPROVE_POLICIES: {Role.ADMIN, Role.RISK_MANAGER},
+    # Phase 9 work management
+    Cap.VIEW_TASKS: {Role.ADMIN, Role.RISK_MANAGER, Role.CONTROL_OWNER, Role.AUDITOR},
+    Cap.MANAGE_TASKS: {Role.ADMIN, Role.RISK_MANAGER},
+    Cap.COMMENT: {Role.ADMIN, Role.RISK_MANAGER, Role.CONTROL_OWNER, Role.AUDITOR},
+    Cap.REVIEW_EVIDENCE: {Role.ADMIN, Role.RISK_MANAGER, Role.AUDITOR},
+    Cap.APPROVE_CONTROL_CHANGES: {Role.ADMIN, Role.RISK_MANAGER},
 }
 
 
@@ -75,7 +81,12 @@ def test_auditor_and_viewer_have_no_write_capabilities():
 def test_auditor_only_writes_audit_judgements_and_findings():
     """Auditor independence: they record judgements and raise findings, nothing else."""
     reads = {c for c in Cap if c.value.startswith(("view_", "export_"))}
-    assert ROLE_CAPABILITIES[Role.AUDITOR] - reads == {Cap.PERFORM_AUDITS, Cap.RAISE_FINDINGS}
+    assert ROLE_CAPABILITIES[Role.AUDITOR] - reads == {
+        Cap.PERFORM_AUDITS,
+        Cap.RAISE_FINDINGS,
+        Cap.REVIEW_EVIDENCE,
+        Cap.COMMENT,
+    }
     assert not (ROLE_CAPABILITIES[Role.VIEWER] - reads)
 
 

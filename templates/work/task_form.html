@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}{% if task %}Edit {{ task.ref }}{% else %}New task{% endif %}{% endblock %}
+{% block content %}
+<nav class="mb-3 text-sm text-slate-500" aria-label="Breadcrumb"><a class="hover:underline" href="{% url 'work:board' %}">Tasks</a>{% if task %} / <a class="hover:underline" href="{% url 'work:task' task.ref %}">{{ task.ref }}</a>{% endif %}</nav>
+<h1 class="mb-4 text-2xl font-semibold">{% if task %}Edit {{ task.ref }}{% else %}New task{% endif %}</h1>
+<form method="post" class="card grid max-w-3xl gap-4 p-5 sm:grid-cols-2" novalidate>{% csrf_token %}
+  <div class="sm:col-span-2">{% include "partials/_form_errors.html" %}</div>
+  {% include "partials/_field.html" with field=form.title class="sm:col-span-2" %}
+  {% include "partials/_field.html" with field=form.assignees %}{% include "partials/_field.html" with field=form.priority %}
+  {% include "partials/_field.html" with field=form.due_on %}{% include "partials/_field.html" with field=form.recurrence %}
+  {% include "partials/_field.html" with field=form.business_unit %}{% include "partials/_field.html" with field=form.control %}
+  {% include "partials/_field.html" with field=form.risk %}{% include "partials/_field.html" with field=form.finding %}
+  {% include "partials/_field.html" with field=form.policy %}{% include "partials/_field.html" with field=form.audit %}
+  {% include "partials/_field.html" with field=form.requires_evidence class="sm:col-span-2" %}
+  {% include "partials/_field.html" with field=form.description class="sm:col-span-2" %}
+  <div class="flex gap-2 sm:col-span-2"><button class="btn btn-primary" type="submit">Save</button><a class="btn btn-secondary" href="{% if task %}{% url 'work:task' task.ref %}{% else %}{% url 'work:board' %}{% endif %}">Cancel</a></div>
+</form>
+{% endblock %}

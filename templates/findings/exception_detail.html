@@ -1,4 +1,4 @@
-{% extends "base.html" %}{% load tl %}
+{% extends "base.html" %}{% load work tl %}
 {% block title %}{{ exc.ref }} {{ exc.title }}{% endblock %}
 {% block content %}
 <nav class="mb-3 text-sm text-slate-500" aria-label="Breadcrumb"><a class="hover:underline" href="{% url 'findings:exceptions' %}">Exceptions</a></nav>
@@ -31,4 +31,5 @@
     {% if exc.decision_note %}<div><dt class="text-xs text-slate-500">Note</dt><dd>{{ exc.decision_note }}</dd></div>{% endif %}
   </dl></section></aside>
 </div>
+<div class="mt-6">{% comments exc %}</div>
 {% endblock %}

@@ -1,0 +1,3 @@
+<nav class="mb-4 flex flex-wrap gap-4 border-b border-slate-200 text-sm" aria-label="Work">
+  {% for key, label, url in tabs %}<a class="-mb-px border-b-2 px-1 pb-2 {% if tab == key %}border-brand-600 font-medium text-slate-900{% else %}border-transparent text-slate-500 hover:text-slate-800{% endif %}" href="{{ url }}"{% if tab == key %} aria-current="page"{% endif %}>{{ label }}</a>{% endfor %}
+</nav>

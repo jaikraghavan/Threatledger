@@ -35,6 +35,8 @@ class DemoReport:
     findings: int = 0
     exceptions: int = 0
     policies: int = 0
+    tasks: int = 0
+    questionnaires: int = 0
 
 
 def _days(n: int | None) -> Any:
@@ -150,6 +152,7 @@ def seed_demo(org: Organisation, path: Path = DEMO_FILE) -> DemoReport:
                 )
             report.acceptances += int(isinstance(acc, RiskAcceptance))
     seed_governance(org, data, users, bus, controls, report)
+    seed_work(org, data, users, controls, report)
     take_snapshots(org)
     return report
 
@@ -295,3 +298,87 @@ def seed_governance(
                 version.effective_on = timezone.localdate() - timedelta(days=400)
                 version.save(update_fields=["decided_at", "effective_on"])
         report.policies += 1
+
+
+def seed_work(
+    org: Organisation,
+    data: dict[str, Any],
+    users: dict[str, User],
+    controls: dict[str, Control],
+    report: DemoReport,
+) -> None:
+    """Phase 9: periodic checks, a questionnaire, comments, pending four-eyes approvals."""
+    from threatledger.controls.models import ChangeRequestStatus
+    from threatledger.org.services import set_workflow
+    from threatledger.risks.models import Risk
+    from threatledger.work import services as work_services
+    from threatledger.work.models import Comment, Questionnaire, Task
+
+    rm, admin = users["riskmanager"], users["admin"]
+    for title, who, due, recurrence, ref, needs_evidence, status in data.get("tasks", []):
+        if Task.objects.filter(organisation=org, title=title).exists():
+            continue
+        assignee = users.get(who, rm)
+        task = work_services.create_task(
+            user=rm,
+            data={
+                "title": title,
+                "due_on": _days(due),
+                "recurrence": recurrence,
+                "control": controls.get(ref),
+                "requires_evidence": needs_evidence and status != "done",
+                "priority": "high" if (due or 0) < 0 else "medium",
+            },
+            assignees=[assignee],
+        )
+        if status != "todo":
+            work_services.set_task_status(
+                task, user=assignee, status=status, note="Reviewed; no anomalies (demo)."
+            )
+        report.tasks += 1
+    for item in data.get("questionnaires", []):
+        if Questionnaire.objects.filter(organisation=org, title=item["title"]).exists():
+            continue
+        q = work_services.create_questionnaire(
+            user=rm,
+            title=item["title"],
+            description=item.get("description", ""),
+            questions=item["questions"],
+        )
+        work_services.assign_questionnaire(
+            q,
+            user=rm,
+            respondents=[users[u] for u in item["send_to"] if u in users],
+            data={"due_on": _days(item.get("due"))},
+        )
+        report.questionnaires += 1
+    for ref, who, body in data.get("comments", []):
+        risk = Risk.objects.filter(organisation=org, ref=ref).first()
+        author = users.get(who)
+        if risk is None or author is None or Comment.objects.filter(body=body).exists():
+            continue
+        work_services.add_comment(risk, user=author, body=body)
+    flags = data.get("workflow") or {}
+    if flags:
+        set_workflow(org, user=admin, values=flags)
+        org.refresh_from_db()
+    pending = data.get("pending") or {}
+    if pending.get("evidence"):
+        ref, title, url = pending["evidence"]
+        c = Control.objects.select_related("organisation").filter(organisation=org, ref=ref).first()
+        if c is not None and not c.evidence.filter(title=title).exists():
+            control_services.add_link_evidence(
+                c, user=users.get("controlowner", admin), url=url, title=title
+            )
+    if pending.get("change"):
+        ref, to_status, reason = pending["change"]
+        c = Control.objects.select_related("organisation").filter(organisation=org, ref=ref).first()
+        if (
+            c is not None
+            and c.owner is not None
+            and not c.change_requests.filter(status=ChangeRequestStatus.PENDING).exists()
+            and c.status != to_status
+        ):
+            control_services.request_status_change(
+                c, user=c.owner, to_status=to_status, reason=reason
+            )

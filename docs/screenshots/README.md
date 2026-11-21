@@ -23,6 +23,9 @@ an end-to-end check of the UI under the strict Content Security Policy.
 | `audit.png` | `/audits/A-0001/` |
 | `findings.png` | `/findings/` |
 | `policy.png` | `/policies/POL-002/` |
+| `task-board.png` | `/work/board/` |
+| `approvals.png` | `/work/approvals/` |
+| `my-work.png` | `/work/` |
 
 The script also visits the other audit, campaign, finding, exception and policy pages for the
 console/CSP check without saving screenshots.

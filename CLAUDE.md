@@ -77,6 +77,13 @@ The design lives in [PLAN.md](PLAN.md). Read it before changing models or scorin
   Segregation of duties: finding owners can't close their own finding; exception requesters and
   policy authors can't approve their own. Refs come from `core.refs.next_ref()` (A-, C-, F-, EX-, POL-).
   BU scope includes sub-units (`org.models.descendant_ids`).
+- **Work (Phase 9)**: `threatledger/work` (Task, Comment, Notification, Questionnaire/Question/
+  Assignment/Answer, UserPreference, DigestLog). Notify with `work.notify.notify(users, msg, url,
+  actor=)` (lazy import from other apps); approvers via `users_with(org, Cap.X, bu_id)`. Comments
+  via `{% load work %}{% comments obj %}`; add new commentable models to `services._registry()`.
+  Org switches live in `Organisation.settings` (`org.workflow(key)`, `org.services.set_workflow`).
+  `ControlChangeRequest` and evidence `review_status` live in `controls`; the control's status only
+  changes on approval. Daily digest job: `work.tasks.daily`.
 - **Ops commands**: `backup`, `verify_backup`, `restore --force`, `seed_demo`, `perf_check --risks 1000`.
   Backups must run outside a DB transaction (tests use `django_db(transaction=True)`).
 - Test helpers for risks/controls/techniques: `threatledger/risks/tests/helpers.py`.

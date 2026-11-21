@@ -1,4 +1,4 @@
-{% extends "base.html" %}{% load tl %}
+{% extends "base.html" %}{% load work tl %}
 {% block title %}{{ finding.ref }} {{ finding.title }}{% endblock %}
 {% block content %}
 <nav class="mb-3 text-sm text-slate-500" aria-label="Breadcrumb"><a class="hover:underline" href="{% url 'findings:list' %}">Findings</a></nav>
@@ -33,4 +33,5 @@
     {% if exceptions %}<section class="card p-5"><h2 class="mb-3 font-semibold">Exceptions</h2><ul class="space-y-2 text-sm">{% for e in exceptions %}<li><a class="font-mono text-xs text-brand-700 hover:underline" href="{% url 'findings:exception' e.ref %}">{{ e.ref }}</a> <span class="badge {{ e.effective_status|tone }}">{{ e.effective_status_label }}</span></li>{% endfor %}</ul></section>{% endif %}
   </aside>
 </div>
+<div class="mt-6">{% comments finding %}</div>
 {% endblock %}

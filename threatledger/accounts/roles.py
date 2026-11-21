@@ -56,6 +56,12 @@ class Cap(StrEnum):
     APPROVE_EXCEPTION = "approve_exception"
     EDIT_POLICIES = "edit_policies"
     APPROVE_POLICIES = "approve_policies"
+    # work management (Phase 9)
+    VIEW_TASKS = "view_tasks"  # everyone always sees work assigned to them
+    MANAGE_TASKS = "manage_tasks"  # create/assign tasks and questionnaires
+    COMMENT = "comment"
+    REVIEW_EVIDENCE = "review_evidence"  # four-eyes: never your own upload
+    APPROVE_CONTROL_CHANGES = "approve_control_changes"
 
 
 _READ_ALL = {
@@ -72,9 +78,10 @@ _READ_SENSITIVE = {
     Cap.EXPORT_DATA,
     Cap.VIEW_AUDITS,
     Cap.VIEW_FINDINGS,
+    Cap.VIEW_TASKS,
 }
 # Auditors judge and report; they never change the controls, risks or policies they audit.
-_AUDIT_WORK = {Cap.PERFORM_AUDITS, Cap.RAISE_FINDINGS}
+_AUDIT_WORK = {Cap.PERFORM_AUDITS, Cap.RAISE_FINDINGS, Cap.REVIEW_EVIDENCE, Cap.COMMENT}
 
 ROLE_CAPABILITIES: dict[Role, frozenset[Cap]] = {
     Role.ADMIN: frozenset(Cap),
@@ -96,6 +103,8 @@ ROLE_CAPABILITIES: dict[Role, frozenset[Cap]] = {
             Cap.APPROVE_EXCEPTION,
             Cap.EDIT_POLICIES,
             Cap.APPROVE_POLICIES,
+            Cap.MANAGE_TASKS,
+            Cap.APPROVE_CONTROL_CHANGES,
         }
         | _AUDIT_WORK
     ),
@@ -107,6 +116,7 @@ ROLE_CAPABILITIES: dict[Role, frozenset[Cap]] = {
             Cap.UPLOAD_EVIDENCE,
             Cap.UPDATE_OWN_FINDING,
             Cap.REQUEST_EXCEPTION,
+            Cap.COMMENT,
         }
     ),
     Role.AUDITOR: frozenset(_READ_ALL | _READ_SENSITIVE | _AUDIT_WORK),

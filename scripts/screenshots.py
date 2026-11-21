@@ -31,6 +31,9 @@ PAGES = [
     ("audit", "/audits/A-0001/"),
     ("findings", "/findings/"),
     ("policy", "/policies/POL-002/"),
+    ("task-board", "/work/board/"),
+    ("approvals", "/work/approvals/"),
+    ("my-work", "/work/"),
 ]
 # Visited for the console/CSP check only (no screenshot).
 CHECK_ONLY = [
@@ -42,6 +45,14 @@ CHECK_ONLY = [
     "/findings/F-0001/",
     "/policies/",
     "/controls/CTL-MFA/",
+    "/controls/CTL-HARDEN/",
+    "/work/tasks/",
+    "/work/tasks/T-0001/",
+    "/work/questionnaires/",
+    "/work/questionnaires/Q-001/",
+    "/work/answers/QA-0001/",
+    "/work/notifications/?all=1",
+    "/work/preferences/",
 ]
 
 

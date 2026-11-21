@@ -1,4 +1,4 @@
-{% extends "base.html" %}{% load tl %}
+{% extends "base.html" %}{% load work tl %}
 {% block title %}{{ policy.ref }} {{ policy.title }}{% endblock %}
 {% block content %}
 <nav class="mb-3 text-sm text-slate-500" aria-label="Breadcrumb"><a class="hover:underline" href="{% url 'policies:list' %}">Policies</a></nav>
@@ -41,4 +41,5 @@
       <div class="text-xs text-slate-500">by {{ v.author }}{% if v.decided_by %} · decided by {{ v.decided_by }} {{ v.decided_at|date:"Y-m-d" }}{% endif %}</div></li>{% endfor %}</ol></section>
   </aside>
 </div>
+<div class="mt-6">{% comments policy %}</div>
 {% endblock %}

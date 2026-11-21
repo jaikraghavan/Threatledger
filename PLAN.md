@@ -557,7 +557,7 @@ Each phase is one release with the same rules as Phases 1–7: tests and linters
 - *Policies & documents:* versioned, with an owner, approval and review date.
 - *Perimeters / domains:* a nested business-unit hierarchy.
 
-**Phase 9: Work management**
+**Phase 9: Work management** ✅ done
 - Tasks, including periodic checks with multiple assignees.
 - Assignments and respondent mode, questionnaires with required evidence.
 - Comments, a notification centre and email reminders.
